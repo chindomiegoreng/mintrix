@@ -21,6 +21,7 @@ TextStyle primaryTextStyle = GoogleFonts.poppins(color: primaryColor);
 TextStyle secondaryTextStyle = GoogleFonts.poppins(color: secondaryColor);
 TextStyle thirdTextStyle = GoogleFonts.poppins(color: thirdColor);
 TextStyle whiteTextStyle = GoogleFonts.poppins(color: whiteColor);
+TextStyle bluePrimaryTextStyle = GoogleFonts.poppins(color: bluePrimaryColor);
 
 // inisialisasi ketebalan text
 
