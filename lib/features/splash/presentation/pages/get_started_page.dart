@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mintrix/widgets/home_card.dart';
+import 'package:mintrix/shared/theme.dart';
+import 'package:mintrix/widgets/buttons.dart';
 
 class GetStartedPage extends StatelessWidget {
   const GetStartedPage({super.key});
@@ -7,94 +8,43 @@ class GetStartedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.fromARGB(255, 255, 255, 255),
-              Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: whiteColor,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Image.asset(
+                'assets/images/dino_get_started.png', 
+                width: 250,
+              ),
+              const Spacer(),
+              Text(
+                'Yeay, Mintrix adalah temanmu untuk membantu mengenal diri lebih lagi',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 24),
+              CustomFilledButton(
+                title: 'Ayo Mulai Sekarang',
+                variant: ButtonColorVariant.blue,
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+              ),
+              const SizedBox(height: 16),
+              CustomFilledButton(
+                title: 'Masuk Yuk',
+                variant: ButtonColorVariant.white,
+                withShadow: true,
+                onPressed: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
             ],
           ),
-        ),
-        // child: SafeArea(
-        //   child: Wrap(
-        //     runSpacing: 15,
-        //     alignment: WrapAlignment.spaceBetween,
-        //     children: [
-        //       CustomHomeCardSmall(
-        //         images: "assets/images/home_card_asset1.png",
-        //         title: "title",
-        //         subTitle: "subTitle",
-        //       ),
-        //       CustomHomeCardSmall(
-        //         images: "assets/images/home_card_asset2.png",
-        //         title: "title",
-        //         subTitle: "subTitle",
-        //       ),
-        //       CustomHomeCardSmall(
-        //         images: "assets/images/home_card_asset3.png",
-        //         title: "title",
-        //         subTitle: "subTitle",
-        //       ),
-        //       CustomHomeCardSmall(
-        //         images: "assets/images/home_card_asset4.png",
-        //         title: "title",
-        //         subTitle: "subTitle",
-        //       ),
-        //     ],
-        //   ),
-        child: Column(
-          children: [
-            const Spacer(),
-            // Logo container
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 167, 213, 235),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: const Icon(
-                Icons.school,
-                size: 60,
-                color: Color.fromARGB(255, 27, 126, 154),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Mintrix',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Belajar Lebih Mudah',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(color: Colors.white70),
-            ),
-            const Spacer(),
-            // Buttons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                children: [
-                  CustomHomeCardLarge(
-                    title: "Liga Emas",
-                    subTitle: "Posisi 1",
-                    description:
-                        "Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian",
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 48),
-          ],
         ),
       ),
     );

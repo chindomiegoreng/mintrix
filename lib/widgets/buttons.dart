@@ -14,6 +14,7 @@ class CustomFilledButton extends StatelessWidget {
   final TextStyle? textStyle;
   final double borderRadius;
   final bool withShadow;
+  final Widget? icon; // 🔹 tambahan baru
 
   const CustomFilledButton({
     super.key,
@@ -27,6 +28,7 @@ class CustomFilledButton extends StatelessWidget {
     this.textStyle,
     this.borderRadius = 56,
     this.withShadow = true,
+    this.icon, // 🔹 inisialisasi
   });
 
   Color _getBackgroundColor() {
@@ -97,14 +99,28 @@ class CustomFilledButton extends StatelessWidget {
           backgroundColor: _getBackgroundColor(),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
+            side: variant == ButtonColorVariant.white
+                ? const BorderSide(color: Colors.grey)
+                : BorderSide.none,
           ),
           padding: EdgeInsets.zero,
         ),
-        child: Text(title, style: _getTextStyle()),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              icon!,
+              const SizedBox(width: 10),
+            ],
+            Text(title, style: _getTextStyle()),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 // // usage
 

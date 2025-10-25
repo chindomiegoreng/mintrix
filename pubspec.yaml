@@ -45,7 +45,6 @@ dependencies:
   # Dependency Injection
   get_it: ^7.6.4
   font_awesome_flutter: ^10.9.1
-  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:
