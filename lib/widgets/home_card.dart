@@ -100,8 +100,8 @@ class CustomHomeCardSmall extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 165,
-      height: 180,
+      width: 175,
+      height: 220,
       child: Stack(
         children: [
           Positioned.fill(
@@ -113,39 +113,44 @@ class CustomHomeCardSmall extends StatelessWidget {
               ),
             ),
           ),
-          Center(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, 
               crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const Spacer(),
                 Image.asset(
-                  // "assets/images/home_card_asset1.png",
                   images,
-                  width: 100,
-                  height: 100,
+                  width: 90,
+                  height: 90,
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 10),
                 Text(
-                  // "Permainan",
                   title,
+                  textAlign: TextAlign.center,
                   style: bluePrimaryTextStyle.copyWith(
                     fontWeight: bold,
                     fontSize: 18,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 32, 
+                  child: Text(
+                    subTitle,
+                    textAlign: TextAlign.center,
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontWeight: medium,
+                      fontSize: 12,
+                    ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  // "Ayo bermain dan belajar",
-                  subTitle,
-                  style: bluePrimaryTextStyle.copyWith(
-                    fontWeight: medium,
-                    fontSize: 12,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  maxLines: 2,
-                ),
+                const Spacer(), 
               ],
             ),
           ),
