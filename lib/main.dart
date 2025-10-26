@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (context) => const MainNavigationPage(),
+          '/detail-profile': (context) => const DetailProfilePage(),
         },
       ),
     );
