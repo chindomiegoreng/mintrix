@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
@@ -25,10 +26,21 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Mintrix',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+          // reusable app bar
+          scaffoldBackgroundColor: lightBackgoundColor,
+          appBarTheme: AppBarTheme(
+            backgroundColor: lightBackgoundColor,
+            surfaceTintColor:
+                lightBackgoundColor, // ketika scroll appbar akan berada di lightbackgroundcolor
+            elevation: 0, // shadow
+            centerTitle: true,
+            iconTheme: IconThemeData(color: primaryColor),
+            titleTextStyle: primaryTextStyle.copyWith(
+              fontSize: 20,
+              fontWeight: semiBold,
+            ),
+          ),
         ),
         initialRoute: '/',
         routes: {

@@ -20,9 +20,12 @@ class DetailProfilePage extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         children: [
           profileInfo(),
+          SizedBox(height: 20),
           sectionTitle1(),
           progressContainer(),
+          SizedBox(height: 12),
           sectionTitle2(),
+          SizedBox(height: 50),
         ],
       ),
     );
@@ -60,6 +63,7 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
+        SizedBox(height: 8),
         Text(
           "Data di bawah ini merupakan rekam jejak penggunaan aplikasi dari awal hingga saat ini dan dapat berubah kapanpun. Penilaian yang ditampilkan didasarkan pada keseluruhan aktivitas anak.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
@@ -77,29 +81,9 @@ class DetailProfilePage extends StatelessWidget {
       "Kreativitas",
     ];
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 100),
+      margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Perkembangan",
-                style: primaryTextStyle.copyWith(
-                  fontSize: 20,
-                  fontWeight: semiBold,
-                ),
-              ),
-              Text(
-                "Lihat Detail",
-                style: secondaryTextStyle.copyWith(
-                  fontSize: 16,
-                  fontWeight: semiBold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(30),
@@ -169,6 +153,7 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
+        SizedBox(height: 8),
         Text(
           "Menggambar, bermain musik, dan menulis. kamu senang mengarang dan menciptakan dunia dari imajinasi kamu sendiri.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),

@@ -8,24 +8,43 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
+      body: Stack(
         children: [
-          profileInfo(),
-          statsRow(),
-          achievementsContainer(),
-          progressContainer(context),
+          // bg
+          Positioned.fill(
+            child: Image.asset(
+              "assets/images/profile_background.png",
+              fit: BoxFit.cover,
+            ),
+          ),
+          // container white
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Container(
+              height: 423,
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+            ),
+          ),
+          // konten scroll
+          ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            children: [
+              const SizedBox(height: 98),
+              profileInfo(),
+              statsRow(),
+              achievementsContainer(),
+              progressContainer(context),
+              const SizedBox(height: 50),
+            ],
+          ),
         ],
       ),
     );
@@ -226,7 +245,7 @@ class ProfilePage extends StatelessWidget {
       "Kreativitas",
     ];
     return Container(
-      margin: const EdgeInsets.only(top: 24, bottom: 100),
+      margin: const EdgeInsets.only(top: 24, bottom: 50),
       child: Column(
         children: [
           Row(
@@ -241,7 +260,7 @@ class ProfilePage extends StatelessWidget {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, "detail-profile");
+                  Navigator.pushNamed(context, "/detail-profile");
                 },
                 child: Text(
                   "Lihat Detail",
