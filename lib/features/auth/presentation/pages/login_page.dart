@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:mintrix/widgets/buttons.dart';
+import 'package:mintrix/widgets/form.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -15,14 +17,20 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text('Masuk'),
+        title: const Text(
+          'Masuk',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
+        ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -42,146 +50,94 @@ class _LoginPageState extends State<LoginPage> {
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  Text(
-                    'Nama Pengguna',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Masukkan username kamu',
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Kata Sandi',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Masukkan kata sandi',
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.read<AuthBloc>().add(
-                          LoginEvent(
-                            username: _usernameController.text,
-                            password: _passwordController.text,
-                          ),
-                        );
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+                    CustomFormField(
+                      title: 'Emailmu',
+                      controller: _usernameController,
+                      hintText: 'Masukkan email kamu',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email pengguna tidak boleh kosong';
+                        }
+                        return null;
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[400],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Masuk Sekarang',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () => {},
-                      child: Text("Lupa Kata Sandimu?"),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: Colors.grey[300])),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'atau',
-                          style: TextStyle(color: Colors.grey[600]),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey[300])),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Handle Google sign in
+                    const SizedBox(height: 16),
+                    CustomFormField(
+                      title: 'Kata Sandi',
+                      type: FormFieldType.password,
+                      controller: _passwordController,
+                      hintText: 'Masukkan kata sandi',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Kata sandi tidak boleh kosong';
+                        }
+                        return null;
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black87,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Colors.grey),
-                        ),
-                        elevation: 1,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          FaIcon(
-                            FontAwesomeIcons.google,
-                            color: Colors.red,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            'Masuk dengan Google',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                    ),
+                    const SizedBox(height: 24),
+                    CustomFilledButton(
+                      title: 'Masuk Sekarang',
+                      variant: ButtonColorVariant.blue,
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          context.read<AuthBloc>().add(
+                            LoginEvent(
+                              username: _usernameController.text,
+                              password: _passwordController.text,
                             ),
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          "Lupa Kata Sandimu?",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            'atau',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    CustomFilledButton(
+                      title: 'Masuk dengan Google',
+                      variant: ButtonColorVariant.white,
+                      withShadow: true,
+                      icon: const FaIcon(
+                        FontAwesomeIcons.google,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
           );
