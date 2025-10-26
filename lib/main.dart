@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
+import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
           '/main': (context) => const MainNavigationPage(),
           '/detail-profile': (context) => const DetailProfilePage(),
           '/settings': (context) => const SettingsPage(),
+          '/settings-connect': (context) => const SettingsConnectPage(),
         },
       ),
     );

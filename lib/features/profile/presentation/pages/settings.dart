@@ -75,7 +75,9 @@ class _SettingsPageState extends State<SettingsPage> {
             variant: ButtonColorVariant.blue,
             width: 135,
             borderRadius: 12,
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushNamed(context, "/settings-connect");
+            },
           ),
         ],
       ),
