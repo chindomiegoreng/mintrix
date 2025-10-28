@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
           '/settings': (context) => const SettingsPage(),
           '/settings-connect': (context) => const SettingsConnectPage(),
           '/store': (context) => const StorePage(),
+          '/leaderboard': (context) => const LeaderboardPage(),
         },
       ),
     );
