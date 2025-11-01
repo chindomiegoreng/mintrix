@@ -9,21 +9,24 @@ class Personalization3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Data disesuaikan dengan gambar
     final List<Map<String, dynamic>> rewards = [
       {
-        'icon': Icons.auto_awesome,
+        'icon': Icons.list_alt_outlined, // Ikon disesuaikan
         'title': 'Yuk, Jadi Super Seru Bareng Mintrix',
         'subtitle': 'Belajar asik tanpa bosen',
       },
       {
-        'icon': Icons.play_circle,
+        'icon': Icons.videocam_outlined, // Ikon disesuaikan
         'title': 'Video Keren Bikin Kamu Jago',
-        'subtitle': 'Dan nantibu lulusnya sampai hobi baru, semua ada',
+        'subtitle':
+            'Dari ngatasin bullying sampe nyobain hobi baru, semua ada', // Teks disesuaikan
       },
       {
-        'icon': Icons.emoji_events,
+        'icon': Icons.extension_outlined, // Ikon puzzle disesuaikan
         'title': 'Jadi Versi Paling Kerenmu',
-        'subtitle': 'Dapetin reminder asik, bikin awatar kece, dan belajar di toko seru',
+        'subtitle':
+            'Dapetin reminder asik, bikin avatar kece, dan belanja di toko seru', // Teks disesuaikan
       },
     ];
 
@@ -61,70 +64,63 @@ class Personalization3 extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          Expanded(
-            child: ListView.builder(
+          Container(
+            decoration: BoxDecoration(
+              color: whiteColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5E5E5)),
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: rewards.length,
+              separatorBuilder: (context, index) => const Divider(
+                height: 1,
+                color: Color(0xFFE5E5E5),
+                indent: 16,
+                endIndent: 16,
+              ),
               itemBuilder: (context, index) {
                 final reward = rewards[index];
-                final isFirst = index == 0;
-
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: whiteColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE5E5E5)),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isFirst
-                                ? Colors.orange.shade100
-                                : Colors.blue.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            reward['icon'],
-                            color: isFirst ? Colors.orange : bluePrimaryColor,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                reward['title'],
-                                style: primaryTextStyle.copyWith(
-                                  fontSize: 14,
-                                  fontWeight: semiBold,
-                                ),
+                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  child: Row(
+                    children: [
+                      Icon(
+                        reward['icon'],
+                        color: bluePrimaryColor,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              reward['title'],
+                              style: primaryTextStyle.copyWith(
+                                fontSize: 14,
+                                fontWeight: semiBold,
                               ),
-                              if (reward['subtitle'].isNotEmpty) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  reward['subtitle'],
-                                  style: secondaryTextStyle.copyWith(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              reward['subtitle'],
+                              style: secondaryTextStyle.copyWith(
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 16),
+          const Spacer(), 
+
           CustomFilledButton(
             title: 'Selanjutnya',
             variant: ButtonColorVariant.blue,
