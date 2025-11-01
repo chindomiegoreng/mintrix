@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
 import '../bloc/auth_bloc.dart';
@@ -137,13 +136,12 @@ class _RegisterPageState extends State<RegisterPage> {
               CustomFilledButton(
                 title: 'Masuk dengan Google',
                 variant: ButtonColorVariant.white,
-                icon: const FaIcon(
-                  FontAwesomeIcons.google,
-                  color: Colors.red,
-                  size: 20,
+                icon: Image.asset(
+                  'assets/icons/logo_google.png',
+                  width: 20,
+                  height: 20,
                 ),
-                onPressed: () {
-                },
+                onPressed: () {},
                 withShadow: true,
               ),
             ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
@@ -8,8 +10,10 @@ import 'features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 import 'features/splash/presentation/pages/get_started_page.dart';
 
-void main() {
+void main() async {
   runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
 }
 
 class MyApp extends StatelessWidget {
@@ -34,6 +38,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashPage(),
           '/get-started': (context) => const GetStartedPage(),
           '/login': (context) => const LoginPage(),
+           '/personalization': (context) => const PersonalizationPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (context) => const MainNavigationPage(),
         },
