@@ -47,8 +47,8 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
             body: SafeArea(
               child: Column(
                 children: [
-                  if (![0, 3, 4, 5, 6, 7].contains(_currentPage))
-                    _buildProgressBar(state),
+                  if ([1, 2].contains(_currentPage))
+                    _buildProgressBar(context, state),
                   Expanded(
                     child: PageView(
                       controller: _pageController,
@@ -84,9 +84,18 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
                                 .add(SkipSecondStage());
                           },
                         ),
-                        Personalization5(onNext: () => _nextPage(context), onBack: () => _previousPage(),),
-                        Personalization6(onNext: () => _nextPage(context), onBack: () => _previousPage(),),
-                        Personalization7(onNext: () => _nextPage(context), onBack: () => _previousPage(),),
+                        Personalization5(
+                          onNext: () => _nextPage(context),
+                          onBack: () => _previousPage(context),
+                        ),
+                        Personalization6(
+                          onNext: () => _nextPage(context),
+                          onBack: () => _previousPage(context),
+                        ),
+                        Personalization7(
+                          onNext: () => _nextPage(context),
+                          onBack: () => _previousPage(context),
+                        ),
                         Personalization8(
                           onComplete: () {
                             context
@@ -106,15 +115,14 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
     );
   }
 
-  Widget _buildProgressBar(PersonalizationState state) {
+  Widget _buildProgressBar(BuildContext context, PersonalizationState state) {
     int step = 0;
     if (state is PersonalizationStage1) {
       step = state.currentStep;
     } else if (state is PersonalizationStage2) {
       step = state.currentStep;
     }
-
-    double progress = (step + 1) / _totalPages;
+    double progress = step / _totalPages;
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -122,9 +130,11 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
         children: [
           if (step > 0)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => _previousPage(),
-            ),
+              icon: const Icon(Icons.arrow_back_ios_new), 
+              onPressed: () => _previousPage(context),
+            )
+          else
+            const SizedBox(width: 48.0),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
@@ -157,11 +167,20 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
     }
   }
 
-  void _previousPage() {
+  void _previousPage(BuildContext context) {
     _pageController.previousPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+
+    final bloc = context.read<PersonalizationBloc>();
+    final state = bloc.state;
+
+    if (state is PersonalizationStage1 && state.currentStep > 0) {
+      bloc.add(UpdatePersonalizationStep(state.currentStep - 1));
+    } else if (state is PersonalizationStage2 && state.currentStep > 0) {
+      bloc.add(UpdatePersonalizationStep(state.currentStep - 1));
+    }
   }
 
   @override
