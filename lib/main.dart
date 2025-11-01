@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
+import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
+import 'package:mintrix/features/profile/presentation/pages/settings.dart';
+import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
+import 'package:mintrix/features/store/presentation/pages/store_page.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -28,10 +34,21 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Mintrix',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+          // reusable app bar
+          scaffoldBackgroundColor: lightBackgoundColor,
+          appBarTheme: AppBarTheme(
+            backgroundColor: lightBackgoundColor,
+            surfaceTintColor:
+                lightBackgoundColor, // ketika scroll appbar akan berada di lightbackgroundcolor
+            elevation: 0, // shadow
+            centerTitle: true,
+            iconTheme: IconThemeData(color: primaryColor),
+            titleTextStyle: primaryTextStyle.copyWith(
+              fontSize: 20,
+              fontWeight: semiBold,
+            ),
+          ),
         ),
         initialRoute: '/',
         routes: {
@@ -41,6 +58,11 @@ class MyApp extends StatelessWidget {
            '/personalization': (context) => const PersonalizationPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (context) => const MainNavigationPage(),
+          '/detail-profile': (context) => const DetailProfilePage(),
+          '/settings': (context) => const SettingsPage(),
+          '/settings-connect': (context) => const SettingsConnectPage(),
+          '/store': (context) => const StorePage(),
+          '/leaderboard': (context) => const LeaderboardPage(),
         },
       ),
     );
