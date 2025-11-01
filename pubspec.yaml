@@ -37,7 +37,7 @@ dependencies:
   google_fonts: ^6.3.2
   flutter_svg: ^2.2.1
   radar_chart: ^2.1.0
-  fl_chart: ^1.1.1
+  fl_chart: ^1.1.0
 
   # BLoC State Management
   flutter_bloc: ^8.1.3

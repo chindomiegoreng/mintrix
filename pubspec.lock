@@ -105,6 +105,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  fl_chart:
+    dependency: "direct main"
+    description:
+      name: fl_chart
+      sha256: d3f82f4a38e33ba23d05a08ff304d7d8b22d2a59a5503f20bd802966e915db89
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -352,6 +360,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.5+1"
+  radar_chart:
+    dependency: "direct main"
+    description:
+      name: radar_chart
+      sha256: "8354cb6f4398a03aff283f7b73c8e27a406c740227e7e0ac0feefe438087fcd6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   shared_preferences:
     dependency: "direct main"
     description:

@@ -196,7 +196,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ),
                         Switch(
                           value: isDailyReminderEnabled,
-                          activeThumbColor: bluePrimaryColor,
+                          activeTrackColor: bluePrimaryColor,
                           onChanged: (bool value) {
                             setState(() {
                               isDailyReminderEnabled = value;
