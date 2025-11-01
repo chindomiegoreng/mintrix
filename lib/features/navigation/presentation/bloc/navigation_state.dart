@@ -13,5 +13,5 @@ class NavigationInitial extends NavigationState {
 }
 
 class NavigationUpdated extends NavigationState {
-  const NavigationUpdated(int index) : super(index);
+  const NavigationUpdated(super.index);
 }

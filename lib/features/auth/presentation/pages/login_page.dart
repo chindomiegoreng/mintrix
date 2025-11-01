@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -33,13 +33,22 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthError) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           } else if (state is AuthAuthenticated) {
-            Navigator.pushReplacementNamed(context, '/main');
+            final prefs = await SharedPreferences.getInstance();
+            final hasCompletedPersonalization =
+                prefs.getBool('hasCompletedPersonalization') ?? false;
+
+            if (!mounted) return;
+            if (hasCompletedPersonalization) {
+              Navigator.pushReplacementNamed(context, '/main');
+            } else {
+              Navigator.pushReplacementNamed(context, '/personalization');
+            }
           }
         },
         builder: (context, state) {
@@ -129,12 +138,14 @@ class _LoginPageState extends State<LoginPage> {
                       title: 'Masuk dengan Google',
                       variant: ButtonColorVariant.white,
                       withShadow: true,
-                      icon: const FaIcon(
-                        FontAwesomeIcons.google,
-                        color: Colors.red,
-                        size: 20,
+                      icon: Image.asset(
+                        'assets/icons/logo_google.png',
+                        width: 20,
+                        height: 20,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        // Implement Google Sign In
+                      },
                     ),
                   ],
                 ),
