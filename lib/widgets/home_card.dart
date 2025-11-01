@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:mintrix/shared/theme.dart';
 
 class CustomHomeCardLarge extends StatelessWidget {
@@ -20,8 +19,8 @@ class CustomHomeCardLarge extends StatelessWidget {
       borderRadius: BorderRadius.circular(28),
       child: Stack(
         children: [
-          SvgPicture.asset(
-            "assets/images/home_card_large.svg",
+          Image.asset(
+            "assets/images/home_card_large.png",
             fit: BoxFit.cover,
             width: double.infinity,
             height: 175,
@@ -107,8 +106,8 @@ class CustomHomeCardSmall extends StatelessWidget {
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: SvgPicture.asset(
-                "assets/images/home_card_small.svg",
+              child: Image.asset(
+                "assets/images/home_card_small.png",
                 fit: BoxFit.cover,
               ),
             ),
@@ -116,15 +115,11 @@ class CustomHomeCardSmall extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, 
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(),
-                Image.asset(
-                  images,
-                  width: 90,
-                  height: 90,
-                ),
+                Image.asset(images, width: 90, height: 90),
                 const SizedBox(height: 10),
                 Text(
                   title,
@@ -138,7 +133,7 @@ class CustomHomeCardSmall extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 SizedBox(
-                  height: 32, 
+                  height: 32,
                   child: Text(
                     subTitle,
                     textAlign: TextAlign.center,
@@ -150,7 +145,7 @@ class CustomHomeCardSmall extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Spacer(), 
+                const Spacer(),
               ],
             ),
           ),

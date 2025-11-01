@@ -46,6 +46,7 @@ dependencies:
   get_it: ^7.6.4
   font_awesome_flutter: ^10.9.1
   shared_preferences: ^2.5.3
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

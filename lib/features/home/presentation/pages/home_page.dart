@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
 import 'package:mintrix/shared/theme.dart'; 
 import 'package:mintrix/widgets/home_card.dart';
 
@@ -8,7 +9,6 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Ganti warna background agar sesuai desain
       backgroundColor: const Color(0xffF5F8FF), 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -20,7 +20,7 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 30),
               _buildLargeCard(),
               const SizedBox(height: 24),
-              _buildMenuGrid(),
+              _buildMenuGrid(context),
             ],
           ),
         ),
@@ -28,7 +28,6 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // Widget untuk Header
   Widget _buildHeader() {
     return Row(
       children: [
@@ -84,7 +83,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuGrid() {
+  Widget _buildMenuGrid(BuildContext context) {
     return Column(
       children: [
         Row(
@@ -95,10 +94,18 @@ class HomePage extends StatelessWidget {
               title: "Permainan",
               subTitle: "Ayo bermain dan belajar",
             ),
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset2.png",
-              title: "Catatan harian",
-              subTitle: "Ceritakan kegiatanmu hari ini",
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DailyNotesPage()),
+                );
+              },
+              child: const CustomHomeCardSmall(
+                images: "assets/images/home_card_asset2.png",
+                title: "Catatan harian",
+                subTitle: "Ceritakan kegiatanmu hari ini",
+              ),
             ),
           ],
         ),

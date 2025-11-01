@@ -1,10 +1,28 @@
 part of 'daily_notes_bloc.dart';
 
-sealed class DailyNotesState extends Equatable {
+abstract class DailyNotesState extends Equatable {
   const DailyNotesState();
-  
+
   @override
   List<Object> get props => [];
 }
 
-final class DailyNotesInitial extends DailyNotesState {}
+class DailyNotesInitial extends DailyNotesState {}
+
+class DailyNotesLoading extends DailyNotesState {}
+
+class DailyNotesLoaded extends DailyNotesState {
+  final List<Note> notes;
+  const DailyNotesLoaded(this.notes);
+
+  @override
+  List<Object> get props => [notes];
+}
+
+class DailyNotesError extends DailyNotesState {
+  final String message;
+  const DailyNotesError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}

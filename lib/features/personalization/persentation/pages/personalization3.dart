@@ -9,24 +9,22 @@ class Personalization3 extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Data disesuaikan dengan gambar
     final List<Map<String, dynamic>> rewards = [
       {
-        'icon': Icons.list_alt_outlined, // Ikon disesuaikan
+        'icon': Icons.list_alt_outlined,
         'title': 'Yuk, Jadi Super Seru Bareng Mintrix',
         'subtitle': 'Belajar asik tanpa bosen',
       },
       {
-        'icon': Icons.videocam_outlined, // Ikon disesuaikan
+        'icon': Icons.videocam_outlined,
         'title': 'Video Keren Bikin Kamu Jago',
-        'subtitle':
-            'Dari ngatasin bullying sampe nyobain hobi baru, semua ada', // Teks disesuaikan
+        'subtitle': 'Dari ngatasin bullying sampe nyobain hobi baru, semua ada',
       },
       {
-        'icon': Icons.extension_outlined, // Ikon puzzle disesuaikan
+        'icon': Icons.extension_outlined,
         'title': 'Jadi Versi Paling Kerenmu',
         'subtitle':
-            'Dapetin reminder asik, bikin avatar kece, dan belanja di toko seru', // Teks disesuaikan
+            'Dapetin reminder asik, bikin avatar kece, dan belanja di toko seru',
       },
     ];
 
@@ -83,14 +81,13 @@ class Personalization3 extends StatelessWidget {
               itemBuilder: (context, index) {
                 final reward = rewards[index];
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 16,
+                    horizontal: 20,
+                  ),
                   child: Row(
                     children: [
-                      Icon(
-                        reward['icon'],
-                        color: bluePrimaryColor,
-                        size: 24,
-                      ),
+                      Icon(reward['icon'], color: bluePrimaryColor, size: 24),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -106,9 +103,7 @@ class Personalization3 extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               reward['subtitle'],
-                              style: secondaryTextStyle.copyWith(
-                                fontSize: 12,
-                              ),
+                              style: secondaryTextStyle.copyWith(fontSize: 12),
                             ),
                           ],
                         ),
@@ -119,7 +114,7 @@ class Personalization3 extends StatelessWidget {
               },
             ),
           ),
-          const Spacer(), 
+          const Spacer(),
 
           CustomFilledButton(
             title: 'Selanjutnya',
