@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
+import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
 import 'package:mintrix/shared/theme.dart';
@@ -19,7 +20,7 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 30),
               _buildLargeCard(),
               const SizedBox(height: 24),
@@ -31,7 +32,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         const CircleAvatar(
@@ -65,7 +66,12 @@ class HomePage extends StatelessWidget {
         ),
         const SizedBox(width: 16),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyMissionPage()),
+            );
+          },
           style: TextButton.styleFrom(
             backgroundColor: bluePrimaryColor,
             shape: RoundedRectangleBorder(
