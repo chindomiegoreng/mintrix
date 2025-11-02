@@ -35,12 +35,11 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          // reusable app bar
           scaffoldBackgroundColor: lightBackgoundColor,
           appBarTheme: AppBarTheme(
             backgroundColor: lightBackgoundColor,
             surfaceTintColor:
-                lightBackgoundColor, // ketika scroll appbar akan berada di lightbackgroundcolor
+                lightBackgoundColor, 
             elevation: 0, // shadow
             centerTitle: true,
             iconTheme: IconThemeData(color: primaryColor),
@@ -55,7 +54,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashPage(),
           '/get-started': (context) => const GetStartedPage(),
           '/login': (context) => const LoginPage(),
-           '/personalization': (context) => const PersonalizationPage(),
+          '/personalization': (context) => const PersonalizationPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (context) => const MainNavigationPage(),
           '/detail-profile': (context) => const DetailProfilePage(),

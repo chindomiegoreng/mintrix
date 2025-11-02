@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
 import '../bloc/auth_bloc.dart';
@@ -17,6 +19,20 @@ class _RegisterPageState extends State<RegisterPage> {
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  File? _profileImage;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked != null) {
+      setState(() {
+        _profileImage = File(picked.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +65,72 @@ class _RegisterPageState extends State<RegisterPage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(5), 
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF81D4FA), Color(0xFF4FC3F7)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: CircleAvatar(
+                        radius: 55,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: _profileImage != null
+                            ? FileImage(_profileImage!)
+                            : null,
+                        child: _profileImage == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 60,
+                                color: Colors.grey,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 4,
+                    child: InkWell(
+                      onTap: _pickImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF4FC3F7),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
               CustomFormField(
                 title: 'Nama Kerenmu',
                 type: FormFieldType.text,
@@ -64,9 +144,10 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
               ),
               const SizedBox(height: 16),
+
               CustomFormField(
                 title: 'Emailmu',
-                controller: _usernameController,
+                controller: _emailController,
                 hintText: 'Masukkan email kamu',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -76,6 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
               ),
               const SizedBox(height: 16),
+
               CustomFormField(
                 title: 'Kata Sandi',
                 type: FormFieldType.password,
@@ -88,9 +170,8 @@ class _RegisterPageState extends State<RegisterPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 26),
 
-              // 🔹 Tombol Register
               CustomFilledButton(
                 title: 'Gabung Sekarang',
                 variant: ButtonColorVariant.blue,
@@ -104,9 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   );
                 },
               ),
-              const SizedBox(height: 12),
-
-              // 🔹 Tombol ke halaman login
+              const SizedBox(height: 18),
               CustomFilledButton(
                 title: 'Masuk Yuk',
                 variant: ButtonColorVariant.white,

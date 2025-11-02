@@ -25,7 +25,7 @@ class _SplashPageState extends State<SplashPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset('assets/images/logo_mintrix.png', width: 200),
+        child: Image.asset('assets/images/logo_mintrix.png', width: 265),
       ),
     );
   }

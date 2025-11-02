@@ -121,7 +121,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -129,7 +129,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
               'Tuliskan Pengalamanmu',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Expanded(
               child: TextField(
                 controller: _contentController,
