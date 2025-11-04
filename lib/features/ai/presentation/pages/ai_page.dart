@@ -3,7 +3,9 @@ import 'package:mintrix/features/ai/presentation/pages/ai_history_page.dart';
 import 'package:mintrix/shared/theme.dart';
 
 class AIPage extends StatefulWidget {
-  const AIPage({super.key});
+  final bool showAppBar;
+
+  const AIPage({super.key, this.showAppBar = true});
 
   @override
   State<AIPage> createState() => _AIPageState();
@@ -63,12 +65,15 @@ class _AIPageState extends State<AIPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: widget.showAppBar
+            ? IconButton(
+                icon: const Icon(Icons.close, color: Colors.black),
+                onPressed: () => Navigator.pop(context),
+              )
+            : null,
         title: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
@@ -80,7 +85,7 @@ class _AIPageState extends State<AIPage> {
             style: primaryTextStyle.copyWith(
               fontSize: 14,
               fontWeight: semiBold,
-              color: Colors.black
+              color: Colors.black,
             ),
           ),
         ),
@@ -91,7 +96,9 @@ class _AIPageState extends State<AIPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AIHistoryPage()),
+                MaterialPageRoute(
+                  builder: (context) => const AIHistoryPage(),
+                ),
               );
             },
           ),
@@ -99,7 +106,6 @@ class _AIPageState extends State<AIPage> {
       ),
       body: Column(
         children: [
-          // Chat messages
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
@@ -110,7 +116,6 @@ class _AIPageState extends State<AIPage> {
               },
             ),
           ),
-          // Input field
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -236,9 +241,7 @@ class _AIPageState extends State<AIPage> {
               ),
             ),
           ),
-          if (message.isFromDino) ...[
-            const SizedBox(width: 8),
-          ] else ...[
+          if (!message.isFromDino) ...[
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 20,

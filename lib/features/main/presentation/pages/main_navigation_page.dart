@@ -23,7 +23,7 @@ class MainNavigationPage extends StatelessWidget {
             children: const [
               HomePage(),
               GamePage(),
-              AIPage(),
+              AIPage(showAppBar: false),
               LeaderboardPage(),
               StorePage(),
               ProfilePage(),
