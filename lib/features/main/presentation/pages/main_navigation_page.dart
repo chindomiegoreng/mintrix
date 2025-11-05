@@ -22,7 +22,7 @@ class MainNavigationPage extends StatelessWidget {
             index: state.index,
             children: const [
               HomePage(),
-              GamePage(),
+              GamePage(userName: 'Renata', streak: 4, gems: 200, xp: 520),
               AIPage(showAppBar: false),
               LeaderboardPage(),
               StorePage(),
@@ -36,14 +36,8 @@ class MainNavigationPage extends StatelessWidget {
             },
             type: BottomNavigationBarType.fixed,
             items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.games),
-                label: 'Game',
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+              BottomNavigationBarItem(icon: Icon(Icons.games), label: 'Game'),
               BottomNavigationBarItem(
                 icon: Icon(Icons.psychology),
                 label: 'AI',
@@ -52,10 +46,7 @@ class MainNavigationPage extends StatelessWidget {
                 icon: Icon(Icons.leaderboard),
                 label: 'Leaderboard',
               ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.store),
-                label: 'Store',
-              ),
+              BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Store'),
               BottomNavigationBarItem(
                 icon: Icon(Icons.person),
                 label: 'Profile',
