@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
+import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
 import 'package:mintrix/features/store/presentation/pages/store_page.dart';
@@ -63,6 +64,7 @@ class MyApp extends StatelessWidget {
           '/settings-connect': (context) => const SettingsConnectPage(),
           '/store': (context) => const StorePage(),
           '/leaderboard': (context) => const LeaderboardPage(),
+          '/download-cv': (context) => const DownloadCv(),
         },
       ),
     );
