@@ -198,7 +198,7 @@ class _StorePageState extends State<StorePage>
                   ),
                   tabs: const [
                     Tab(text: 'Power-up'),
-                    Tab(text: 'Avatar'),
+                    Tab(text: 'Diamond'),
                     Tab(text: 'Badge'),
                   ],
                 ),
@@ -209,7 +209,7 @@ class _StorePageState extends State<StorePage>
                     controller: _tabController,
                     children: [
                       buildPowerUpTab(),
-                      buildAvatarTab(),
+                      buildDiamondTab(),
                       buildBadgeTab(),
                     ],
                   ),
@@ -251,12 +251,12 @@ class _StorePageState extends State<StorePage>
     );
   }
 
-  Widget buildAvatarTab() {
+  Widget buildDiamondTab() {
     return ListView(
       children: [
         Center(
           child: Text(
-            'Avatar Items',
+            'Diamond Items',
             style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
           ),
         ),

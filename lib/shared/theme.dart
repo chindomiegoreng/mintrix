@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // inisialisasi warna yg dapat digunakan berulang kali
 
@@ -17,14 +16,34 @@ Color numberBackgroundColor = const Color(0xff1A1D2E);
 
 // inisialisasi warna text
 
-TextStyle primaryTextStyle = GoogleFonts.poppins(color: primaryColor);
-TextStyle secondaryTextStyle = GoogleFonts.poppins(color: secondaryColor);
-TextStyle thirdTextStyle = GoogleFonts.poppins(color: thirdColor);
-TextStyle whiteTextStyle = GoogleFonts.poppins(color: whiteColor);
-TextStyle bluePrimaryTextStyle = GoogleFonts.poppins(color: bluePrimaryColor);
+TextStyle primaryTextStyle = TextStyle(
+  color: primaryColor,
+  fontFamily: 'VisbyRound',
+);
+
+TextStyle secondaryTextStyle = TextStyle(
+  color: secondaryColor,
+  fontFamily: 'VisbyRound',
+);
+
+TextStyle thirdTextStyle = TextStyle(
+  color: thirdColor,
+  fontFamily: 'VisbyRound',
+);
+
+TextStyle whiteTextStyle = TextStyle(
+  color: whiteColor,
+  fontFamily: 'VisbyRound',
+);
+
+TextStyle bluePrimaryTextStyle = TextStyle(
+  color: bluePrimaryColor,
+  fontFamily: 'VisbyRound',
+);
 
 // inisialisasi ketebalan text
 
+FontWeight extraLight = FontWeight.w200;
 FontWeight light = FontWeight.w300;
 FontWeight regular = FontWeight.w400;
 FontWeight medium = FontWeight.w500;
