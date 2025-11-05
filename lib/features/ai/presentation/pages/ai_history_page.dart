@@ -23,7 +23,7 @@ class AIHistoryPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: Container(
@@ -37,7 +37,7 @@ class AIHistoryPage extends StatelessWidget {
             style: primaryTextStyle.copyWith(
               fontSize: 14,
               fontWeight: semiBold,
-              color: const Color(0xff4DD4E8),
+              color: Colors.black,
             ),
           ),
         ),
