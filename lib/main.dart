@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
+import 'package:mintrix/features/game/presentation/pages/video/video_page.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
@@ -36,12 +38,10 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          // reusable app bar
           scaffoldBackgroundColor: lightBackgoundColor,
           appBarTheme: AppBarTheme(
             backgroundColor: lightBackgoundColor,
-            surfaceTintColor:
-                lightBackgoundColor, // ketika scroll appbar akan berada di lightbackgroundcolor
+            surfaceTintColor: lightBackgoundColor,
             elevation: 0, // shadow
             centerTitle: true,
             iconTheme: IconThemeData(color: primaryColor),
@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashPage(),
           '/get-started': (context) => const GetStartedPage(),
           '/login': (context) => const LoginPage(),
-           '/personalization': (context) => const PersonalizationPage(),
+          '/personalization': (context) => const PersonalizationPage(),
           '/register': (context) => const RegisterPage(),
           '/main': (context) => const MainNavigationPage(),
           '/detail-profile': (context) => const DetailProfilePage(),
@@ -65,6 +65,8 @@ class MyApp extends StatelessWidget {
           '/store': (context) => const StorePage(),
           '/leaderboard': (context) => const LeaderboardPage(),
           '/download-cv': (context) => const DownloadCv(),
+          '/videoPage': (context) => const VideoPage(title: '',description: '',videoUrl: '', thumbnail: '',),
+          '/quizPage': (context) => const QuizPage(),
         },
       ),
     );

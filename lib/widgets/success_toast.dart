@@ -64,15 +64,15 @@ class SuccessToast extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w400,
               ),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),

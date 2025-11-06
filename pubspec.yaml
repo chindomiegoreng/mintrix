@@ -37,7 +37,7 @@ dependencies:
   google_fonts: ^6.3.2
   flutter_svg: ^2.2.1
   radar_chart: ^2.1.0
-  fl_chart: ^1.1.1
+  fl_chart: ^1.1.0
 
   # BLoC State Management
   flutter_bloc: ^8.1.3
@@ -49,6 +49,13 @@ dependencies:
   font_awesome_flutter: ^10.9.1
   shared_preferences: ^2.5.3
   intl: ^0.20.2
+  image_picker: ^1.2.0
+  permission_handler: ^12.0.1
+  video_player: ^2.10.0
+  chewie: ^1.13.0
+  youtube_player_flutter: ^9.1.3
+  youtube_player_iframe: ^5.2.2
+  youtube_explode_dart: ^2.5.3
 
 dev_dependencies:
   flutter_test:

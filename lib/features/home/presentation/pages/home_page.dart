@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
-import 'package:mintrix/shared/theme.dart'; 
+import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/home_card.dart';
 
 class HomePage extends StatelessWidget {
@@ -9,14 +13,14 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF5F8FF), 
+      backgroundColor: const Color(0xffF5F8FF),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const SizedBox(height: 30),
               _buildLargeCard(),
               const SizedBox(height: 24),
@@ -28,12 +32,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         const CircleAvatar(
           radius: 25,
-          backgroundImage: AssetImage('assets/images/logo_mintrix.png'), 
+          backgroundImage: AssetImage('assets/images/logo_mintrix.png'),
         ),
         const SizedBox(width: 12),
         Column(
@@ -45,10 +49,7 @@ class HomePage extends StatelessWidget {
             ),
             Text(
               "Renata",
-              style: primaryTextStyle.copyWith(
-                fontSize: 18,
-                fontWeight: bold,
-              ),
+              style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: bold),
             ),
           ],
         ),
@@ -56,10 +57,21 @@ class HomePage extends StatelessWidget {
         // Ganti dengan ikon yang sesuai
         const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
         const SizedBox(width: 4),
-        Text("4", style: bluePrimaryTextStyle.copyWith(fontSize: 16, fontWeight: semiBold)),
+        Text(
+          "4",
+          style: bluePrimaryTextStyle.copyWith(
+            fontSize: 16,
+            fontWeight: semiBold,
+          ),
+        ),
         const SizedBox(width: 16),
         TextButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyMissionPage()),
+            );
+          },
           style: TextButton.styleFrom(
             backgroundColor: bluePrimaryColor,
             shape: RoundedRectangleBorder(
@@ -79,7 +91,8 @@ class HomePage extends StatelessWidget {
     return const CustomHomeCardLarge(
       title: 'Liga Emas',
       subTitle: 'Posisi 1',
-      description: 'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
+      description:
+          'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
     );
   }
 
@@ -89,16 +102,23 @@ class HomePage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset1.png",
-              title: "Permainan",
-              subTitle: "Ayo bermain dan belajar",
+            GestureDetector(
+              onTap: () {
+                context.read<NavigationBloc>().add(UpdateIndex(1));
+              },
+              child: CustomHomeCardSmall(
+                images: "assets/images/home_card_asset1.png",
+                title: "Permainan",
+                subTitle: "Ayo bermain dan belajar",
+              ),
             ),
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const DailyNotesPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const DailyNotesPage(),
+                  ),
                 );
               },
               child: const CustomHomeCardSmall(
@@ -113,15 +133,25 @@ class HomePage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset3.png",
-              title: "Assisten",
-              subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+            GestureDetector(
+              onTap: () {
+                context.read<NavigationBloc>().add(UpdateIndex(2));
+              },
+              child: CustomHomeCardSmall(
+                images: "assets/images/home_card_asset3.png",
+                title: "Assisten",
+                subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+              ),
             ),
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset4.png",
-              title: "Toko",
-              subTitle: "Tingkatkan performa dengan membeli item",
+            GestureDetector(
+              onTap: () {
+                context.read<NavigationBloc>().add(UpdateIndex(4));
+              },
+              child: const CustomHomeCardSmall(
+                images: "assets/images/home_card_asset4.png",
+                title: "Toko",
+                subTitle: "Tingkatkan performa dengan membeli item",
+              ),
             ),
           ],
         ),

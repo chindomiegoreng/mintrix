@@ -27,7 +27,7 @@ class _MainNavigationConstants {
 
   static const List<NavItem> navItems = [
     NavItem(iconPath: 'assets/icons/navbar-home.svg', page: HomePage()),
-    NavItem(iconPath: 'assets/icons/navbar-game.svg', page: GamePage()),
+    NavItem(iconPath: 'assets/icons/navbar-game.svg', page: GamePage(userName: 'Renata', streak: 800, gems: 280, xp: 200,)),
     NavItem(iconPath: 'assets/icons/navbar-ai.svg', page: AIPage()),
     NavItem(
       iconPath: 'assets/icons/navbar-leaderboard.svg',
@@ -134,3 +134,4 @@ class MainNavigationPage extends StatelessWidget {
     context.read<NavigationBloc>().add(UpdateIndex(index));
   }
 }
+
