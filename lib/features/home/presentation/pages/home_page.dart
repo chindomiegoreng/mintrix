@@ -102,10 +102,15 @@ class HomePage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset1.png",
-              title: "Permainan",
-              subTitle: "Ayo bermain dan belajar",
+            GestureDetector(
+              onTap: () {
+                context.read<NavigationBloc>().add(UpdateIndex(1));
+              },
+              child: CustomHomeCardSmall(
+                images: "assets/images/home_card_asset1.png",
+                title: "Permainan",
+                subTitle: "Ayo bermain dan belajar",
+              ),
             ),
             GestureDetector(
               onTap: () {
@@ -128,10 +133,15 @@ class HomePage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset3.png",
-              title: "Assisten",
-              subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+            GestureDetector(
+              onTap: () {
+                context.read<NavigationBloc>().add(UpdateIndex(2));
+              },
+              child: CustomHomeCardSmall(
+                images: "assets/images/home_card_asset3.png",
+                title: "Assisten",
+                subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+              ),
             ),
             GestureDetector(
               onTap: () {

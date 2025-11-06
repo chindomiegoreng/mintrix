@@ -5,11 +5,15 @@ import 'package:mintrix/widgets/buttons.dart';
 class GameDetailPage extends StatefulWidget {
   final String sectionTitle;
   final double progress;
+  final String moduleId; 
+  final String sectionId;
 
   const GameDetailPage({
     super.key,
     required this.sectionTitle,
     required this.progress,
+    required this.moduleId,
+    required this.sectionId,
   });
 
   @override
@@ -19,9 +23,63 @@ class GameDetailPage extends StatefulWidget {
 class _GameDetailPageState extends State<GameDetailPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
+  String _getSectionTitle() {
+    if (widget.moduleId == "modul1") {
+      return "Bagian 1";
+    } else if (widget.moduleId == "modul2") {
+      return "Bagian 1";
+    }
+    return "Bagian 1";
+  }
+  List<Map<String, dynamic>> _getLessons() {
+
+    if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "title": "Persiapan Karir",
+          "dinoImage": "assets/images/dino_career.png",
+          "locked": false,
+        },
+      ];
+    }
+    
+    if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "title": "Mencari Hal Yang Kamu Suka",
+          "dinoImage": "assets/images/dino_daily_mission.png",
+          "locked": false,
+        },
+        {
+          "title": "Mengatur Waktu",
+          "dinoImage": "assets/images/dino_daily_mission.png",
+          "locked": false,
+        },
+        {
+          "title": "Berpikir Positif",
+          "dinoImage": "assets/images/dino_daily_mission.png",
+          "locked": true,
+        },
+      ];
+    }
+    return [
+      {
+        "title": "Coming Soon",
+        "dinoImage": "assets/images/dino_daily_mission.png",
+        "locked": true,
+      },
+    ];
+  }
+
+  bool _showCarousel() {
+    return _getLessons().length > 1;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final lessons = _getLessons();
+    final showCarousel = _showCarousel();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -30,53 +88,72 @@ class _GameDetailPageState extends State<GameDetailPage> {
           children: [
             const GameHeader(),
             SectionProgressCard(
-              title: "Bagian 1",
+              title: _getSectionTitle(),
               subtitle: widget.sectionTitle,
               progress: widget.progress,
             ),
             const SizedBox(height: 24),
+            // // Debug info
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 20),
+            //   child: Container(
+            //     padding: EdgeInsets.all(8),
+            //     color: Colors.yellow.shade100,
+            //     child: Text(
+            //       'DEBUG: ${widget.moduleId} - ${widget.sectionId}\nLessons: ${lessons.length}\nCarousel: $showCarousel',
+            //       style: TextStyle(fontSize: 10),
+            //     ),
+            //   ),
+            // ),
+            const SizedBox(height: 12),
             Expanded(
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                children: const [
-                  LessonCard(
-                    title: "Mencari Hal Yang Kamu Suka",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: false,
-                  ),
-                  LessonCard(
-                    title: "Mengatur Waktu",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: false,
-                  ),
-                  LessonCard(
-                    title: "Berpikir Positif",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: true,
-                  ),
-                ],
-              ),
+              child: showCarousel
+                  ? PageView.builder(
+                      controller: _controller,
+                      onPageChanged: (index) =>
+                          setState(() => _currentPage = index),
+                      itemCount: lessons.length,
+                      itemBuilder: (context, index) {
+                        final lesson = lessons[index];
+                        return LessonCard(
+                          title: lesson["title"],
+                          dinoImage: lesson["dinoImage"],
+                          locked: lesson["locked"],
+                        );
+                      },
+                    )
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: LessonCard(
+                        title: lessons[0]["title"],
+                        dinoImage: lessons[0]["dinoImage"],
+                        locked: lessons[0]["locked"],
+                      ),
+                    ),
             ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                3,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  height: 10,
-                  width: 10,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index
-                        ? Colors.lightBlue
-                        : Colors.grey.shade300,
-                    shape: BoxShape.circle,
+            if (showCarousel) ...[
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  lessons.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    height: 10,
+                    width: 10,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index
+                          ? Colors.lightBlue
+                          : Colors.grey.shade300,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
               ),
-            ),
+            ] else ...[
+              const SizedBox(height: 16),
+            ],
             const SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -88,7 +165,10 @@ class _GameDetailPageState extends State<GameDetailPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const LevelJourneyPage(),
+                      builder: (context) => LevelJourneyPage(
+                        moduleId: widget.moduleId,
+                        sectionId: widget.sectionId,
+                      ),
                     ),
                   );
                 },

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
+import 'package:mintrix/features/game/presentation/pages/video/video_page.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
@@ -38,8 +40,7 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: lightBackgoundColor,
           appBarTheme: AppBarTheme(
             backgroundColor: lightBackgoundColor,
-            surfaceTintColor:
-                lightBackgoundColor, 
+            surfaceTintColor: lightBackgoundColor,
             elevation: 0, // shadow
             centerTitle: true,
             iconTheme: IconThemeData(color: primaryColor),
@@ -62,6 +63,8 @@ class MyApp extends StatelessWidget {
           '/settings-connect': (context) => const SettingsConnectPage(),
           '/store': (context) => const StorePage(),
           '/leaderboard': (context) => const LeaderboardPage(),
+          '/videoPage': (context) => const VideoPage(title: '',description: '',videoUrl: '', thumbnail: '',),
+          '/quizPage': (context) => const QuizPage(),
         },
       ),
     );

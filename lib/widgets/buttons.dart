@@ -14,7 +14,7 @@ class CustomFilledButton extends StatelessWidget {
   final TextStyle? textStyle;
   final double borderRadius;
   final bool withShadow;
-  final Widget? icon; // 🔹 tambahan baru
+  final Widget? icon;
 
   const CustomFilledButton({
     super.key,
