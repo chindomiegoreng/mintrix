@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
-import 'package:mintrix/features/game/presentation/pages/video/video_page.dart';
+import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
@@ -67,6 +68,7 @@ class MyApp extends StatelessWidget {
           '/download-cv': (context) => const DownloadCv(),
           '/videoPage': (context) => const VideoPage(title: '',description: '',videoUrl: '', thumbnail: '',),
           '/quizPage': (context) => const QuizPage(),
+          '/buildCV': (context) => BuildCVPage(),
         },
       ),
     );

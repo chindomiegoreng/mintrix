@@ -27,8 +27,14 @@ class _MainNavigationConstants {
 
   static const List<NavItem> navItems = [
     NavItem(iconPath: 'assets/icons/navbar-home.svg', page: HomePage()),
-    NavItem(iconPath: 'assets/icons/navbar-game.svg', page: GamePage(userName: 'Renata', streak: 800, gems: 280, xp: 200,)),
-    NavItem(iconPath: 'assets/icons/navbar-ai.svg', page: AIPage()),
+    NavItem(
+      iconPath: 'assets/icons/navbar-game.svg',
+      page: GamePage(userName: 'Renata', streak: 800, gems: 280, xp: 200),
+    ),
+    NavItem(
+      iconPath: 'assets/icons/navbar-ai.svg',
+      page: AIPage(showAppBar: false),
+    ),
     NavItem(
       iconPath: 'assets/icons/navbar-leaderboard.svg',
       page: LeaderboardPage(),
@@ -62,13 +68,15 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
-  // Bottom Navigation Bar karo custom
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Container(
-      height: _MainNavigationConstants.bottomNavHeight,
+      height: _MainNavigationConstants.bottomNavHeight + 10, 
+      padding: const EdgeInsets.only(bottom: 9), 
       decoration: BoxDecoration(
         color: whiteColor,
-        border: Border(top: BorderSide(color: bluePrimaryColor.withAlpha(100), width: 1)),
+        border: Border(
+          top: BorderSide(color: bluePrimaryColor.withAlpha(100), width: 1),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -134,4 +142,3 @@ class MainNavigationPage extends StatelessWidget {
     context.read<NavigationBloc>().add(UpdateIndex(index));
   }
 }
-

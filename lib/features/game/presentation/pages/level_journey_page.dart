@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mintrix/features/game/presentation/pages/video/video_page.dart';
+import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -209,6 +209,9 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     );
   }
 
+  // Hanya bagian yang dimodifikasi di LevelJourneyPage
+  // Update method _buildLargePlatform untuk pass moduleId dan sectionId
+
   Widget _buildLargePlatform(
     StageType stageType,
     BuildContext context, {
@@ -249,6 +252,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                   description: videoData["videoDescription"],
                   videoUrl: videoData["videoUrl"],
                   thumbnail: videoData["thumbnail"],
+                  moduleId: widget.moduleId, 
+                  sectionId: widget.sectionId, 
                 ),
               ),
             );
