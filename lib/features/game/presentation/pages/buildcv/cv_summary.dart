@@ -35,15 +35,14 @@ class _CVSummaryState extends State<CVSummary> {
 
       body: Padding(
         padding: const EdgeInsets.only(left: 24, right: 24, top: 0, bottom: 0),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
               'Ringkasan',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             const Text(
               'Tulis perkenalan singkat yang menyoroti pengalaman, keterampilan utama, dan tujuan karier Anda.',
               style: TextStyle(fontSize: 14, color: Colors.grey),
