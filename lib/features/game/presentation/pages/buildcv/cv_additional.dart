@@ -13,27 +13,21 @@ class CVAdditional extends StatefulWidget {
 }
 
 class _CVAdditionalState extends State<CVAdditional> {
-  // Bahasa
   List<TextEditingController> languageControllers = [];
   List<int> levels = [];
 
-  // Expand control
   bool showLanguage = true;
   bool showCert = false;
   bool showAward = false;
   bool showLink = false;
   bool showCustom = false;
 
-  // Sertifikasi
   List<TextEditingController> certControllers = [];
 
-  // Penghargaan
   List<TextEditingController> awardControllers = [];
 
-  // Link
   List<TextEditingController> linkControllers = [];
 
-  // Custom
   List<TextEditingController> customControllers = [];
 
   @override
@@ -42,7 +36,6 @@ class _CVAdditionalState extends State<CVAdditional> {
     addLanguage();
   }
 
-  // Bahasa
   void addLanguage() {
     languageControllers.add(TextEditingController());
     levels.add(1);
@@ -148,14 +141,14 @@ class _CVAdditionalState extends State<CVAdditional> {
       backgroundColor: whiteColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 "Bagian Tambahan",
                 style: primaryTextStyle.copyWith(
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: bold,
                 ),
               ),

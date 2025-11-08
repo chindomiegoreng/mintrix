@@ -109,7 +109,6 @@ class _BuildCVPageState extends State<BuildCVPage> {
     bool isLastPage = step == _totalPages - 1;
     double progress = (step + 1) / _totalPages;
 
-    // ✅ Logic ikon
     bool showCloseIcon = step <= 1;
 
     return Padding(

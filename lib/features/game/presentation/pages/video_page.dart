@@ -1,5 +1,6 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/features/game/presentation/pages/quiz/resume_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:video_player/video_player.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
@@ -9,8 +10,9 @@ class VideoPage extends StatefulWidget {
   final String description;
   final String videoUrl;
   final String thumbnail;
-  final String? moduleId; // Tambahkan parameter ini
-  final String? sectionId; // Tambahkan parameter ini
+  final String? moduleId;
+  final String? sectionId;
+  final String? subSection;
 
   const VideoPage({
     super.key,
@@ -18,8 +20,9 @@ class VideoPage extends StatefulWidget {
     required this.description,
     required this.videoUrl,
     required this.thumbnail,
-    this.moduleId, // Optional
-    this.sectionId, // Optional
+    this.moduleId,
+    this.sectionId,
+    this.subSection,
   });
 
   @override
@@ -57,18 +60,17 @@ class _VideoPageState extends State<VideoPage> {
         isLoadingVideo = false;
       });
 
-      // Langsung buka video player
       _openVideoPlayer();
     } catch (e) {
       if (!mounted) return;
-      
+
       setState(() {
         isLoadingVideo = false;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memuat video: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat video: $e')));
     }
   }
 
@@ -89,18 +91,30 @@ class _VideoPageState extends State<VideoPage> {
     }
   }
 
-  // Cek apakah ini modul 2 bagian 1
   bool _isModule2Section1() {
     return widget.moduleId == "modul2" && widget.sectionId == "bagian1";
   }
 
   void _handleNext() {
     if (_isModule2Section1()) {
-      // Arahkan ke BuildCVPage
       Navigator.pushNamed(context, '/buildCV');
     } else {
-      // Arahkan ke QuizPage seperti biasa
-      Navigator.pushNamed(context, '/quizPage');
+      if (widget.moduleId != null &&
+          widget.sectionId != null &&
+          widget.subSection != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ResumePage(
+              moduleId: widget.moduleId!,
+              sectionId: widget.sectionId!,
+              subSection: widget.subSection!,
+            ),
+          ),
+        );
+      } else {
+        Navigator.pushNamed(context, '/quizPage');
+      }
     }
   }
 
@@ -183,26 +197,30 @@ class _VideoPageState extends State<VideoPage> {
                     style: const TextStyle(fontSize: 14, color: Colors.black54),
                   ),
                 ),
-                const Spacer(),
-                CustomFilledButton(
-                  title: "Selanjutnya",
-                  variant: isWatched
-                      ? ButtonColorVariant.blue
-                      : ButtonColorVariant.secondary,
-                  onPressed: isWatched ? _handleNext : null,
-                  withShadow: isWatched,
-                ),
               ],
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: CustomFilledButton(
+            title: "Selanjutnya",
+            variant: isWatched
+                ? ButtonColorVariant.blue
+                : ButtonColorVariant.secondary,
+            onPressed: isWatched ? _handleNext : null,
+            withShadow: isWatched,
+          ),
+        ),
       ),
     );
   }
 }
 
 class VideoPlayerPage extends StatefulWidget {
-  final String videoUrl; 
+  final String videoUrl;
 
   const VideoPlayerPage({super.key, required this.videoUrl});
 
@@ -260,10 +278,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context, false),
         ),
-        title: const Text(
-          "Video",
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text("Video", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(

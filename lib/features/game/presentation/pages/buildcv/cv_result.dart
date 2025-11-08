@@ -92,10 +92,14 @@ class CVResult extends StatelessWidget {
                       title: "Selanjutnya",
                       variant: ButtonColorVariant.blue,
                       onPressed: () {
-                        Navigator.push(
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LevelJourneyPage(moduleId: '', sectionId: '',),
+                            builder: (context) => const LevelJourneyPage(
+                              moduleId: "modul2",
+                              sectionId: "bagian1",
+                              lessonIndex: 0,
+                            ),
                           ),
                         );
                       },

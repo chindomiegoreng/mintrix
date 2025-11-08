@@ -72,12 +72,12 @@ class _CVEducationState extends State<CVEducation> {
       extendBody: true,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Pendidikan',
-                  style: primaryTextStyle.copyWith(fontSize: 28, fontWeight: bold)),
+                  style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: bold)),
               const SizedBox(height: 6),
               Text(
                 'Tambahkan detail pendidikan Anda - meskipun belum lulus.',

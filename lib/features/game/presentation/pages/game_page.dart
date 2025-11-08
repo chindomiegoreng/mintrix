@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'game_detail_page.dart';
 
-class GamePage extends StatelessWidget {
+class GamePage extends StatefulWidget {
   final String userName;
   final int streak;
   final int gems;
@@ -14,6 +15,51 @@ class GamePage extends StatelessWidget {
     required this.gems,
     required this.xp,
   });
+
+  @override
+  State<GamePage> createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  Map<String, double> sectionProgress = {};
+  Map<String, bool> sectionLocked = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      // Load progress untuk setiap section
+      sectionProgress['modul1_bagian1'] =
+          prefs.getDouble('modul1_bagian1_progress') ?? 0.0;
+      sectionProgress['modul1_bagian2'] =
+          prefs.getDouble('modul1_bagian2_progress') ?? 0.0;
+      sectionProgress['modul1_bagian3'] =
+          prefs.getDouble('modul1_bagian3_progress') ?? 0.0;
+      sectionProgress['modul2_bagian1'] =
+          prefs.getDouble('modul2_bagian1_progress') ?? 0.0;
+      sectionProgress['modul2_bagian2'] =
+          prefs.getDouble('modul2_bagian2_progress') ?? 0.0;
+      sectionProgress['modul2_bagian3'] =
+          prefs.getDouble('modul2_bagian3_progress') ?? 0.0;
+
+      sectionLocked['modul1_bagian1'] = false; // Selalu terbuka
+      sectionLocked['modul1_bagian2'] =
+          (sectionProgress['modul1_bagian1'] ?? 0.0) < 1.0;
+      sectionLocked['modul1_bagian3'] =
+          (sectionProgress['modul1_bagian2'] ?? 0.0) < 1.0;
+      sectionLocked['modul2_bagian1'] = false; // Langsung terbuka
+      sectionLocked['modul2_bagian2'] =
+          (sectionProgress['modul2_bagian1'] ?? 0.0) < 1.0;
+      sectionLocked['modul2_bagian3'] =
+          (sectionProgress['modul2_bagian2'] ?? 0.0) < 1.0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +78,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 1",
                   "Mencari minat dan gairah",
-                  0.2,
-                  false,
+                  sectionProgress['modul1_bagian1'] ?? 0.0,
+                  sectionLocked['modul1_bagian1'] ?? false,
                   "modul1",
                   "bagian1",
                 ),
@@ -41,8 +87,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 2",
                   "Pemetaan bakat dan kompetensi",
-                  0.0,
-                  true,
+                  sectionProgress['modul1_bagian2'] ?? 0.0,
+                  sectionLocked['modul1_bagian2'] ?? true,
                   "modul1",
                   "bagian2",
                 ),
@@ -50,8 +96,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 3",
                   "Berkomunikasi",
-                  0.0,
-                  true,
+                  sectionProgress['modul1_bagian3'] ?? 0.0,
+                  sectionLocked['modul1_bagian3'] ?? true,
                   "modul1",
                   "bagian3",
                 ),
@@ -62,8 +108,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 1",
                   "Persiapan karir",
-                  0.2,
-                  false,
+                  sectionProgress['modul2_bagian1'] ?? 0.0,
+                  sectionLocked['modul2_bagian1'] ?? true,
                   "modul2",
                   "bagian1",
                 ),
@@ -71,8 +117,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 2",
                   "Personal branding",
-                  0.0,
-                  true,
+                  sectionProgress['modul2_bagian2'] ?? 0.0,
+                  sectionLocked['modul2_bagian2'] ?? true,
                   "modul2",
                   "bagian2",
                 ),
@@ -80,8 +126,8 @@ class GamePage extends StatelessWidget {
                   context,
                   "Bagian 3",
                   "Wawancara kerja",
-                  0.0,
-                  true,
+                  sectionProgress['modul2_bagian3'] ?? 0.0,
+                  sectionLocked['modul2_bagian3'] ?? true,
                   "modul2",
                   "bagian3",
                 ),
@@ -105,14 +151,14 @@ class GamePage extends StatelessWidget {
         const Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
         const SizedBox(width: 4),
         Text(
-          streak.toString(),
+          widget.streak.toString(),
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         const Spacer(),
         const Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
         const SizedBox(width: 4),
         Text(
-          gems.toString(),
+          widget.gems.toString(),
           style: const TextStyle(
             color: Colors.lightBlueAccent,
             fontSize: 14,
@@ -121,7 +167,7 @@ class GamePage extends StatelessWidget {
         ),
         const Spacer(),
         Text(
-          "XP $xp",
+          "XP ${widget.xp}",
           style: const TextStyle(
             color: Colors.green,
             fontSize: 14,
@@ -132,7 +178,11 @@ class GamePage extends StatelessWidget {
     );
   }
 
-  Widget _buildModule(BuildContext context, String title, List<Widget> sections) {
+  Widget _buildModule(
+    BuildContext context,
+    String title,
+    List<Widget> sections,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,9 +207,19 @@ class GamePage extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: locked
-          ? null
-          : () {
-              Navigator.push(
+          ? () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Selesaikan bagian sebelumnya terlebih dahulu!',
+                  ),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          : () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => GameDetailPage(
@@ -170,6 +230,11 @@ class GamePage extends StatelessWidget {
                   ),
                 ),
               );
+
+              // Reload progress setelah kembali dari detail page
+              if (result == true) {
+                _loadProgress();
+              }
             },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),

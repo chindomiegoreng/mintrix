@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
 class GameDetailPage extends StatefulWidget {
   final String sectionTitle;
   final double progress;
-  final String moduleId; 
+  final String moduleId;
   final String sectionId;
 
   const GameDetailPage({
@@ -23,6 +24,26 @@ class GameDetailPage extends StatefulWidget {
 class _GameDetailPageState extends State<GameDetailPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
+  Map<String, bool> _lessonCompletionStatus = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLessonProgress();
+  }
+
+  Future<void> _loadLessonProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _lessonCompletionStatus = {
+        "modul1_bagian1_0": prefs.getBool("modul1_bagian1_0") ?? false,
+        "modul1_bagian1_1": prefs.getBool("modul1_bagian1_1") ?? false,
+        "modul1_bagian1_2": prefs.getBool("modul1_bagian1_2") ?? false,
+        "modul2_bagian1_0": prefs.getBool("modul2_bagian1_0") ?? false,
+      };
+    });
+  }
+
   String _getSectionTitle() {
     if (widget.moduleId == "modul1") {
       return "Bagian 1";
@@ -31,34 +52,47 @@ class _GameDetailPageState extends State<GameDetailPage> {
     }
     return "Bagian 1";
   }
-  List<Map<String, dynamic>> _getLessons() {
 
+  bool _isLessonUnlocked(int currentIndex) {
+    if (currentIndex == 0) return true;
+
+    int previousIndex = currentIndex - 1;
+    String previousKey = "${widget.moduleId}_${widget.sectionId}_$previousIndex";
+
+    return _lessonCompletionStatus[previousKey] ?? false;
+  }
+
+  List<Map<String, dynamic>> _getLessons() {
     if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
       return [
         {
           "title": "Persiapan Karir",
           "dinoImage": "assets/images/dino_career.png",
-          "locked": false,
+          "locked": !_isLessonUnlocked(0),
+          "lessonIndex": 0,
         },
       ];
     }
-    
+
     if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
       return [
         {
           "title": "Mencari Hal Yang Kamu Suka",
           "dinoImage": "assets/images/dino_daily_mission.png",
-          "locked": false,
+          "locked": !_isLessonUnlocked(0),
+          "lessonIndex": 0,
         },
         {
           "title": "Mengatur Waktu",
           "dinoImage": "assets/images/dino_daily_mission.png",
-          "locked": false,
+          "locked": !_isLessonUnlocked(1),
+          "lessonIndex": 1,
         },
         {
           "title": "Berpikir Positif",
           "dinoImage": "assets/images/dino_daily_mission.png",
-          "locked": true,
+          "locked": !_isLessonUnlocked(2),
+          "lessonIndex": 2,
         },
       ];
     }
@@ -67,6 +101,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
         "title": "Coming Soon",
         "dinoImage": "assets/images/dino_daily_mission.png",
         "locked": true,
+        "lessonIndex": 0,
       },
     ];
   }
@@ -75,10 +110,19 @@ class _GameDetailPageState extends State<GameDetailPage> {
     return _getLessons().length > 1;
   }
 
+  bool _isCurrentLessonLocked() {
+    final lessons = _getLessons();
+    if (!_showCarousel()) {
+      return lessons[0]["locked"];
+    }
+    return lessons[_currentPage]["locked"];
+  }
+
   @override
   Widget build(BuildContext context) {
     final lessons = _getLessons();
     final showCarousel = _showCarousel();
+    final isLocked = _isCurrentLessonLocked();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -93,18 +137,6 @@ class _GameDetailPageState extends State<GameDetailPage> {
               progress: widget.progress,
             ),
             const SizedBox(height: 24),
-            // // Debug info
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 20),
-            //   child: Container(
-            //     padding: EdgeInsets.all(8),
-            //     color: Colors.yellow.shade100,
-            //     child: Text(
-            //       'DEBUG: ${widget.moduleId} - ${widget.sectionId}\nLessons: ${lessons.length}\nCarousel: $showCarousel',
-            //       style: TextStyle(fontSize: 10),
-            //     ),
-            //   ),
-            // ),
             const SizedBox(height: 12),
             Expanded(
               child: showCarousel
@@ -158,20 +190,29 @@ class _GameDetailPageState extends State<GameDetailPage> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: CustomFilledButton(
-                title: "Mulai",
-                variant: ButtonColorVariant.blue,
-                height: 50,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LevelJourneyPage(
-                        moduleId: widget.moduleId,
-                        sectionId: widget.sectionId,
-                      ),
-                    ),
-                  );
-                },
+                title: isLocked ? "Terkunci" : "Mulai",
+                variant: isLocked
+                    ? ButtonColorVariant.secondary
+                    : ButtonColorVariant.blue,
+                onPressed: isLocked
+                    ? null
+                    : () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LevelJourneyPage(
+                              moduleId: widget.moduleId,
+                              sectionId: widget.sectionId,
+                              lessonIndex: showCarousel ? _currentPage : 0,
+                            ),
+                          ),
+                        );
+                        
+                        // Reload progress setelah kembali dari journey
+                        if (result == true) {
+                          _loadLessonProgress();
+                        }
+                      },
               ),
             ),
           ],

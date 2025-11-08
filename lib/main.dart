@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
           '/leaderboard': (context) => const LeaderboardPage(),
           '/download-cv': (context) => const DownloadCv(),
           '/videoPage': (context) => const VideoPage(title: '',description: '',videoUrl: '', thumbnail: '',),
-          '/quizPage': (context) => const QuizPage(),
+          '/quizPage': (context) => const QuizPage(moduleId: '',sectionId: '', subSection: '',),
           '/buildCV': (context) => BuildCVPage(),
         },
       ),

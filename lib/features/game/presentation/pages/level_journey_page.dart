@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
@@ -6,11 +7,13 @@ import 'package:mintrix/widgets/buttons.dart';
 class LevelJourneyPage extends StatefulWidget {
   final String moduleId;
   final String sectionId;
+  final int lessonIndex;
 
   const LevelJourneyPage({
     super.key,
     required this.moduleId,
     required this.sectionId,
+    required this.lessonIndex,
   });
 
   @override
@@ -18,13 +21,82 @@ class LevelJourneyPage extends StatefulWidget {
 }
 
 class _LevelJourneyPageState extends State<LevelJourneyPage> {
-  Map<String, bool> platformStatus = {
-    'platform1': false,
-    'platform2': false,
-    'platform3': false,
-  };
+  Map<String, bool> platformStatus = {};
 
-  // Mendapatkan data video berdasarkan modul dan section
+  @override
+  void initState() {
+    super.initState();
+    _loadPlatformStatus();
+  }
+
+  Future<void> _loadPlatformStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lessonKey =
+        "${widget.moduleId}_${widget.sectionId}_${widget.lessonIndex}";
+
+    setState(() {
+      platformStatus = {
+        'platform1': prefs.getBool('${lessonKey}_platform1') ?? false,
+        'platform2': prefs.getBool('${lessonKey}_platform2') ?? false,
+        'platform3': prefs.getBool('${lessonKey}_platform3') ?? false,
+      };
+    });
+  }
+
+  Future<void> _savePlatformStatus(String platformKey, bool status) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lessonKey =
+        "${widget.moduleId}_${widget.sectionId}_${widget.lessonIndex}";
+    await prefs.setBool('${lessonKey}_$platformKey', status);
+
+    // Update lesson completion jika semua platform selesai
+    await _updateLessonCompletion();
+  }
+
+  Future<void> _updateLessonCompletion() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lessonKey =
+        "${widget.moduleId}_${widget.sectionId}_${widget.lessonIndex}";
+
+    // Cek apakah semua platform sudah selesai
+    bool allCompleted = platformStatus.values.every((completed) => completed);
+
+    if (allCompleted) {
+      await prefs.setBool(lessonKey, true);
+
+      // Update section progress
+      await _updateSectionProgress();
+    }
+  }
+
+  Future<void> _updateSectionProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final sectionKey = "${widget.moduleId}_${widget.sectionId}";
+
+    // Hitung berapa lesson yang sudah selesai di section ini
+    int completedLessons = 0;
+    int totalLessons = _getTotalLessonsInSection();
+
+    for (int i = 0; i < totalLessons; i++) {
+      String lessonKey = "${widget.moduleId}_${widget.sectionId}_$i";
+      if (prefs.getBool(lessonKey) ?? false) {
+        completedLessons++;
+      }
+    }
+
+    double progress = completedLessons / totalLessons;
+    await prefs.setDouble('${sectionKey}_progress', progress);
+  }
+
+  int _getTotalLessonsInSection() {
+    if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
+      return 3; // 3 lessons
+    } else if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
+      return 1; // 1 lesson
+    }
+    return 1;
+  }
+
   Map<String, dynamic> _getVideoData() {
     if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
       return {
@@ -52,7 +124,6 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
       };
     }
 
-    // Default data
     return {
       "title": "Coming Soon",
       "description": "Konten akan segera hadir.",
@@ -64,134 +135,239 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     };
   }
 
+  List<Map<String, dynamic>> _getPlatformData() {
+    if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "key": "platform1",
+          "hasVideo": true,
+          "title": "Mencari Hal Yang Kamu Suka",
+          "description":
+              "Membahas cara mengidentifikasi minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
+          "subSection": "mencari_hal_yang_kamu_suka",
+        },
+        {
+          "key": "platform2",
+          "hasVideo": false,
+          "title": "Mengatur Waktu",
+          "description":
+              "Belajar manajemen waktu yang efektif untuk produktivitas optimal.",
+          "subSection": "mengatur_waktu",
+        },
+        {
+          "key": "platform3",
+          "hasVideo": false,
+          "title": "Berpikir Positif",
+          "description":
+              "Membangun mindset positif untuk menghadapi tantangan.",
+          "subSection": "berpikir_positif",
+        },
+      ];
+    }
+
+    if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "key": "platform1",
+          "hasVideo": true,
+          "title": "Persiapan Karir",
+          "description":
+              "Membahas langkah-langkah persiapan karir yang efektif untuk masa depan yang lebih cerah.",
+          "subSection": "persiapan_karir",
+        },
+        {
+          "key": "platform2",
+          "hasVideo": false,
+          "title": "default",
+          "description": "default",
+          "subSection": "default",
+        },
+        {
+          "key": "platform3",
+          "hasVideo": false,
+          "title": "default",
+          "description": "default",
+          "subSection": "default",
+        },
+      ];
+    }
+
+    return [
+      {
+        "key": "platform1",
+        "hasVideo": false,
+        "title": "Coming Soon",
+        "description": "Konten akan segera hadir.",
+        "subSection": "default",
+      },
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     final videoData = _getVideoData();
+    final platformDataList = _getPlatformData();
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const JourneyHeader(),
-            Expanded(
-              child: SizedBox(
-                width: screenWidth,
-                height: screenHeight,
-                child: Stack(
-                  children: [
-                    CustomPaint(size: Size(screenWidth, screenHeight)),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, true);
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              const JourneyHeader(),
+              Expanded(
+                child: SizedBox(
+                  width: screenWidth,
+                  height: screenHeight,
+                  child: Stack(
+                    children: [
+                      CustomPaint(size: Size(screenWidth, screenHeight)),
 
-                    Positioned(
-                      top: 60,
-                      left: 200,
-                      child: _buildSmallPlatform(
-                        isActive: true,
-                        context: context,
+                      Positioned(
+                        top: 60,
+                        left: 200,
+                        child: _buildSmallPlatform(
+                          isActive: true,
+                          context: context,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 120,
-                      left: 40,
-                      child: _buildLargePlatform(
-                        platformStatus['platform1']!
-                            ? StageType.active
-                            : StageType.incoming,
-                        context,
-                        platformKey: 'platform1',
-                        videoData: videoData,
-                      ),
-                    ),
+                      if (platformDataList.isNotEmpty)
+                        Positioned(
+                          top: 120,
+                          left: 40,
+                          child: _buildLargePlatform(
+                            (platformStatus[platformDataList[0]["key"]] ??
+                                    false)
+                                ? StageType.active
+                                : StageType.incoming,
+                            context,
+                            platformData: platformDataList[0],
+                            videoData: videoData,
+                          ),
+                        ),
 
-                    Positioned(
-                      top: 225,
-                      left: 90,
-                      child: _buildSmallPlatform(
-                        isActive: false,
-                        context: context,
-                      ),
-                    ),
+                      if (platformDataList.length > 1)
+                        Positioned(
+                          top: 225,
+                          left: 90,
+                          child: _buildSmallPlatform(
+                            isActive:
+                                (platformStatus[platformDataList[1]["key"]] ??
+                                false),
+                            context: context,
+                            platformData: platformDataList[1],
+                            videoData: videoData,
+                          ),
+                        )
+                      else
+                        Positioned(
+                          top: 225,
+                          left: 90,
+                          child: _buildSmallPlatform(
+                            isActive: false,
+                            context: context,
+                          ),
+                        ),
 
-                    Positioned(
-                      top: 285,
-                      right: 160,
-                      child: _buildSmallPlatform(
-                        isActive: false,
-                        context: context,
-                      ),
-                    ),
+                      if (platformDataList.length > 2)
+                        Positioned(
+                          top: 285,
+                          right: 160,
+                          child: _buildSmallPlatform(
+                            isActive:
+                                (platformStatus[platformDataList[2]["key"]] ??
+                                false),
+                            context: context,
+                            platformData: platformDataList[2],
+                            videoData: videoData,
+                          ),
+                        )
+                      else
+                        Positioned(
+                          top: 285,
+                          right: 160,
+                          child: _buildSmallPlatform(
+                            isActive: false,
+                            context: context,
+                          ),
+                        ),
 
-                    Positioned(
-                      top: 330,
-                      right: 35,
-                      child: _buildLargePlatform(
-                        platformStatus['platform2']!
-                            ? StageType.active
-                            : StageType.inactive,
-                        context,
-                        platformKey: 'platform2',
-                        videoData: videoData,
+                      Positioned(
+                        top: 330,
+                        right: 35,
+                        child: _buildLargePlatform(
+                          (platformDataList.length > 1 &&
+                                  (platformStatus[platformDataList[1]["key"]] ??
+                                      false))
+                              ? StageType.active
+                              : StageType.inactive,
+                          context,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 500,
-                      right: 40,
-                      child: _buildSmallPlatform(
-                        isActive: false,
-                        context: context,
+                      Positioned(
+                        top: 500,
+                        right: 40,
+                        child: _buildSmallPlatform(
+                          isActive: false,
+                          context: context,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 570,
-                      right: 150,
-                      child: _buildSmallPlatform(
-                        isActive: false,
-                        context: context,
+                      Positioned(
+                        top: 570,
+                        right: 150,
+                        child: _buildSmallPlatform(
+                          isActive: false,
+                          context: context,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 650,
-                      left: 30,
-                      child: _buildLargePlatform(
-                        platformStatus['platform3']!
-                            ? StageType.active
-                            : StageType.inactive,
-                        context,
-                        platformKey: 'platform3',
-                        videoData: videoData,
+                      Positioned(
+                        top: 650,
+                        left: 30,
+                        child: _buildLargePlatform(
+                          (platformDataList.length > 2 &&
+                                  (platformStatus[platformDataList[2]["key"]] ??
+                                      false))
+                              ? StageType.active
+                              : StageType.inactive,
+                          context,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: -10,
-                      right: 10,
-                      child: _buildCharacterStage(
-                        context,
-                        imagePath: videoData["ballImage"],
-                        stageType: StageType.active,
+                      Positioned(
+                        top: -10,
+                        right: 10,
+                        child: _buildCharacterStage(
+                          context,
+                          imagePath: videoData["ballImage"],
+                          stageType: StageType.active,
+                        ),
                       ),
-                    ),
 
-                    Positioned(
-                      top: 340,
-                      left: 30,
-                      child: _buildCharacterStage(
-                        context,
-                        imagePath: videoData["characterImage"],
-                        stageType: StageType.completed,
+                      Positioned(
+                        top: 340,
+                        left: 30,
+                        child: _buildCharacterStage(
+                          context,
+                          imagePath: videoData["characterImage"],
+                          stageType: StageType.completed,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -209,16 +385,14 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     );
   }
 
-  // Hanya bagian yang dimodifikasi di LevelJourneyPage
-  // Update method _buildLargePlatform untuk pass moduleId dan sectionId
-
   Widget _buildLargePlatform(
     StageType stageType,
     BuildContext context, {
-    required String platformKey,
-    required Map<String, dynamic> videoData,
+    Map<String, dynamic>? platformData,
+    Map<String, dynamic>? videoData,
   }) {
     late String asset;
+    bool hasData = platformData != null && videoData != null;
 
     switch (stageType) {
       case StageType.active:
@@ -233,30 +407,70 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         asset = "assets/images/platform_large_inactive.png";
         break;
     }
+    if (!hasData) {
+      return Image.asset(asset, width: 110, height: 70, fit: BoxFit.contain);
+    }
 
     return GestureDetector(
       onTap: () {
+        bool isLocked = stageType == StageType.inactive;
+        if (isLocked) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Selesaikan modul sebelumnya terlebih dahulu!'),
+              duration: Duration(seconds: 2),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
+
         _showLessonPopup(
           context,
-          title: videoData["title"],
-          description: videoData["description"],
-          onStart: () {
+          title: platformData["title"],
+          description: platformData["description"],
+          onStart: () async {
             setState(() {
-              platformStatus[platformKey] = true;
+              platformStatus[platformData["key"]] = true;
             });
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => VideoPage(
-                  title: videoData["title"],
-                  description: videoData["videoDescription"],
-                  videoUrl: videoData["videoUrl"],
-                  thumbnail: videoData["thumbnail"],
-                  moduleId: widget.moduleId, 
-                  sectionId: widget.sectionId, 
+
+            await _savePlatformStatus(platformData["key"], true);
+
+            if (platformData["hasVideo"]) {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VideoPage(
+                    title: videoData["title"],
+                    description: videoData["videoDescription"],
+                    videoUrl: videoData["videoUrl"],
+                    thumbnail: videoData["thumbnail"],
+                    moduleId: widget.moduleId,
+                    sectionId: widget.sectionId,
+                    subSection: platformData["subSection"],
+                  ),
                 ),
-              ),
-            );
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            } else {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => QuizPage(
+                    moduleId: widget.moduleId,
+                    sectionId: widget.sectionId,
+                    subSection: platformData["subSection"],
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            }
           },
         );
       },
@@ -267,10 +481,54 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
   Widget _buildSmallPlatform({
     required bool isActive,
     required BuildContext context,
+    Map<String, dynamic>? platformData,
+    Map<String, dynamic>? videoData,
   }) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => QuizPage()));
+        if (platformData != null && videoData != null) {
+          String platformKey = platformData["key"];
+          bool isPreviousCompleted = _isPreviousPlatformCompleted(platformKey);
+
+          if (!isPreviousCompleted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Selesaikan modul sebelumnya terlebih dahulu!'),
+                duration: Duration(seconds: 2),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            return;
+          }
+
+          _showLessonPopup(
+            context,
+            title: platformData["title"],
+            description: platformData["description"],
+            onStart: () async {
+              setState(() {
+                platformStatus[platformData["key"]] = true;
+              });
+
+              await _savePlatformStatus(platformData["key"], true);
+
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => QuizPage(
+                    moduleId: widget.moduleId,
+                    sectionId: widget.sectionId,
+                    subSection: platformData["subSection"],
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            },
+          );
+        }
       },
       child: Image.asset(
         isActive
@@ -281,6 +539,17 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         fit: BoxFit.contain,
       ),
     );
+  }
+
+  bool _isPreviousPlatformCompleted(String currentPlatformKey) {
+    if (currentPlatformKey == "platform1") {
+      return true;
+    } else if (currentPlatformKey == "platform2") {
+      return platformStatus["platform1"] ?? false;
+    } else if (currentPlatformKey == "platform3") {
+      return platformStatus["platform2"] ?? false;
+    }
+    return false;
   }
 
   void _showLessonPopup(
@@ -297,7 +566,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          backgroundColor: Color(0xFF7DD3F7),
+          backgroundColor: const Color(0xFF7DD3F7),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
@@ -323,7 +592,6 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
                 CustomFilledButton(
                   title: "Mulai +80 XP",
                   variant: ButtonColorVariant.white,
@@ -396,7 +664,6 @@ class JourneyHeader extends StatelessWidget {
   }
 }
 
-// ✅ Tidak dihapus sesuai permintaan
 // class _JourneyPathPainter extends CustomPainter {
 //   final double screenWidth;
 //   _JourneyPathPainter(this.screenWidth);

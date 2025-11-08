@@ -46,16 +46,14 @@ class _CVContactState extends State<CVContact> {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 16),
-
               Text(
                 'Kontak',
                 style: primaryTextStyle.copyWith(
-                  fontSize: 28,
+                  fontSize: 20,
                   fontWeight: bold,
                 ),
               ),
