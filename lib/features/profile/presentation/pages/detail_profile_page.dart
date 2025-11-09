@@ -1,9 +1,63 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
+import 'package:mintrix/core/models/profile_detail_model.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
 
-class DetailProfilePage extends StatelessWidget {
+class DetailProfilePage extends StatefulWidget {
   const DetailProfilePage({super.key});
+
+  @override
+  State<DetailProfilePage> createState() => _DetailProfilePageState();
+}
+
+class _DetailProfilePageState extends State<DetailProfilePage> {
+  final ApiClient _apiClient = ApiClient();
+  ProfileDetailModel? _profileDetail;
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileDetail();
+  }
+
+  Future<void> _loadProfileDetail() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      print('📡 Loading profile detail...');
+
+      final response = await _apiClient.get(
+        ApiEndpoints.profileDetail,
+        requiresAuth: true,
+      );
+
+      print('✅ Profile detail response: $response');
+
+      final data = response['data'] ?? {};
+      final profileDetail = ProfileDetailModel.fromJson(data);
+
+      setState(() {
+        _profileDetail = profileDetail;
+        _isLoading = false;
+      });
+
+      print('🎉 Profile detail loaded: ${profileDetail.user.nama}');
+    } catch (e) {
+      print('❌ Profile detail error: $e');
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,35 +70,73 @@ class DetailProfilePage extends StatelessWidget {
           },
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        children: [
-          profileInfo(),
-          SizedBox(height: 20),
-          sectionTitle1(),
-          progressContainer(),
-          SizedBox(height: 12),
-          sectionTitle2(),
-          SizedBox(height: 50),
-        ],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(_errorMessage!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadProfileDetail,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadProfileDetail,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  profileInfo(),
+                  const SizedBox(height: 20),
+                  sectionTitle1(),
+                  progressContainer(),
+                  const SizedBox(height: 12),
+                  sectionTitle2(),
+                  const SizedBox(height: 50),
+                ],
+              ),
+            ),
     );
   }
 
   Widget profileInfo() {
+    if (_profileDetail == null) return const SizedBox();
+
+    final user = _profileDetail!.user;
+
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          Image.asset("assets/images/profile.png"),
-          SizedBox(height: 14),
+          // ✅ Dynamic photo
+          user.foto != null && user.foto!.isNotEmpty
+              ? CircleAvatar(
+                  radius: 60,
+                  backgroundImage: CachedNetworkImageProvider(user.foto!),
+                )
+              : CircleAvatar(
+                  radius: 60,
+                  backgroundImage: const AssetImage(
+                    "assets/images/profile.png",
+                  ),
+                ),
+          const SizedBox(height: 14),
+          // ✅ Dynamic name
           Text(
-            "Renata",
+            user.nama,
             style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
+          // ✅ Dynamic ID
           Text(
-            "ID: 5220411131",
+            "ID: ${user.id.substring(user.id.length - 10)}",
             style: primaryTextStyle.copyWith(fontSize: 14, fontWeight: regular),
           ),
         ],
@@ -63,7 +155,7 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           "Data di bawah ini merupakan rekam jejak penggunaan aplikasi dari awal hingga saat ini dan dapat berubah kapanpun. Penilaian yang ditampilkan didasarkan pada keseluruhan aktivitas anak.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
@@ -73,6 +165,9 @@ class DetailProfilePage extends StatelessWidget {
   }
 
   Widget progressContainer() {
+    if (_profileDetail == null) return const SizedBox();
+
+    final personality = _profileDetail!.personality;
     final labels = [
       "Berani",
       "Empati",
@@ -80,13 +175,17 @@ class DetailProfilePage extends StatelessWidget {
       "Kerja Sama",
       "Kreativitas",
     ];
+
+    // ✅ Dynamic radar values
+    final radarValues = personality.toRadarValues();
+
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(30),
+            padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: whiteColor,
               border: Border.all(color: bluePrimaryColor, width: 1),
@@ -128,7 +227,7 @@ class DetailProfilePage extends StatelessWidget {
                   ],
                   radars: [
                     RadarTile(
-                      values: [0.4, 0.8, 0.65, 0.7, 0.5],
+                      values: radarValues, // ✅ Dynamic values from API
                       borderStroke: 2,
                       backgroundColor: greenColor.withAlpha(100),
                     ),
@@ -143,6 +242,10 @@ class DetailProfilePage extends StatelessWidget {
   }
 
   Widget sectionTitle2() {
+    if (_profileDetail == null) return const SizedBox();
+
+    final personality = _profileDetail!.personality;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -153,9 +256,12 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
+        // ✅ Dynamic hobi dan minat
         Text(
-          "Menggambar, bermain musik, dan menulis. kamu senang mengarang dan menciptakan dunia dari imajinasi kamu sendiri.",
+          personality.hobiDanMinat.isNotEmpty
+              ? personality.hobiDanMinat
+              : "Belum ada data hobi dan minat.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
         ),
       ],

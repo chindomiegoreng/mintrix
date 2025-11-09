@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -32,127 +31,129 @@ class _LoginPageState extends State<LoginPage> {
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
         ),
       ),
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) async {
-          if (state is AuthError) {
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoading) {
+            // Show loading
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+          } else if (state is AuthAuthenticated) {
+            // Close loading
+            Navigator.pop(context);
+            // Navigate ke home
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/main',
+              (route) => false,
+            );
+          } else if (state is AuthError) {
+            // Close loading
+            Navigator.pop(context);
+            // Show error
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is AuthAuthenticated) {
-            final prefs = await SharedPreferences.getInstance();
-            final hasCompletedPersonalization =
-                prefs.getBool('hasCompletedPersonalization') ?? false;
-
-            if (!mounted) return;
-            if (hasCompletedPersonalization) {
-              Navigator.pushReplacementNamed(context, '/main');
-            } else {
-              Navigator.pushReplacementNamed(context, '/personalization');
-            }
           }
         },
-        builder: (context, state) {
-          if (state is AuthLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 8),
-                    CustomFormField(
-                      title: 'Emailmu',
-                      controller: _usernameController,
-                      hintText: 'Masukkan email kamu',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Email pengguna tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    CustomFormField(
-                      title: 'Kata Sandi',
-                      type: FormFieldType.password,
-                      controller: _passwordController,
-                      hintText: 'Masukkan kata sandi',
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Kata sandi tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 24),
-                    CustomFilledButton(
-                      title: 'Masuk Sekarang',
-                      variant: ButtonColorVariant.blue,
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          context.read<AuthBloc>().add(
-                            LoginEvent(
-                              username: _usernameController.text,
-                              password: _passwordController.text,
-                            ),
-                          );
-                        }
-                      },
-                    ),
-                    const SizedBox(height: 4),
-                    SizedBox(
-                      width: double.infinity,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text(
-                          "Lupa Kata Sandimu?",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 8),
+                  CustomFormField(
+                    title: 'Emailmu',
+                    controller: _usernameController,
+                    hintText: 'Masukkan email kamu',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Email pengguna tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomFormField(
+                    title: 'Kata Sandi',
+                    type: FormFieldType.password,
+                    controller: _passwordController,
+                    hintText: 'Masukkan kata sandi',
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kata sandi tidak boleh kosong';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  CustomFilledButton(
+                    title: 'Masuk Sekarang',
+                    variant: ButtonColorVariant.blue,
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        context.read<AuthBloc>().add(
+                          LoginEvent(
+                            username: _usernameController.text,
+                            password: _passwordController.text,
                           ),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {},
+                      child: const Text(
+                        "Lupa Kata Sandimu?",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: Colors.grey[300])),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'atau',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey[300])),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'atau',
+                          style: TextStyle(color: Colors.grey[600]),
                         ),
-                        Expanded(child: Divider(color: Colors.grey[300])),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    CustomFilledButton(
-                      title: 'Masuk dengan Google',
-                      variant: ButtonColorVariant.white,
-                      withShadow: true,
-                      icon: Image.asset(
-                        'assets/icons/logo_google.png',
-                        width: 20,
-                        height: 20,
                       ),
-                      onPressed: () {
-                        // Implement Google Sign In
-                      },
+                      Expanded(child: Divider(color: Colors.grey[300])),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  CustomFilledButton(
+                    title: 'Masuk dengan Google',
+                    variant: ButtonColorVariant.white,
+                    withShadow: true,
+                    icon: Image.asset(
+                      'assets/icons/logo_google.png',
+                      width: 20,
+                      height: 20,
                     ),
-                  ],
-                ),
+                    onPressed: () {
+                      // Implement Google Sign In
+                    },
+                  ),
+                ],
               ),
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

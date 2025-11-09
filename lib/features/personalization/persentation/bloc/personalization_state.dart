@@ -1,31 +1,44 @@
-import 'package:mintrix/widgets/personalization_long_learning_button.dart';
+import 'package:mintrix/core/models/duration_option_model.dart';
 
 abstract class PersonalizationState {}
 
 class PersonalizationInitial extends PersonalizationState {}
 
+class PersonalizationLoading extends PersonalizationState {}
+
+// ✅ State untuk load duration options dari API
+class PersonalizationOptionsLoaded extends PersonalizationState {
+  final List<DurationOptionModel> durationOptions;
+
+  PersonalizationOptionsLoaded({required this.durationOptions});
+}
+
 class PersonalizationStage1 extends PersonalizationState {
   final int currentStep;
-  final DurationOption? selectedDuration;
+  final DurationOptionModel? selectedDuration; // ✅ Changed type
+  final List<DurationOptionModel> durationOptions; // ✅ Add options list
 
   PersonalizationStage1({
     required this.currentStep,
     this.selectedDuration,
+    this.durationOptions = const [],
   });
 
   PersonalizationStage1 copyWith({
     int? currentStep,
-    DurationOption? selectedDuration,
+    DurationOptionModel? selectedDuration,
+    List<DurationOptionModel>? durationOptions,
   }) {
     return PersonalizationStage1(
       currentStep: currentStep ?? this.currentStep,
       selectedDuration: selectedDuration ?? this.selectedDuration,
+      durationOptions: durationOptions ?? this.durationOptions,
     );
   }
 }
 
 class PersonalizationStage1Complete extends PersonalizationState {
-  final DurationOption? selectedDuration;
+  final DurationOptionModel? selectedDuration;
 
   PersonalizationStage1Complete({this.selectedDuration});
 }
@@ -59,3 +72,8 @@ class PersonalizationStage2 extends PersonalizationState {
 }
 
 class PersonalizationCompleted extends PersonalizationState {}
+
+class PersonalizationError extends PersonalizationState {
+  final String message;
+  PersonalizationError(this.message);
+}

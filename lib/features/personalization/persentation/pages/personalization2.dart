@@ -5,11 +5,24 @@ import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/personalization_long_learning_button.dart';
 import '../bloc/personalization_bloc.dart';
 import '../bloc/personalization_event.dart';
+import '../bloc/personalization_state.dart';
 
-class Personalization2 extends StatelessWidget {
+class Personalization2 extends StatefulWidget {
   final VoidCallback onNext;
 
   const Personalization2({super.key, required this.onNext});
+
+  @override
+  State<Personalization2> createState() => _Personalization2State();
+}
+
+class _Personalization2State extends State<Personalization2> {
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Load duration options saat page dibuka
+    context.read<PersonalizationBloc>().add(LoadDurationOptions());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,25 +59,37 @@ class Personalization2 extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 24),
 
+          // ✅ Use BlocBuilder to get dynamic options
           Expanded(
-            child: SingleChildScrollView(
-              child: CustomDurationSelector(
-                onSelected: (option) {
-                  context.read<PersonalizationBloc>().add(
-                    UpdateLearningDuration(option),
+            child: BlocBuilder<PersonalizationBloc, PersonalizationState>(
+              builder: (context, state) {
+                if (state is PersonalizationStage1) {
+                  return SingleChildScrollView(
+                    child: CustomDurationSelector(
+                      options: state.durationOptions, // ✅ Dynamic options
+                      selectedOption: state.selectedDuration,
+                      onSelected: (option) {
+                        context.read<PersonalizationBloc>().add(
+                          UpdateLearningDuration(option),
+                        );
+                      },
+                    ),
                   );
-                },
-              ),
+                }
+
+                // Default loading
+                return const Center(child: CircularProgressIndicator());
+              },
             ),
           ),
+
           const SizedBox(height: 16),
           CustomFilledButton(
             title: 'Selanjutnya',
             variant: ButtonColorVariant.blue,
-            onPressed: onNext,
+            onPressed: widget.onNext,
           ),
           const SizedBox(height: 16),
         ],
