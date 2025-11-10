@@ -1,6 +1,6 @@
 class ApiEndpoints {
   // Base URLs
-  static const String mintrixBaseUrl = 'https://mintrix-api-service.vercel.app';
+  static const String mintrixBaseUrl = 'https://mintrix.yogawanadityapratama.com';
   static const String dinoBaseUrl = 'https://dino.yogawanadityapratama.com';
 
   // Auth Endpoints
