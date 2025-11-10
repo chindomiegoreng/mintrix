@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mintrix/features/ai/presentation/pages/ai_history_page.dart';
+import 'package:mintrix/features/ai/data/services/ai_service.dart';
+import 'package:mintrix/features/ai/data/services/chat_history_service.dart';
 import 'package:mintrix/shared/theme.dart';
 
 class AIPage extends StatefulWidget {
@@ -13,51 +15,124 @@ class AIPage extends StatefulWidget {
 
 class _AIPageState extends State<AIPage> {
   final TextEditingController _messageController = TextEditingController();
+  final AIService _aiService = AIService();
+  final ChatHistoryService _historyService = ChatHistoryService();
+  bool _isLoading = false;
+
   final List<ChatMessage> _messages = [
     ChatMessage(
-      text: "Huhh, hari ini rasanya padat banget. Capek aku...",
+      text:
+          "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
       isFromDino: true,
       time: "10:30",
-    ),
-    ChatMessage(
-      text:
-          "Wah, kedengarannya capek banget, ya. Kamu udah kerja keras hari ini. Kayaknya kamu benerin butuh istirahat sebentar, deh.",
-      isFromDino: false,
-      time: "10:31",
-    ),
-    ChatMessage(
-      text:
-          "Iya, dari pagi rasanya nggak ada berhentinya. Pengen juga jam tidurnya mau ngapain biar rileks.",
-      isFromDino: true,
-      time: "10:32",
-    ),
-    ChatMessage(
-      text:
-          "Gimana kalau coba istirahat 15 menit aja, nggak usah lihat layar? Mungkin sambil dengerin musik atau makan gitu?",
-      isFromDino: false,
-      time: "10:33",
     ),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkAndClearMessages();
+  }
+
+  Future<void> _checkAndClearMessages() async {
+    final shouldClear = await _historyService.shouldClearToday();
+
+    if (shouldClear && _messages.length > 1) {
+      // Save current chat before clearing
+      await _historyService.saveCurrentChat(_messages);
+
+      // Clear messages except the initial greeting
+      setState(() {
+        _messages.removeRange(1, _messages.length);
+      });
+
+      await _historyService.markClearedToday();
+    }
+  }
+
+  @override
   void dispose() {
+    // Save chat before disposing
+    if (_messages.length > 1) {
+      _historyService.saveCurrentChat(_messages);
+    }
     _messageController.dispose();
     super.dispose();
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
+  void _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+
+    final userMessage = _messageController.text.trim();
+    final currentTime = TimeOfDay.now().format(context);
+
+    setState(() {
+      _messages.add(
+        ChatMessage(text: userMessage, isFromDino: false, time: currentTime),
+      );
+      _isLoading = true;
+    });
+
+    _messageController.clear();
+
+    try {
+      // Prepare messages for API
+      final apiMessages = _messages
+          .map(
+            (msg) => {
+              'role': msg.isFromDino ? 'assistant' : 'user',
+              'content': msg.text,
+            },
+          )
+          .toList();
+
+      final response = await _aiService.sendMessage(apiMessages);
+
       setState(() {
         _messages.add(
           ChatMessage(
-            text: _messageController.text,
-            isFromDino: false,
+            text: response,
+            isFromDino: true,
             time: TimeOfDay.now().format(context),
           ),
         );
-        _messageController.clear();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: "Maaf, terjadi kesalahan. Coba lagi nanti ya.",
+            isFromDino: true,
+            time: TimeOfDay.now().format(context),
+          ),
+        );
+        _isLoading = false;
       });
     }
+  }
+
+  void _startNewChat() async {
+    // Save current chat before starting new one
+    if (_messages.length > 1) {
+      await _historyService.saveCurrentChat(_messages);
+    }
+
+    // Reset to initial state
+    setState(() {
+      _messages.clear();
+      _messages.add(
+        ChatMessage(
+          text:
+              "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
+          isFromDino: true,
+          time: TimeOfDay.now().format(context),
+        ),
+      );
+      _isLoading = false;
+    });
+
+    _messageController.clear();
   }
 
   @override
@@ -71,7 +146,13 @@ class _AIPageState extends State<AIPage> {
         leading: widget.showAppBar
             ? IconButton(
                 icon: const Icon(Icons.close, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () async {
+                  // Save chat before closing
+                  if (_messages.length > 1) {
+                    await _historyService.saveCurrentChat(_messages);
+                  }
+                  Navigator.pop(context);
+                },
               )
             : null,
         title: Container(
@@ -92,13 +173,20 @@ class _AIPageState extends State<AIPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.add, color: Colors.black),
+            onPressed: _startNewChat,
+            tooltip: 'Chat Baru',
+          ),
+          IconButton(
             icon: const Icon(Icons.history, color: Colors.black),
-            onPressed: () {
+            onPressed: () async {
+              // Save current chat before navigating
+              if (_messages.length > 1) {
+                await _historyService.saveCurrentChat(_messages);
+              }
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AIHistoryPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const AIHistoryPage()),
               );
             },
           ),
@@ -109,8 +197,11 @@ class _AIPageState extends State<AIPage> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length && _isLoading) {
+                  return _buildLoadingBubble();
+                }
                 final message = _messages[index];
                 return _buildMessageBubble(message);
               },
@@ -185,6 +276,56 @@ class _AIPageState extends State<AIPage> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingBubble() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xffE1F5F5),
+            child: Image.asset(
+              'assets/images/dino_get_started.png',
+              width: 30,
+              height: 30,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xff4DD4E8),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Dino sedang mengetik...",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
