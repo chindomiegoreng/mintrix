@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/models/cv_model.dart';
+import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form_cv.dart';
@@ -8,11 +11,7 @@ class CVEducation extends StatefulWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
 
-  const CVEducation({
-    super.key,
-    required this.onNext,
-    required this.onBack,
-  });
+  const CVEducation({super.key, required this.onNext, required this.onBack});
 
   @override
   State<CVEducation> createState() => _CVEducationState();
@@ -72,12 +71,22 @@ class _CVEducationState extends State<CVEducation> {
       extendBody: true,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
+          padding: const EdgeInsets.only(
+            left: 24.0,
+            top: 0,
+            right: 24.0,
+            bottom: 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Pendidikan',
-                  style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: bold)),
+              Text(
+                'Pendidikan',
+                style: primaryTextStyle.copyWith(
+                  fontSize: 20,
+                  fontWeight: bold,
+                ),
+              ),
               const SizedBox(height: 6),
               Text(
                 'Tambahkan detail pendidikan Anda - meskipun belum lulus.',
@@ -100,7 +109,9 @@ class _CVEducationState extends State<CVEducation> {
                           child: Text(
                             "+ Tambah pendidikan",
                             style: primaryTextStyle.copyWith(
-                                color: bluePrimaryColor, fontWeight: semiBold),
+                              color: bluePrimaryColor,
+                              fontWeight: semiBold,
+                            ),
                           ),
                         ),
                       ),
@@ -124,7 +135,75 @@ class _CVEducationState extends State<CVEducation> {
               child: CustomFilledButton(
                 title: "Selanjutnya",
                 variant: ButtonColorVariant.blue,
-                onPressed: widget.onNext,
+                onPressed: () {
+                  // Validate education data
+                  for (int i = 0; i < educations.length; i++) {
+                    final edu = educations[i];
+                    if (edu["school"]?.text.trim().isEmpty == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Nama sekolah diperlukan untuk pendidikan ke-${i + 1}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                    if (edu["location"]?.text.trim().isEmpty == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Lokasi diperlukan untuk pendidikan ke-${i + 1}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                    if (edu["major"]?.text.trim().isEmpty == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Penjurusan diperlukan untuk pendidikan ke-${i + 1}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                    if (edu["start"]?.text.trim().isEmpty == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Tanggal mulai diperlukan untuk pendidikan ke-${i + 1}',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+                  }
+
+                  // Save education data to bloc before navigating
+                  final educationData = educations.map((edu) {
+                    return CVPendidikan(
+                      namaSekolah: edu["school"]?.text.trim() ?? '',
+                      lokasi: edu["location"]?.text.trim() ?? '',
+                      penjurusan: edu["major"]?.text.trim() ?? '',
+                      tanggalMulai: edu["start"]?.text.trim() ?? '',
+                      tanggalSelesai: edu["end"]?.text.trim().isEmpty == true
+                          ? null
+                          : edu["end"]?.text.trim(),
+                      deskripsi: edu["description"]?.text.trim() ?? '',
+                    );
+                  }).toList();
+
+                  context.read<BuildCVBloc>().add(
+                    UpdateEducationData(educationData),
+                  );
+                  widget.onNext();
+                },
               ),
             ),
           ),
@@ -133,7 +212,10 @@ class _CVEducationState extends State<CVEducation> {
     );
   }
 
-  Widget buildEducationCard(Map<String, TextEditingController> data, int index) {
+  Widget buildEducationCard(
+    Map<String, TextEditingController> data,
+    int index,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
@@ -149,7 +231,10 @@ class _CVEducationState extends State<CVEducation> {
               Expanded(
                 child: Text(
                   "Pendidikan, Sekolah",
-                  style: primaryTextStyle.copyWith(fontWeight: semiBold, fontSize: 14),
+                  style: primaryTextStyle.copyWith(
+                    fontWeight: semiBold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
               GestureDetector(
@@ -168,7 +253,11 @@ class _CVEducationState extends State<CVEducation> {
                 constraints: const BoxConstraints(),
                 splashRadius: 18,
                 onPressed: () => removeEducation(index),
-                icon: Icon(Icons.delete_outline, color: Colors.grey.shade400, size: 18),
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: Colors.grey.shade400,
+                  size: 18,
+                ),
               ),
             ],
           ),
@@ -180,26 +269,47 @@ class _CVEducationState extends State<CVEducation> {
                     key: ValueKey(true),
                     children: [
                       const SizedBox(height: 6),
-                      buildInputCV("Nama Sekolah", data["school"]!,
-                          hint: "SMA / Universitas"),
-                      buildInputCV("Lokasi", data["location"]!, hint: "Yogyakarta"),
-                      buildInputCV("Penjurusan", data["major"]!,
-                          hint: "IPS / Teknik Informatika"),
+                      buildInputCV(
+                        "Nama Sekolah",
+                        data["school"]!,
+                        hint: "SMA / Universitas",
+                      ),
+                      buildInputCV(
+                        "Lokasi",
+                        data["location"]!,
+                        hint: "Yogyakarta",
+                      ),
+                      buildInputCV(
+                        "Penjurusan",
+                        data["major"]!,
+                        hint: "IPS / Teknik Informatika",
+                      ),
                       Row(
                         children: [
                           Expanded(
-                            child: buildInputCV("Tanggal mulai", data["start"]!,
-                                hint: "07/2018", keyboard: TextInputType.datetime),
+                            child: buildInputCV(
+                              "Tanggal mulai",
+                              data["start"]!,
+                              hint: "07/2018",
+                              keyboard: TextInputType.datetime,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: buildInputCV("Tanggal selesai", data["end"]!,
-                                hint: "05/2021", keyboard: TextInputType.datetime),
+                            child: buildInputCV(
+                              "Tanggal selesai",
+                              data["end"]!,
+                              hint: "05/2021",
+                              keyboard: TextInputType.datetime,
+                            ),
                           ),
                         ],
                       ),
-                      buildTextAreaCV("Deskripsi", data["description"]!,
-                          hint: "Organisasi, prestasi, aktivitas, dll."),
+                      buildTextAreaCV(
+                        "Deskripsi",
+                        data["description"]!,
+                        hint: "Organisasi, prestasi, aktivitas, dll.",
+                      ),
                     ],
                   )
                 : const SizedBox.shrink(key: ValueKey(false)),

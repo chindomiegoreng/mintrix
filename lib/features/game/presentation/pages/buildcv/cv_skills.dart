@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/models/cv_model.dart';
+import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -131,7 +134,39 @@ class _CVSkillsState extends State<CVSkills> {
           child: CustomFilledButton(
             title: "Selanjutnya",
             variant: ButtonColorVariant.blue,
-            onPressed: widget.onNext,
+            onPressed: () {
+              // Validate skills data
+              bool hasValidSkill = false;
+              for (int i = 0; i < skillControllers.length; i++) {
+                if (skillControllers[i].text.trim().isNotEmpty) {
+                  hasValidSkill = true;
+                  break;
+                }
+              }
+
+              if (!hasValidSkill) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Minimal satu keterampilan diperlukan'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              // Save skills data to bloc before navigating
+              final skillsData = List.generate(skillControllers.length, (
+                index,
+              ) {
+                return CVKeterampilan(
+                  namaKeterampilan: skillControllers[index].text.trim(),
+                  level: index < levels.length ? levels[index] : 1,
+                );
+              }).where((skill) => skill.namaKeterampilan.isNotEmpty).toList();
+
+              context.read<BuildCVBloc>().add(UpdateSkillsData(skillsData));
+              widget.onNext();
+            },
           ),
         ),
       ),

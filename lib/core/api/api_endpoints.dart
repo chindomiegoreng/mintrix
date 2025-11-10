@@ -16,8 +16,7 @@ class ApiEndpoints {
   static const String profileShort = '/api/profile/short';
   static const String profileDetail = '/api/profile/detail';
   static const String updateProfile = '/api/profile/update';
-  static const String generateQRCode =
-      '/api/profile/generate/qrcode';
+  static const String generateQRCode = '/api/profile/generate/qrcode';
 
   // Game/Module Endpoints
   static const String modules = '/api/modules';
@@ -34,4 +33,8 @@ class ApiEndpoints {
   static const String leaderboard = '/api/leaderboard';
 
   static const String mission = '/api/mission';
+
+  // Resume/CV Endpoints
+  static const String resume = '/api/resume';
+  static String resumeById(String id) => '/api/resume/$id';
 }

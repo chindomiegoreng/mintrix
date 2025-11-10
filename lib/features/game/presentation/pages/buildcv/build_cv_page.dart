@@ -31,6 +31,13 @@ class _BuildCVPageState extends State<BuildCVPage> {
         listener: (context, state) {
           if (state is CVCompleted) {
             Navigator.pushReplacementNamed(context, '/main');
+          } else if (state is CVSubmitError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.error}'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         builder: (context, state) {

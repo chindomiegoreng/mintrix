@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/models/cv_model.dart';
+import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -137,157 +140,256 @@ class _CVAdditionalState extends State<CVAdditional> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: whiteColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Bagian Tambahan",
-                style: primaryTextStyle.copyWith(
-                  fontSize: 20,
-                  fontWeight: bold,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                "Tambahkan sertifikasi, bahasa, penghargaan, atau detail lain yang relevan.",
-                style: secondaryTextStyle.copyWith(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      buildMainCategoryCard(
-                        icon: Icons.language,
-                        title: "Bahasa",
-                        desc: "Tambahkan bahasa yang Anda kuasai.",
-                        itemCount: languageControllers.length,
-                        expanded: showLanguage,
-                        onToggle: () => setState(() => showLanguage = !showLanguage),
-                        onDeleteCategory: clearLanguage,
-                        children: showLanguage
-                            ? List.generate(
-                                languageControllers.length,
-                                (i) => buildLanguageItem(i),
-                              )
-                            : [],
-                        addButtonLabel: "+ Tambah Bahasa",
-                        onAdd: showLanguage ? addLanguage : null,
-                      ),
-                      const SizedBox(height: 16),
-                      buildMainCategoryCard(
-                        icon: Icons.badge_outlined,
-                        title: "Sertifikasi dan lisensi",
-                        desc: "Tambahkan kredensial yang mendukung keahlian Anda.",
-                        itemCount: certControllers.length,
-                        expanded: showCert,
-                        onToggle: () => setState(() => showCert = !showCert),
-                        onDeleteCategory: clearCert,
-                        children: showCert
-                            ? List.generate(
-                                certControllers.length,
-                                (i) => buildItemField(
-                                  controller: certControllers[i],
-                                  onDelete: () => removeCert(i),
-                                  hint: "Nama Sertifikasi",
-                                ),
-                              )
-                            : [],
-                        addButtonLabel: "+ Tambah Sertifikasi",
-                        onAdd: showCert ? addCert : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Penghargaan
-                      buildMainCategoryCard(
-                        icon: Icons.emoji_events_outlined,
-                        title: "Penghargaan dan apresiasi",
-                        desc: "Bagikan pencapaian Anda.",
-                        itemCount: awardControllers.length,
-                        expanded: showAward,
-                        onToggle: () => setState(() => showAward = !showAward),
-                        onDeleteCategory: clearAward,
-                        children: showAward
-                            ? List.generate(
-                                awardControllers.length,
-                                (i) => buildItemField(
-                                  controller: awardControllers[i],
-                                  onDelete: () => removeAward(i),
-                                  hint: "Nama Penghargaan",
-                                ),
-                              )
-                            : [],
-                        addButtonLabel: "+ Tambah Penghargaan",
-                        onAdd: showAward ? addAward : null,
-                      ),
-                      const SizedBox(height: 16),
-                      buildMainCategoryCard(
-                        icon: Icons.link_outlined,
-                        title: "Situs Web dan media sosial",
-                        desc: "LinkedIn, Portofolio, Github, dll.",
-                        expanded: showLink,
-                        onToggle: () => setState(() => showLink = !showLink),
-                        onDeleteCategory: clearLink,
-                        itemCount: linkControllers.length,
-                        children: showLink
-                            ? List.generate(
-                                linkControllers.length,
-                                (i) => buildItemField(
-                                  controller: linkControllers[i],
-                                  onDelete: () => removeLink(i),
-                                  hint: "URL / Username",
-                                ),
-                              )
-                            : [],
-                        addButtonLabel: "+ Tambah Link",
-                        onAdd: showLink ? addLink : null,
-                      ),
-                      const SizedBox(height: 16),
-                      buildMainCategoryCard(
-                        icon: Icons.widgets_outlined,
-                        title: "Kustom",
-                        desc: "Tambahkan informasi tambahan lainnya",
-                        expanded: showCustom,
-                        onToggle: () => setState(() => showCustom = !showCustom),
-                        onDeleteCategory: clearCustom,
-                        itemCount: customControllers.length,
-                        children: showCustom
-                            ? List.generate(
-                                customControllers.length,
-                                (i) => buildItemField(
-                                  controller: customControllers[i],
-                                  onDelete: () => removeCustom(i),
-                                  hint: "Teks Kustom",
-                                ),
-                              )
-                            : [],
-                        addButtonLabel: "+ Tambah Kustom",
-                        onAdd: showCustom ? addCustom : null,
-                      ),
-
-                      const SizedBox(height: 140),
-                    ],
+    return BlocListener<BuildCVBloc, BuildCVState>(
+      listener: (context, state) {
+        if (state is CVSubmitting) {
+          // Show loading indicator
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) =>
+                const Center(child: CircularProgressIndicator()),
+          );
+        } else if (state is CVSubmitSuccess) {
+          // Close loading and navigate to result
+          Navigator.of(context).pop(); // Close loading dialog
+          widget.onNext();
+        } else if (state is CVSubmitError) {
+          // Close loading and show error
+          Navigator.of(context).pop(); // Close loading dialog
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${state.error}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: whiteColor,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 24.0,
+              top: 0,
+              right: 24.0,
+              bottom: 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Bagian Tambahan",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 20,
+                    fontWeight: bold,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Text(
+                  "Tambahkan sertifikasi, bahasa, penghargaan, atau detail lain yang relevan.",
+                  style: secondaryTextStyle.copyWith(fontSize: 14),
+                ),
+                const SizedBox(height: 16),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        buildMainCategoryCard(
+                          icon: Icons.language,
+                          title: "Bahasa",
+                          desc: "Tambahkan bahasa yang Anda kuasai.",
+                          itemCount: languageControllers.length,
+                          expanded: showLanguage,
+                          onToggle: () =>
+                              setState(() => showLanguage = !showLanguage),
+                          onDeleteCategory: clearLanguage,
+                          children: showLanguage
+                              ? List.generate(
+                                  languageControllers.length,
+                                  (i) => buildLanguageItem(i),
+                                )
+                              : [],
+                          addButtonLabel: "+ Tambah Bahasa",
+                          onAdd: showLanguage ? addLanguage : null,
+                        ),
+                        const SizedBox(height: 16),
+                        buildMainCategoryCard(
+                          icon: Icons.badge_outlined,
+                          title: "Sertifikasi dan lisensi",
+                          desc:
+                              "Tambahkan kredensial yang mendukung keahlian Anda.",
+                          itemCount: certControllers.length,
+                          expanded: showCert,
+                          onToggle: () => setState(() => showCert = !showCert),
+                          onDeleteCategory: clearCert,
+                          children: showCert
+                              ? List.generate(
+                                  certControllers.length,
+                                  (i) => buildItemField(
+                                    controller: certControllers[i],
+                                    onDelete: () => removeCert(i),
+                                    hint: "Nama Sertifikasi",
+                                  ),
+                                )
+                              : [],
+                          addButtonLabel: "+ Tambah Sertifikasi",
+                          onAdd: showCert ? addCert : null,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Penghargaan
+                        buildMainCategoryCard(
+                          icon: Icons.emoji_events_outlined,
+                          title: "Penghargaan dan apresiasi",
+                          desc: "Bagikan pencapaian Anda.",
+                          itemCount: awardControllers.length,
+                          expanded: showAward,
+                          onToggle: () =>
+                              setState(() => showAward = !showAward),
+                          onDeleteCategory: clearAward,
+                          children: showAward
+                              ? List.generate(
+                                  awardControllers.length,
+                                  (i) => buildItemField(
+                                    controller: awardControllers[i],
+                                    onDelete: () => removeAward(i),
+                                    hint: "Nama Penghargaan",
+                                  ),
+                                )
+                              : [],
+                          addButtonLabel: "+ Tambah Penghargaan",
+                          onAdd: showAward ? addAward : null,
+                        ),
+                        const SizedBox(height: 16),
+                        buildMainCategoryCard(
+                          icon: Icons.link_outlined,
+                          title: "Situs Web dan media sosial",
+                          desc: "LinkedIn, Portofolio, Github, dll.",
+                          expanded: showLink,
+                          onToggle: () => setState(() => showLink = !showLink),
+                          onDeleteCategory: clearLink,
+                          itemCount: linkControllers.length,
+                          children: showLink
+                              ? List.generate(
+                                  linkControllers.length,
+                                  (i) => buildItemField(
+                                    controller: linkControllers[i],
+                                    onDelete: () => removeLink(i),
+                                    hint: "URL / Username",
+                                  ),
+                                )
+                              : [],
+                          addButtonLabel: "+ Tambah Link",
+                          onAdd: showLink ? addLink : null,
+                        ),
+                        const SizedBox(height: 16),
+                        buildMainCategoryCard(
+                          icon: Icons.widgets_outlined,
+                          title: "Kustom",
+                          desc: "Tambahkan informasi tambahan lainnya",
+                          expanded: showCustom,
+                          onToggle: () =>
+                              setState(() => showCustom = !showCustom),
+                          onDeleteCategory: clearCustom,
+                          itemCount: customControllers.length,
+                          children: showCustom
+                              ? List.generate(
+                                  customControllers.length,
+                                  (i) => buildItemField(
+                                    controller: customControllers[i],
+                                    onDelete: () => removeCustom(i),
+                                    hint: "Teks Kustom",
+                                  ),
+                                )
+                              : [],
+                          addButtonLabel: "+ Tambah Kustom",
+                          onAdd: showCustom ? addCustom : null,
+                        ),
+
+                        const SizedBox(height: 140),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
 
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: CustomFilledButton(
-            title: "Periksa",
-            variant: ButtonColorVariant.blue,
-            onPressed: widget.onNext,
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: CustomFilledButton(
+              title: "Periksa",
+              variant: ButtonColorVariant.blue,
+              onPressed: () {
+                // Save additional data to bloc before navigating
+                final languages = List.generate(languageControllers.length, (
+                  index,
+                ) {
+                  final languageName = languageControllers[index].text;
+                  if (languageName.isNotEmpty) {
+                    return CVBahasa(
+                      namaBahasa: languageName,
+                      level: index < levels.length ? levels[index] : 1,
+                    );
+                  }
+                  return null;
+                }).whereType<CVBahasa>().toList();
+
+                final certifications = certControllers
+                    .where((controller) => controller.text.isNotEmpty)
+                    .map(
+                      (controller) =>
+                          CVSertifikasi(namaSertifikasi: controller.text),
+                    )
+                    .toList();
+
+                final awards = awardControllers
+                    .where((controller) => controller.text.isNotEmpty)
+                    .map(
+                      (controller) =>
+                          CVPenghargaan(namaPenghargaan: controller.text),
+                    )
+                    .toList();
+
+                final socialMedia = linkControllers
+                    .where((controller) => controller.text.isNotEmpty)
+                    .map((controller) {
+                      final link = controller.text;
+                      String platformName = "Website";
+                      if (link.contains("linkedin"))
+                        platformName = "LinkedIn";
+                      else if (link.contains("github"))
+                        platformName = "GitHub";
+                      else if (link.contains("twitter"))
+                        platformName = "Twitter";
+                      else if (link.contains("instagram"))
+                        platformName = "Instagram";
+
+                      return CVMediaSosial(
+                        namaMediaSosial: platformName,
+                        linkMediaSosial: link,
+                      );
+                    })
+                    .toList();
+
+                context.read<BuildCVBloc>().add(
+                  UpdateAdditionalData(
+                    languages: languages,
+                    certifications: certifications,
+                    awards: awards,
+                    socialMedia: socialMedia,
+                  ),
+                );
+
+                // Submit CV to backend
+                context.read<BuildCVBloc>().add(SubmitCV());
+                widget.onNext();
+              },
+            ),
           ),
         ),
       ),
@@ -332,11 +434,18 @@ class _CVAdditionalState extends State<CVAdditional> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: primaryTextStyle.copyWith(
-                            fontWeight: semiBold, fontSize: 16)),
+                    Text(
+                      title,
+                      style: primaryTextStyle.copyWith(
+                        fontWeight: semiBold,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(desc, style: secondaryTextStyle.copyWith(fontSize: 13)),
+                    Text(
+                      desc,
+                      style: secondaryTextStyle.copyWith(fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -363,7 +472,7 @@ class _CVAdditionalState extends State<CVAdditional> {
                   color: bluePrimaryColor,
                   size: 24,
                 ),
-              )
+              ),
             ],
           ),
 
@@ -376,13 +485,16 @@ class _CVAdditionalState extends State<CVAdditional> {
             const SizedBox(height: 12),
             InkWell(
               onTap: onAdd,
-              child: Text(addButtonLabel,
-                  style: primaryTextStyle.copyWith(
-                      color: bluePrimaryColor,
-                      fontWeight: semiBold,
-                      fontSize: 14)),
+              child: Text(
+                addButtonLabel,
+                style: primaryTextStyle.copyWith(
+                  color: bluePrimaryColor,
+                  fontWeight: semiBold,
+                  fontSize: 14,
+                ),
+              ),
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -402,9 +514,13 @@ class _CVAdditionalState extends State<CVAdditional> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Keterampilan",
-              style: primaryTextStyle.copyWith(
-                  fontWeight: semiBold, fontSize: 13)),
+          Text(
+            "Keterampilan",
+            style: primaryTextStyle.copyWith(
+              fontWeight: semiBold,
+              fontSize: 13,
+            ),
+          ),
           const SizedBox(height: 8),
 
           TextField(
@@ -414,8 +530,10 @@ class _CVAdditionalState extends State<CVAdditional> {
               hintStyle: secondaryTextStyle.copyWith(fontSize: 14),
               filled: true,
               fillColor: Colors.white,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: thirdColor),
@@ -438,7 +556,9 @@ class _CVAdditionalState extends State<CVAdditional> {
                 TextSpan(
                   text: "Level — ",
                   style: primaryTextStyle.copyWith(
-                      fontWeight: semiBold, fontSize: 13),
+                    fontWeight: semiBold,
+                    fontSize: 13,
+                  ),
                 ),
                 TextSpan(
                   text: getLevelName(safeLevel),
@@ -455,8 +575,11 @@ class _CVAdditionalState extends State<CVAdditional> {
               const SizedBox(width: 8),
               InkWell(
                 onTap: () => removeLanguage(index),
-                child: Icon(Icons.delete_outline,
-                    color: bluePrimaryColor, size: 20),
+                child: Icon(
+                  Icons.delete_outline,
+                  color: bluePrimaryColor,
+                  size: 20,
+                ),
               ),
             ],
           ),
@@ -482,8 +605,10 @@ class _CVAdditionalState extends State<CVAdditional> {
                 hintStyle: secondaryTextStyle.copyWith(fontSize: 14),
                 filled: true,
                 fillColor: const Color(0xFFF8FAFB),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: thirdColor),
@@ -502,8 +627,11 @@ class _CVAdditionalState extends State<CVAdditional> {
           const SizedBox(width: 8),
           InkWell(
             onTap: onDelete,
-            child:
-                Icon(Icons.delete_outline, color: bluePrimaryColor, size: 20),
+            child: Icon(
+              Icons.delete_outline,
+              color: bluePrimaryColor,
+              size: 20,
+            ),
           ),
         ],
       ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -133,7 +135,33 @@ class _CVSummaryState extends State<CVSummary> {
           child: CustomFilledButton(
             title: "Selanjutnya",
             variant: ButtonColorVariant.blue,
-            onPressed: widget.onNext,
+            onPressed: () {
+              // Validate summary data
+              String finalSummary = summaryController.text.trim();
+
+              if (finalSummary.isEmpty &&
+                  (selectedIndex < 0 || selectedIndex >= templates.length)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Silakan tulis ringkasan atau pilih template',
+                    ),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+                return;
+              }
+
+              // Save summary data to bloc before navigating
+              if (finalSummary.isEmpty &&
+                  selectedIndex >= 0 &&
+                  selectedIndex < templates.length) {
+                finalSummary = templates[selectedIndex];
+              }
+
+              context.read<BuildCVBloc>().add(UpdateSummaryData(finalSummary));
+              widget.onNext();
+            },
           ),
         ),
       ),

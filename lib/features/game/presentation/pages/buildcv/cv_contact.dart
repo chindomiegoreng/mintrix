@@ -1,5 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/models/cv_model.dart';
+import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form_cv.dart';
@@ -46,7 +49,12 @@ class _CVContactState extends State<CVContact> {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(left: 24.0, top: 0, right: 24.0, bottom: 24),
+          padding: const EdgeInsets.only(
+            left: 24.0,
+            top: 0,
+            right: 24.0,
+            bottom: 24,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -70,26 +78,44 @@ class _CVContactState extends State<CVContact> {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      buildInputCV("Nama Awal", firstNameController, hint: "Renata"),
+                      buildInputCV(
+                        "Nama Awal",
+                        firstNameController,
+                        hint: "Renata",
+                      ),
                       buildInputCV("Nama Akhir", lastNameController),
-                      buildInputCV("Jabatan yang diinginkan", jobTitleController, hint: "Pelajar"),
-                      buildInputCV("Nomor Telepon", phoneController,
-                          hint: "+62 812 3456 7890", keyboard: TextInputType.phone),
-                      buildInputCV("Email", emailController, hint: "renata@mail.com",
-                          keyboard: TextInputType.emailAddress),
+                      buildInputCV(
+                        "Jabatan yang diinginkan",
+                        jobTitleController,
+                        hint: "Pelajar",
+                      ),
+                      buildInputCV(
+                        "Nomor Telepon",
+                        phoneController,
+                        hint: "+62 812 3456 7890",
+                        keyboard: TextInputType.phone,
+                      ),
+                      buildInputCV(
+                        "Email",
+                        emailController,
+                        hint: "renata@mail.com",
+                        keyboard: TextInputType.emailAddress,
+                      ),
 
                       buildDropdownCV(
                         label: "Negara",
                         value: selectedCountry,
                         items: const ["Indonesia"],
-                        onChanged: (value) => setState(() => selectedCountry = value!),
+                        onChanged: (value) =>
+                            setState(() => selectedCountry = value!),
                       ),
 
                       buildDropdownCV(
                         label: "Kota",
                         value: selectedCity,
                         items: cityList,
-                        onChanged: (value) => setState(() => selectedCity = value!),
+                        onChanged: (value) =>
+                            setState(() => selectedCity = value!),
                       ),
 
                       buildTextAreaCV(
@@ -110,7 +136,10 @@ class _CVContactState extends State<CVContact> {
 
       bottomNavigationBar: ClipRRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0), // bisa dibuat blur bila mau
+          filter: ImageFilter.blur(
+            sigmaX: 0,
+            sigmaY: 0,
+          ), // bisa dibuat blur bila mau
           child: SafeArea(
             child: Container(
               color: Colors.transparent, // ✅ beneran transparan
@@ -118,7 +147,46 @@ class _CVContactState extends State<CVContact> {
               child: CustomFilledButton(
                 title: "Selanjutnya",
                 variant: ButtonColorVariant.blue,
-                onPressed: widget.onNext,
+                onPressed: () {
+                  // Validate required fields
+                  if (firstNameController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Nama awal diperlukan'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (emailController.text.trim().isEmpty ||
+                      !emailController.text.contains('@')) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Email yang valid diperlukan'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Save contact data to bloc before navigating
+                  final contactData = CVKontak(
+                    namaAwal: firstNameController.text.trim(),
+                    namaAkhir: lastNameController.text.trim(),
+                    jabatanYangDiinginkan: jobTitleController.text.trim(),
+                    nomorTelepon: phoneController.text.trim(),
+                    email: emailController.text.trim(),
+                    negara: selectedCountry,
+                    kota: selectedCity,
+                    alamatLengkap: addressController.text.trim(),
+                  );
+
+                  context.read<BuildCVBloc>().add(
+                    UpdateContactData(contactData),
+                  );
+                  widget.onNext();
+                },
               ),
             ),
           ),
@@ -126,6 +194,4 @@ class _CVContactState extends State<CVContact> {
       ),
     );
   }
-
-  
 }
