@@ -14,7 +14,6 @@ import 'package:mintrix/features/profile/presentation/pages/settings_connect.dar
 import 'package:mintrix/features/store/presentation/pages/store_page.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';

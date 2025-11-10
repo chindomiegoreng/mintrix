@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/models/profile_detail_model.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
 import '../bloc/profile_bloc.dart';
@@ -140,7 +141,7 @@ class _ProfilePageState extends State<ProfilePage> {
               _profileInfo(state),
               _statsRow(state),
               _achievementsContainer(),
-              _progressContainer(context),
+              _progressContainer(context, state), // ✅ Pass state here
               const SizedBox(height: 50),
             ],
           ),
@@ -346,13 +347,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontWeight: semiBold,
                 ),
               ),
-              Text(
-                "Lihat Detail",
-                style: secondaryTextStyle.copyWith(
-                  fontSize: 16,
-                  fontWeight: semiBold,
-                ),
-              ),
+              // Text(
+              //   "Lihat Detail",
+              //   style: secondaryTextStyle.copyWith(
+              //     fontSize: 16,
+              //     fontWeight: semiBold,
+              //   ),
+              // ),
             ],
           ),
           const SizedBox(height: 12),
@@ -390,7 +391,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _progressContainer(BuildContext context) {
+  Widget _progressContainer(BuildContext context, ProfileLoaded state) {
     final labels = [
       "Berani",
       "Empati",
@@ -398,6 +399,13 @@ class _ProfilePageState extends State<ProfilePage> {
       "Kerja Sama",
       "Kreativitas",
     ];
+
+    // ✅ Get radar values from personality data
+    final radarValues =
+        state.personality?.toRadarValues() ?? [0.0, 0.0, 0.0, 0.0, 0.0];
+
+    print('🏠 Profile Page Radar Values: $radarValues'); // ✅ Add debug log
+
     return Container(
       margin: const EdgeInsets.only(top: 24, bottom: 50),
       child: Column(
@@ -471,7 +479,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ],
                   radars: [
                     RadarTile(
-                      values: [0.4, 0.8, 0.65, 0.7, 0.5],
+                      values: radarValues, // ✅ Dynamic values from API
                       borderStroke: 2,
                       backgroundColor: greenColor.withAlpha(100),
                     ),

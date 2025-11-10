@@ -1,10 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:mintrix/core/api/api_client.dart';
-import 'package:mintrix/core/api/api_endpoints.dart';
-import 'package:mintrix/core/models/profile_detail_model.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
+import '../bloc/profile_bloc.dart'; // ✅ Add this
+import '../bloc/profile_event.dart'; // ✅ Add this
+import '../bloc/profile_state.dart'; // ✅ Add this
 
 class DetailProfilePage extends StatefulWidget {
   const DetailProfilePage({super.key});
@@ -14,49 +15,11 @@ class DetailProfilePage extends StatefulWidget {
 }
 
 class _DetailProfilePageState extends State<DetailProfilePage> {
-  final ApiClient _apiClient = ApiClient();
-  ProfileDetailModel? _profileDetail;
-  bool _isLoading = true;
-  String? _errorMessage;
-
   @override
   void initState() {
     super.initState();
-    _loadProfileDetail();
-  }
-
-  Future<void> _loadProfileDetail() async {
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
-
-      print('📡 Loading profile detail...');
-
-      final response = await _apiClient.get(
-        ApiEndpoints.profileDetail,
-        requiresAuth: true,
-      );
-
-      print('✅ Profile detail response: $response');
-
-      final data = response['data'] ?? {};
-      final profileDetail = ProfileDetailModel.fromJson(data);
-
-      setState(() {
-        _profileDetail = profileDetail;
-        _isLoading = false;
-      });
-
-      print('🎉 Profile detail loaded: ${profileDetail.user.nama}');
-    } catch (e) {
-      print('❌ Profile detail error: $e');
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
-    }
+    // ✅ Load profile using bloc (same as Profile Page)
+    context.read<ProfileBloc>().add(LoadProfile());
   }
 
   @override
@@ -70,73 +33,84 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
           },
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? Center(
+      body: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProfileError) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text(_errorMessage!),
+                  Text(
+                    state.message,
+                    style: primaryTextStyle.copyWith(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: _loadProfileDetail,
-                    child: const Text('Retry'),
+                    onPressed: () {
+                      context.read<ProfileBloc>().add(LoadProfile());
+                    },
+                    child: const Text('Coba Lagi'),
                   ),
                 ],
               ),
-            )
-          : RefreshIndicator(
-              onRefresh: _loadProfileDetail,
+            );
+          } else if (state is ProfileLoaded) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<ProfileBloc>().add(RefreshProfile());
+                await Future.delayed(const Duration(seconds: 1));
+              },
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 children: [
-                  profileInfo(),
+                  _profileInfo(state),
                   const SizedBox(height: 20),
-                  sectionTitle1(),
-                  progressContainer(),
+                  _sectionTitle1(),
+                  _progressContainer(state),
                   const SizedBox(height: 12),
-                  sectionTitle2(),
+                  _sectionTitle2(state),
                   const SizedBox(height: 50),
                 ],
               ),
-            ),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
   }
 
-  Widget profileInfo() {
-    if (_profileDetail == null) return const SizedBox();
-
-    final user = _profileDetail!.user;
-
+  Widget _profileInfo(ProfileLoaded state) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          // ✅ Dynamic photo
-          user.foto != null && user.foto!.isNotEmpty
+          // ✅ Dynamic photo from bloc
+          state.foto != null && state.foto!.isNotEmpty
               ? CircleAvatar(
                   radius: 60,
-                  backgroundImage: CachedNetworkImageProvider(user.foto!),
+                  backgroundImage: CachedNetworkImageProvider(state.foto!),
                 )
-              : CircleAvatar(
+              : const CircleAvatar(
                   radius: 60,
-                  backgroundImage: const AssetImage(
-                    "assets/images/profile.png",
-                  ),
+                  backgroundImage: AssetImage("assets/images/profile.png"),
                 ),
           const SizedBox(height: 14),
-          // ✅ Dynamic name
+          // ✅ Dynamic name from bloc
           Text(
-            user.nama,
+            state.name,
             style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
           ),
           const SizedBox(height: 6),
-          // ✅ Dynamic ID
+          // ✅ Dynamic ID from bloc
           Text(
-            "ID: ${user.id.substring(user.id.length - 10)}",
+            // "ID: ${state.id.substring(state.id.length - 10)}",
+            "ID: ${state.id}",
             style: primaryTextStyle.copyWith(fontSize: 14, fontWeight: regular),
           ),
         ],
@@ -144,7 +118,7 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
     );
   }
 
-  Widget sectionTitle1() {
+  Widget _sectionTitle1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -164,10 +138,7 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
     );
   }
 
-  Widget progressContainer() {
-    if (_profileDetail == null) return const SizedBox();
-
-    final personality = _profileDetail!.personality;
+  Widget _progressContainer(ProfileLoaded state) {
     final labels = [
       "Berani",
       "Empati",
@@ -176,8 +147,11 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
       "Kreativitas",
     ];
 
-    // ✅ Dynamic radar values
-    final radarValues = personality.toRadarValues();
+    // ✅ Get radar values from bloc state (same as Profile Page)
+    final radarValues =
+        state.personality?.toRadarValues() ?? [0.0, 0.0, 0.0, 0.0, 0.0];
+
+    print('🎨 Detail Profile Radar Values: $radarValues'); // ✅ Debug log
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
@@ -227,7 +201,7 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
                   ],
                   radars: [
                     RadarTile(
-                      values: radarValues, // ✅ Dynamic values from API
+                      values: radarValues, // ✅ Same source as Profile Page
                       borderStroke: 2,
                       backgroundColor: greenColor.withAlpha(100),
                     ),
@@ -241,11 +215,7 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
     );
   }
 
-  Widget sectionTitle2() {
-    if (_profileDetail == null) return const SizedBox();
-
-    final personality = _profileDetail!.personality;
-
+  Widget _sectionTitle2(ProfileLoaded state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -257,10 +227,10 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
           ),
         ),
         const SizedBox(height: 8),
-        // ✅ Dynamic hobi dan minat
+        // ✅ Dynamic hobi dan minat from bloc
         Text(
-          personality.hobiDanMinat.isNotEmpty
-              ? personality.hobiDanMinat
+          state.personality?.hobiDanMinat.isNotEmpty ?? false
+              ? state.personality!.hobiDanMinat
               : "Belum ada data hobi dan minat.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
         ),

@@ -14,8 +14,10 @@ class ApiEndpoints {
   // Profile Endpoints
   static const String profile = '/api/profile';
   static const String profileShort = '/api/profile/short';
-  static const String profileDetail = '/api/profile/detail'; // ✅ Add this
+  static const String profileDetail = '/api/profile/detail';
   static const String updateProfile = '/api/profile/update';
+  static const String generateQRCode =
+      '/api/profile/generate/qrcode';
 
   // Game/Module Endpoints
   static const String modules = '/api/modules';

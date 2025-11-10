@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:mintrix/core/models/profile_detail_model.dart';
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -16,12 +17,14 @@ class ProfileLoaded extends ProfileState {
   final String name;
   final String email;
   final String? foto;
-  // ✅ Stats dari endpoint /api/profile/short
+  // Stats dari endpoint /api/profile/short
   final String liga;
   final int xp;
   final int streakCount;
   final int point;
   final bool streakActive;
+  // ✅ Personality data untuk radar chart
+  final PersonalityDetailModel? personality;
 
   const ProfileLoaded({
     required this.id,
@@ -33,6 +36,7 @@ class ProfileLoaded extends ProfileState {
     required this.streakCount,
     required this.point,
     required this.streakActive,
+    this.personality, // ✅ Add personality
   });
 
   @override
@@ -46,6 +50,7 @@ class ProfileLoaded extends ProfileState {
     streakCount,
     point,
     streakActive,
+    personality, // ✅ Add to props
   ];
 }
 

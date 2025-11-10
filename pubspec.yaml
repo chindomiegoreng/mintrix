@@ -39,6 +39,7 @@ dependencies:
   radar_chart: ^2.1.0
   fl_chart: ^1.1.0
   cached_network_image: ^3.4.1
+  http_parser: ^4.1.2
 
   # BLoC State Management
   flutter_bloc: ^8.1.3

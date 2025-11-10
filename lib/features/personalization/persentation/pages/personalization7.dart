@@ -4,7 +4,6 @@ import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import '../bloc/personalization_bloc.dart';
 import '../bloc/personalization_event.dart';
-import '../bloc/personalization_state.dart';
 
 class Personalization7 extends StatefulWidget {
   final VoidCallback onNext;

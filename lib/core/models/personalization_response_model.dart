@@ -1,4 +1,3 @@
-import 'package:mintrix/core/models/user_model.dart';
 import 'package:mintrix/core/models/personalization_model.dart';
 
 class PersonalizationResponseModel {

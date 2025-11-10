@@ -3,6 +3,7 @@ import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/core/models/profile_model.dart';
 import 'package:mintrix/core/models/profile_stats_model.dart';
+import 'package:mintrix/core/models/profile_detail_model.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
@@ -26,7 +27,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       print('📡 Loading profile...');
 
-      // ✅ Load basic profile data
+      // 1. Load basic profile data
       final profileResponse = await _apiClient.get(
         ApiEndpoints.profile,
         requiresAuth: true,
@@ -37,7 +38,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final profileData = profileResponse['data'] ?? profileResponse;
       final profile = ProfileModel.fromJson(profileData);
 
-      // ✅ Load profile stats (liga, xp, streak)
+      // 2. Load profile stats (liga, xp, streak)
       print('📡 Loading profile stats...');
 
       final statsResponse = await _apiClient.get(
@@ -50,24 +51,40 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final statsData = statsResponse['data']['stats'] ?? {};
       final stats = ProfileStatsModel.fromJson(statsData);
 
+      // ✅ 3. Load profile detail (untuk personality/radar chart)
+      print('📡 Loading profile detail for radar chart...');
+
+      final detailResponse = await _apiClient.get(
+        ApiEndpoints.profileDetail,
+        requiresAuth: true,
+      );
+
+      print('✅ Detail response: $detailResponse');
+
+      final detailData = detailResponse['data'] ?? {};
+      final profileDetail = ProfileDetailModel.fromJson(detailData);
+
       emit(
         ProfileLoaded(
           id: profile.id,
           name: profile.name,
           email: profile.email,
           foto: profile.foto,
-          // ✅ Use stats from API
           liga: stats.liga,
           xp: stats.xp,
           streakCount: stats.streakCount,
           point: stats.point,
           streakActive: stats.streakActive,
+          personality: profileDetail.personality, // ✅ Add personality
         ),
       );
 
       print('🎉 Profile loaded: ${profile.name}');
       print(
         '📊 Stats: Liga=${stats.liga}, XP=${stats.xp}, Streak=${stats.streakCount}',
+      );
+      print(
+        '🎨 Personality: Kreatifitas=${profileDetail.personality.kreatifitas}, Keberanian=${profileDetail.personality.keberanian}',
       );
     } catch (e) {
       print('❌ Profile error: $e');
@@ -96,6 +113,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final statsData = statsResponse['data']['stats'] ?? {};
       final stats = ProfileStatsModel.fromJson(statsData);
 
+      // ✅ Load detail for personality
+      final detailResponse = await _apiClient.get(
+        ApiEndpoints.profileDetail,
+        requiresAuth: true,
+      );
+
+      final detailData = detailResponse['data'] ?? {};
+      final profileDetail = ProfileDetailModel.fromJson(detailData);
+
       emit(
         ProfileLoaded(
           id: profile.id,
@@ -107,6 +133,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           streakCount: stats.streakCount,
           point: stats.point,
           streakActive: stats.streakActive,
+          personality: profileDetail.personality, // ✅ Add personality
         ),
       );
     } catch (e) {
@@ -142,6 +169,15 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final statsData = statsResponse['data']['stats'] ?? {};
       final stats = ProfileStatsModel.fromJson(statsData);
 
+      // ✅ Reload detail
+      final detailResponse = await _apiClient.get(
+        ApiEndpoints.profileDetail,
+        requiresAuth: true,
+      );
+
+      final detailData = detailResponse['data'] ?? {};
+      final profileDetail = ProfileDetailModel.fromJson(detailData);
+
       emit(
         ProfileLoaded(
           id: profile.id,
@@ -153,6 +189,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           streakCount: stats.streakCount,
           point: stats.point,
           streakActive: stats.streakActive,
+          personality: profileDetail.personality, // ✅ Add personality
         ),
       );
 
