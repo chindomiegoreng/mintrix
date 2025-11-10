@@ -105,7 +105,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Membahas cara mengidentifikasi minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
         "videoDescription":
             "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-        "videoUrl": "https://youtu.be/TjPhzgxe3L0?si=G3a6-fqbPu3ZikzA",
+        "videoUrl": "https://youtu.be/JA8SjQ334CQ",
         "thumbnail": "assets/images/home_card_large.png",
         "characterImage": "assets/images/dino_reading.png",
         "ballImage": "assets/images/dino_ball.png",

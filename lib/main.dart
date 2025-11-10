@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/api/api_client.dart'; // ✅ Import ApiClient
 import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
+import 'package:mintrix/features/personalization/persentation/bloc/personalization_bloc.dart'; // ✅ Import
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
@@ -11,7 +14,6 @@ import 'package:mintrix/features/profile/presentation/pages/settings_connect.dar
 import 'package:mintrix/features/store/presentation/pages/store_page.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
@@ -21,19 +23,37 @@ import 'features/splash/presentation/pages/splash_page.dart';
 import 'features/splash/presentation/pages/get_started_page.dart';
 
 void main() async {
-  runApp(const MyApp());
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
+  WidgetsFlutterBinding.ensureInitialized(); // ✅ Required untuk async operations
+
+  // ✅ Initialize ApiClient
+  final apiClient = ApiClient();
+
+  runApp(MyApp(apiClient: apiClient)); // ✅ Pass apiClient
+
+  // ⚠️ Clear preferences (hanya untuk development testing)
+  // Hapus baris ini di production!
+  // final prefs = await SharedPreferences.getInstance();
+  // await prefs.clear();
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final ApiClient apiClient; // ✅ Accept apiClient
+
+  const MyApp({super.key, required this.apiClient}); // ✅ Constructor
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => AuthBloc()),
+        // ✅ AuthBloc dengan ApiClient
+        BlocProvider(create: (context) => AuthBloc(apiClient: apiClient)),
+        // ✅ PersonalizationBloc dengan ApiClient
+        BlocProvider(
+          create: (context) => PersonalizationBloc(apiClient: apiClient),
+        ),
+        // ✅ ProfileBloc dengan ApiClient
+        BlocProvider(create: (context) => ProfileBloc(apiClient: apiClient)),
+        // ✅ NavigationBloc (tidak butuh ApiClient)
         BlocProvider(create: (context) => NavigationBloc()),
       ],
       child: MaterialApp(
@@ -43,7 +63,7 @@ class MyApp extends StatelessWidget {
           appBarTheme: AppBarTheme(
             backgroundColor: lightBackgoundColor,
             surfaceTintColor: lightBackgoundColor,
-            elevation: 0, // shadow
+            elevation: 0,
             centerTitle: true,
             iconTheme: IconThemeData(color: primaryColor),
             titleTextStyle: primaryTextStyle.copyWith(
@@ -66,9 +86,15 @@ class MyApp extends StatelessWidget {
           '/store': (context) => const StorePage(),
           '/leaderboard': (context) => const LeaderboardPage(),
           '/download-cv': (context) => const DownloadCv(),
-          '/videoPage': (context) => const VideoPage(title: '',description: '',videoUrl: '', thumbnail: '',),
-          '/quizPage': (context) => const QuizPage(moduleId: '',sectionId: '', subSection: '',),
-          '/buildCV': (context) => BuildCVPage(),
+          '/videoPage': (context) => const VideoPage(
+            title: '',
+            description: '',
+            videoUrl: '',
+            thumbnail: '',
+          ),
+          '/quizPage': (context) =>
+              const QuizPage(moduleId: '', sectionId: '', subSection: ''),
+          '/build-cv': (context) => const BuildCVPage(),
         },
       ),
     );

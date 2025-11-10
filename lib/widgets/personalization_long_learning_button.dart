@@ -1,32 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:mintrix/shared/theme.dart';
-
-enum DurationOption {
-  easy(duration: 5, title: '5 menit/hari', subtitle: 'Santai tapi asik'),
-  moderate(duration: 10, title: '10 menit/hari', subtitle: 'Tambah kece'),
-  hard(duration: 15, title: '15 menit/hari', subtitle: 'Jagoan'),
-  extreme(duration: 30, title: '30 menit/hari', subtitle: 'Super duper keren');
-
-  final int duration;
-  final String title;
-  final String subtitle;
-
-  const DurationOption({
-    required this.duration,
-    required this.title,
-    required this.subtitle,
-  });
-}
+import 'package:mintrix/core/models/duration_option_model.dart';
 
 class CustomDurationSelector extends StatefulWidget {
-  final DurationOption? selectedOption;
-  final Function(DurationOption) onSelected;
+  final List<DurationOptionModel> options; // ✅ Terima list dari luar
+  final DurationOptionModel? selectedOption;
+  final Function(DurationOptionModel) onSelected;
+  final bool isLoading;
 
   const CustomDurationSelector({
     super.key,
+    required this.options, // ✅ Required list options
     this.selectedOption,
     required this.onSelected,
+    this.isLoading = false,
   });
 
   @override
@@ -34,7 +22,7 @@ class CustomDurationSelector extends StatefulWidget {
 }
 
 class _CustomDurationSelectorState extends State<CustomDurationSelector> {
-  DurationOption? _selectedOption;
+  DurationOptionModel? _selectedOption;
 
   @override
   void initState() {
@@ -44,9 +32,31 @@ class _CustomDurationSelectorState extends State<CustomDurationSelector> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Show loading indicator
+    if (widget.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // ✅ Show empty state
+    if (widget.options.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'Tidak ada pilihan waktu belajar',
+              style: secondaryTextStyle.copyWith(fontSize: 16),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
-      children: DurationOption.values.map((option) {
-        final isSelected = _selectedOption == option;
+      children: widget.options.map((option) {
+        final isSelected = _selectedOption?.id == option.id;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
@@ -79,9 +89,25 @@ class _CustomDurationSelectorState extends State<CustomDurationSelector> {
               ),
               child: Row(
                 children: [
-                  SvgPicture.asset(
-                    'assets/icons/personalization_long_learning.svg',
-                  ),
+                  // ✅ Dynamic icon (bisa dari API atau default)
+                  option.icon != null && option.icon!.isNotEmpty
+                      ? Image.network(
+                          option.icon!,
+                          width: 40,
+                          height: 40,
+                          errorBuilder: (context, error, stackTrace) {
+                            return SvgPicture.asset(
+                              'assets/icons/personalization_long_learning.svg',
+                              width: 40,
+                              height: 40,
+                            );
+                          },
+                        )
+                      : SvgPicture.asset(
+                          'assets/icons/personalization_long_learning.svg',
+                          width: 40,
+                          height: 40,
+                        ),
                   const SizedBox(width: 24),
                   Expanded(
                     child: Column(
@@ -92,7 +118,7 @@ class _CustomDurationSelectorState extends State<CustomDurationSelector> {
                           style: primaryTextStyle.copyWith(
                             fontSize: 16,
                             fontWeight: semiBold,
-                            color: isSelected ? primaryColor : primaryColor,
+                            color: primaryColor,
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -122,9 +148,46 @@ class _CustomDurationSelectorState extends State<CustomDurationSelector> {
 // // usage
 
 // CustomDurationSelector(
-//   selectedOption: DurationOption.moderate,
+//   options: [
+//     DurationOptionModel(
+//       id: 1,
+//       title: '5 menit/hari',
+//       subtitle: 'Santai tapi asik',
+//       duration: 5,
+//       icon: 'assets/icons/option1.svg',
+//     ),
+//     DurationOptionModel(
+//       id: 2,
+//       title: '10 menit/hari',
+//       subtitle: 'Tambah kece',
+//       duration: 10,
+//       icon: 'assets/icons/option2.svg',
+//     ),
+//     DurationOptionModel(
+//       id: 3,
+//       title: '15 menit/hari',
+//       subtitle: 'Jagoan',
+//       duration: 15,
+//       icon: 'assets/icons/option3.svg',
+//     ),
+//     DurationOptionModel(
+//       id: 4,
+//       title: '30 menit/hari',
+//       subtitle: 'Super duper keren',
+//       duration: 30,
+//       icon: 'assets/icons/option4.svg',
+//     ),
+//   ],
+//   selectedOption: DurationOptionModel(
+//     id: 2,
+//     title: '10 menit/hari',
+//     subtitle: 'Tambah kece',
+//     duration: 10,
+//     icon: 'assets/icons/option2.svg',
+//   ),
 //   onSelected: (option) {
 //     print('Selected: ${option.title}');
 //     print('Duration: ${option.duration} minutes');
 //   },
+//   isLoading: false,
 // )
