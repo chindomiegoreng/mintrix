@@ -81,7 +81,7 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
             bottom: showThird ? 0 : -300,
-            left: 228,
+            left: 220,
             child: buildPodium(
               number: 3,
               name: third.nama,
