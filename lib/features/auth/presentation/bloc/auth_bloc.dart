@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/core/models/auth_response_model.dart';
+import 'package:mintrix/core/utils/debug_helper.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -70,32 +71,120 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      final response = await _apiClient.postMultipart(
-        ApiEndpoints.register,
-        fields: {
-          'nama': event.username,
-          'email': event.email,
-          'password': event.password,
-        },
-        file: event.foto,
-        fileField: 'foto',
-        requiresAuth: false,
+      // Debug print untuk memverifikasi data sebelum kirim
+      print('🚀 Sending register request:');
+      print('  - nama: ${event.username}');
+      print('  - email: ${event.email}');
+      print('  - password: ${event.password.isNotEmpty ? "***" : "empty"}');
+      print('  - foto: ${event.foto?.path ?? "null"}');
+
+      if (event.foto != null) {
+        final fileExists = await event.foto!.exists();
+        final fileSize = fileExists ? await event.foto!.length() : 0;
+        final fileName = event.foto!.path.split('/').last;
+        final fileExtension = fileName.split('.').last.toLowerCase();
+
+        print('  - foto exists: $fileExists');
+        print('  - foto size: $fileSize bytes');
+        print('  - foto name: $fileName');
+        print('  - foto extension: $fileExtension');
+        print('  - foto absolute path: ${event.foto!.absolute.path}');
+
+        // Validasi file
+        if (!fileExists) {
+          emit(AuthError('File gambar tidak ditemukan'));
+          return;
+        }
+
+        if (fileSize == 0) {
+          emit(AuthError('File gambar kosong'));
+          return;
+        }
+
+        if (fileSize > 5 * 1024 * 1024) {
+          // 5MB limit
+          emit(AuthError('Ukuran file terlalu besar (max 5MB)'));
+          return;
+        }
+
+        if (!['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(fileExtension)) {
+          emit(
+            AuthError('Format file tidak didukung. Gunakan JPG, PNG, atau GIF'),
+          );
+          return;
+        }
+      }
+
+      // Log request details
+      print('📤 Making multipart request to: ${ApiEndpoints.register}');
+      print(
+        '📤 Fields: nama=${event.username}, email=${event.email}, password=***',
       );
+      print('📤 File field: foto, File: ${event.foto?.path ?? "none"}');
 
-      final authResponse = AuthResponseModel.fromJson(response);
+      try {
+        final response = await _apiClient.postMultipart(
+          ApiEndpoints.register,
+          fields: {
+            'nama': event.username,
+            'email': event.email,
+            'password': event.password,
+          },
+          file: event.foto,
+          fileField: 'foto',
+          requiresAuth: false,
+        );
 
-      emit(
-        AuthAuthenticated(
-          userId: authResponse.user.id,
-          username: authResponse.user.name,
-          photoUrl: authResponse.user.foto,
-        ),
-      );
+        print('📦 Raw API Response: $response');
 
-      print('✅ Register Success: ${authResponse.message}');
-    } catch (e) {
-      emit(AuthError(_parseError(e.toString())));
-      print('❌ Register Error: $e');
+        final authResponse = AuthResponseModel.fromJson(response);
+
+        emit(
+          AuthAuthenticated(
+            userId: authResponse.user.id,
+            username: authResponse.user.name,
+            photoUrl: authResponse.user.foto,
+          ),
+        );
+
+        print('✅ Register Success: ${authResponse.message}');
+        print('✅ User foto URL: ${authResponse.user.foto}');
+      } catch (apiError) {
+        print('❌ ApiClient failed: $apiError');
+        print('🧪 Trying manual multipart upload for debugging...');
+
+        // Test with manual multipart upload
+        await DebugHelper.testMultipartUpload(
+          endpoint: ApiEndpoints.register,
+          fields: {
+            'nama': event.username,
+            'email': event.email,
+            'password': event.password,
+          },
+          file: event.foto,
+          fileField: 'foto',
+        );
+
+        // Re-throw the original error
+        throw apiError;
+      }
+    } catch (e, stackTrace) {
+      print('❌ Register Error Full: $e');
+      print('❌ Stack trace: $stackTrace');
+
+      // More specific error handling
+      String errorMessage = e.toString();
+      if (errorMessage.contains('Connection refused') ||
+          errorMessage.contains('Failed host lookup')) {
+        errorMessage =
+            'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      } else if (errorMessage.contains('Request timeout')) {
+        errorMessage = 'Permintaan timeout. Coba lagi dalam beberapa saat.';
+      } else if (errorMessage.contains('File upload failed')) {
+        errorMessage = 'Upload foto gagal. Periksa ukuran dan format file.';
+      }
+
+      emit(AuthError(_parseError(errorMessage)));
     }
   }
 
@@ -111,7 +200,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         photoUrl: event.photoUrl,
       ),
     );
-    print('✅ Profile Updated in AuthBloc: ${event.username}, Photo: ${event.photoUrl}');
+    print(
+      '✅ Profile Updated in AuthBloc: ${event.username}, Photo: ${event.photoUrl}',
+    );
   }
 
   // Handle Logout
