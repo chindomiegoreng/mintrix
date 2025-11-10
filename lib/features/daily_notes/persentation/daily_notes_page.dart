@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/daily_notes/persentation/add_edit_note_page.dart';
 import 'package:mintrix/widgets/notes_card.dart';
 import '../bloc/daily_notes_bloc.dart';
-import '../models/note_model.dart';
+import '../../../core/models/note_model.dart';
 
 class DailyNotesPage extends StatelessWidget {
   const DailyNotesPage({super.key});
@@ -122,7 +122,10 @@ class _DailyNotesView extends StatelessWidget {
               ),
             );
           },
-          child: NoteCard(date: note.date, content: note.content),
+          child: NoteCard(
+            date: note.displayDate, // ✅ Gunakan displayDate
+            content: note.content,
+          ),
         );
       },
     );

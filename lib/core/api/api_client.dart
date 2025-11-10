@@ -236,6 +236,97 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> put(
+    String endpoint, {
+    required Map<String, dynamic> body,
+    bool useDinoBase = false,
+    bool requiresAuth = true,
+  }) async {
+    try {
+      final baseUrl = useDinoBase
+          ? ApiEndpoints.dinoBaseUrl
+          : ApiEndpoints.mintrixBaseUrl;
+      final url = Uri.parse('$baseUrl$endpoint');
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+      print('📡 PUT: $url');
+      print('📦 Body: ${jsonEncode(body)}');
+
+      final response = await _client.put(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('✅ Response: ${response.statusCode}');
+      print('📄 Response Body: ${response.body}');
+
+      return _handleResponse(response, requiresAuth: requiresAuth);
+    } catch (e) {
+      print('❌ Error PUT: $e');
+      rethrow;
+    }
+  }
+
+  // ✅ DELETE Request
+  Future<Map<String, dynamic>> delete(
+    String endpoint, {
+    bool useDinoBase = false,
+    bool requiresAuth = true,
+  }) async {
+    try {
+      final baseUrl = useDinoBase
+          ? ApiEndpoints.dinoBaseUrl
+          : ApiEndpoints.mintrixBaseUrl;
+      final url = Uri.parse('$baseUrl$endpoint');
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+      print('📡 DELETE: $url');
+
+      final response = await _client.delete(url, headers: headers);
+
+      print('✅ Response: ${response.statusCode}');
+      print('📄 Response Body: ${response.body}');
+
+      return _handleResponse(response, requiresAuth: requiresAuth);
+    } catch (e) {
+      print('❌ Error DELETE: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> patch(
+    String endpoint, {
+    required Map<String, dynamic> body,
+    bool useDinoBase = false,
+    bool requiresAuth = true,
+  }) async {
+    try {
+      final baseUrl = useDinoBase
+          ? ApiEndpoints.dinoBaseUrl
+          : ApiEndpoints.mintrixBaseUrl;
+      final url = Uri.parse('$baseUrl$endpoint');
+      final headers = await _getHeaders(requiresAuth: requiresAuth);
+
+      print('📡 PATCH: $url');
+      print('📦 Body: ${jsonEncode(body)}');
+
+      final response = await _client.patch(
+        url,
+        headers: headers,
+        body: jsonEncode(body),
+      );
+
+      print('✅ Response: ${response.statusCode}');
+      print('📄 Response Body: ${response.body}');
+
+      return _handleResponse(response, requiresAuth: requiresAuth);
+    } catch (e) {
+      print('❌ Error PATCH: $e');
+      rethrow;
+    }
+  }
+
   void dispose() {
     _client.close();
   }
