@@ -13,7 +13,7 @@ class RegisterEvent extends AuthEvent {
   final String username;
   final String email;
   final String password;
-  final File? foto; // ✅ Tambahkan foto
+  final File? foto;
 
   RegisterEvent({
     required this.username,
@@ -24,3 +24,16 @@ class RegisterEvent extends AuthEvent {
 }
 
 class LogoutEvent extends AuthEvent {}
+
+// ✅ TAMBAHKAN EVENT INI
+class UpdateProfileEvent extends AuthEvent {
+  final String userId;
+  final String username;
+  final String? photoUrl;
+
+  UpdateProfileEvent({
+    required this.userId,
+    required this.username,
+    this.photoUrl,
+  });
+}

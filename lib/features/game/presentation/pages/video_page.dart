@@ -97,7 +97,7 @@ class _VideoPageState extends State<VideoPage> {
 
   void _handleNext() {
     if (_isModule2Section1()) {
-      Navigator.pushNamed(context, '/buildCV');
+      Navigator.pushNamed(context, '/build-cv');
     } else {
       if (widget.moduleId != null &&
           widget.sectionId != null &&

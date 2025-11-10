@@ -25,4 +25,11 @@ class ApiEndpoints {
   // AI Chat Endpoints (Dino)
   static const String chat = '/api/chat';
   static const String chatHistory = '/api/chat/history';
+
+  static const String dailyNotes = '/api/notes';
+  static String dailyNoteById(String id) => '/api/notes/$id';
+
+  static const String leaderboard = '/api/leaderboard';
+
+  static const String mission = '/api/mission';
 }

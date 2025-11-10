@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
 import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
@@ -7,37 +12,111 @@ import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.d
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/home_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final ApiClient _apiClient = ApiClient();
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Fetch profile saat HomePage pertama kali dibuka
+    _fetchAndUpdateProfile();
+  }
+
+  // ✅ Fetch profile dari API dan update AuthBloc
+  Future<void> _fetchAndUpdateProfile() async {
+    try {
+      final response = await _apiClient.get(
+        ApiEndpoints.profile, // Sesuaikan dengan endpoint Anda
+        requiresAuth: true,
+      );
+
+      if (response['data'] != null) {
+        final userData = response['data'];
+        
+        // ✅ Update AuthBloc dengan data terbaru dari database
+        if (mounted) {
+          context.read<AuthBloc>().add(
+            UpdateProfileEvent(
+              userId: userData['_id'].toString(),
+              username: userData['nama'] ?? 'User',
+              photoUrl: userData['foto'],
+            ),
+          );
+        }
+        
+        print('✅ Profile updated: ${userData['nama']}, Photo: ${userData['foto']}');
+      }
+    } catch (e) {
+      print('❌ Failed to fetch profile: $e');
+      // Tidak perlu show error, karena ini background fetch
+    }
+  }
+
+  // Helper function untuk memotong username
+  String _truncateUsername(String username) {
+    if (username.length > 10) {
+      return '${username.substring(0, 10)}...';
+    }
+    return username;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F8FF),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 30),
-              _buildLargeCard(),
-              const SizedBox(height: 24),
-              _buildMenuGrid(context),
-            ],
-          ),
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            String username = 'User';
+            String? photoUrl;
+            
+            if (authState is AuthAuthenticated) {
+              username = authState.username;
+              photoUrl = authState.photoUrl;
+            }
+
+            return RefreshIndicator(
+              onRefresh: _fetchAndUpdateProfile, // ✅ Pull to refresh
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context, username, photoUrl),
+                    const SizedBox(height: 30),
+                    _buildLargeCard(),
+                    const SizedBox(height: 24),
+                    _buildMenuGrid(context),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String username, String? photoUrl) {
     return Row(
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 25,
-          backgroundImage: AssetImage('assets/images/logo_mintrix.png'),
+          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+              ? NetworkImage(photoUrl)
+              : const AssetImage('assets/images/logo_mintrix.png') as ImageProvider,
+          backgroundColor: Colors.grey[300],
+          onBackgroundImageError: (exception, stackTrace) {
+            print('❌ Error loading image: $exception');
+          },
         ),
         const SizedBox(width: 12),
         Column(
@@ -48,13 +127,12 @@ class HomePage extends StatelessWidget {
               style: secondaryTextStyle.copyWith(fontSize: 12),
             ),
             Text(
-              "Renata",
+              _truncateUsername(username),
               style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: bold),
             ),
           ],
         ),
         const Spacer(),
-        // Ganti dengan ikon yang sesuai
         const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
         const SizedBox(width: 4),
         Text(
@@ -157,5 +235,11 @@ class HomePage extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _apiClient.dispose();
+    super.dispose();
   }
 }

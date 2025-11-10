@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
@@ -15,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginEvent>(_onLoginEvent);
     on<RegisterEvent>(_onRegisterEvent);
     on<LogoutEvent>(_onLogoutEvent);
+    on<UpdateProfileEvent>(_onUpdateProfileEvent); // ✅ TAMBAHKAN INI
   }
 
   // Handle Login
@@ -34,12 +34,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         AuthAuthenticated(
           userId: authResponse.user.id,
           username: authResponse.user.name,
+          photoUrl: authResponse.user.foto,
         ),
       );
 
       print('✅ Login Success: ${authResponse.message}');
     } catch (e) {
-      emit(AuthError(e.toString()));
+      emit(AuthError(_parseError(e.toString())));
       print('❌ Login Error: $e');
     }
   }
@@ -52,7 +53,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(AuthLoading());
 
-      // Validasi input
       if (event.username.isEmpty ||
           event.email.isEmpty ||
           event.password.isEmpty) {
@@ -60,19 +60,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      // Validasi email format
       if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(event.email)) {
         emit(AuthError('Format email tidak valid'));
         return;
       }
 
-      // Validasi password minimal 6 karakter
       if (event.password.length < 6) {
         emit(AuthError('Password minimal 6 karakter'));
         return;
       }
 
-      // Gunakan postMultipart untuk upload dengan foto
       final response = await _apiClient.postMultipart(
         ApiEndpoints.register,
         fields: {
@@ -81,7 +78,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           'password': event.password,
         },
         file: event.foto,
-        fileField: 'foto', // ✅ Sesuai dengan API
+        fileField: 'foto',
         requiresAuth: false,
       );
 
@@ -91,6 +88,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         AuthAuthenticated(
           userId: authResponse.user.id,
           username: authResponse.user.name,
+          photoUrl: authResponse.user.foto,
         ),
       );
 
@@ -99,6 +97,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthError(_parseError(e.toString())));
       print('❌ Register Error: $e');
     }
+  }
+
+  // ✅ TAMBAHKAN HANDLER INI
+  Future<void> _onUpdateProfileEvent(
+    UpdateProfileEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(
+      AuthAuthenticated(
+        userId: event.userId,
+        username: event.username,
+        photoUrl: event.photoUrl,
+      ),
+    );
+    print('✅ Profile Updated in AuthBloc: ${event.username}, Photo: ${event.photoUrl}');
   }
 
   // Handle Logout

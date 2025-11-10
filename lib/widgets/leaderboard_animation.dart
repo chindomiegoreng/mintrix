@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mintrix/core/models/leaderboard_models.dart';
 import 'package:mintrix/shared/theme.dart';
 
 class LeaderboardAnimation extends StatefulWidget {
-  const LeaderboardAnimation({super.key});
+  final List<LeaderboardUser> topUsers;
+
+  const LeaderboardAnimation({super.key, required this.topUsers});
 
   @override
   State<LeaderboardAnimation> createState() => _LeaderboardAnimationState();
@@ -18,7 +21,6 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
   void initState() {
     super.initState();
 
-    // Jalankan animasi berurutan
     Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) setState(() => showFirst = true);
     });
@@ -32,6 +34,12 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.topUsers.length < 3) return const SizedBox(height: 300);
+
+    final first = widget.topUsers[0];
+    final second = widget.topUsers[1];
+    final third = widget.topUsers[2];
+
     return Container(
       height: 310,
       decoration: const BoxDecoration(
@@ -43,7 +51,6 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          // JUARA 2 (Kiri)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
@@ -51,39 +58,35 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
             right: 220,
             child: buildPodium(
               number: 2,
-              name: "Rojali",
-              xp: 513,
-              image: "assets/images/profile2.png",
+              name: second.nama,
+              xp: second.xp,
+              image: second.foto ?? "assets/images/profile_placeholder.png",
               podiumImage: "assets/images/leaderboard_podium2.png",
             ),
           ),
-
-          // JUARA 1 (Tengah)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
             bottom: showFirst ? 0 : -300,
             child: buildPodium(
               number: 1,
-              name: "Renata",
-              xp: 580,
-              image: "assets/images/profile2.png",
+              name: first.nama,
+              xp: first.xp,
+              image: first.foto ?? "assets/images/profile_placeholder.png",
               podiumImage: "assets/images/leaderboard_podium1.png",
               isFirst: true,
             ),
           ),
-
-          // JUARA 3 (Kanan)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
             bottom: showThird ? 0 : -300,
-            left: 220,
+            left: 228,
             child: buildPodium(
               number: 3,
-              name: "Kodomo",
-              xp: 497,
-              image: "assets/images/profile2.png",
+              name: third.nama,
+              xp: third.xp,
+              image: third.foto ?? "assets/images/profile_placeholder.png",
               podiumImage: "assets/images/leaderboard_podium3.png",
             ),
           ),
@@ -100,7 +103,6 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
     required String podiumImage,
     bool isFirst = false,
   }) {
-    // warna border berdasarkan peringkat
     Color getBorderColor() {
       if (number == 1) return bluePrimaryColor;
       if (number == 2) return greenColor;
@@ -108,10 +110,24 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
       return Colors.transparent;
     }
 
+    final imageWidget = image.startsWith('http')
+        ? Image.network(
+            image,
+            fit: BoxFit.cover,
+            width: 65,
+            height: 65,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              "assets/images/profile_placeholder.png",
+              fit: BoxFit.cover,
+              width: 65,
+              height: 65,
+            ),
+          )
+        : Image.asset(image, fit: BoxFit.cover, width: 65, height: 65);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // badge "Kamu" untuk juara 1
         Stack(
           clipBehavior: Clip.none,
           children: [
@@ -122,12 +138,7 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
                 shape: BoxShape.circle,
                 border: Border.all(color: getBorderColor(), width: 2),
               ),
-              child: ClipOval(
-                child: Image.asset(
-                  image,
-                  fit: BoxFit.cover,
-                ),
-              ),
+              child: ClipOval(child: imageWidget),
             ),
             if (isFirst)
               Positioned(
@@ -157,15 +168,12 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
           ],
         ),
         SizedBox(height: isFirst ? 12 : 8),
-
-        // Name
+        // 👇 hanya tampilkan first name
         Text(
-          name,
+          name.split(' ').first,
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: bold),
         ),
         const SizedBox(height: 2),
-
-        // XP
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
           decoration: BoxDecoration(
@@ -189,8 +197,6 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
           ),
         ),
         const SizedBox(height: 8),
-
-        // podium Image
         Image.asset(podiumImage, fit: BoxFit.contain),
       ],
     );
