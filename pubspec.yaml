@@ -65,6 +65,9 @@ dependencies:
   hive_flutter: ^1.1.0
   url_launcher: ^6.2.4
   flutter_pdfview: ^1.4.3
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
+  google_sign_in: ^6.2.1
 
 dev_dependencies:
   flutter_test:

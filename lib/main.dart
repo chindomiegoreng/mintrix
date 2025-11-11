@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -13,6 +14,7 @@ import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings.dart';
 import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
 import 'package:mintrix/features/store/presentation/pages/store_page.dart';
+import 'package:mintrix/firebase_options.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
@@ -26,6 +28,16 @@ import 'features/ai/data/models/chat_history.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ✅ Required untuk async operations
+
+  // ✅ Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e) {
+    print('❌ Firebase initialization failed: $e');
+  }
 
   // ✅ Initialize ApiClient
   final apiClient = ApiClient();

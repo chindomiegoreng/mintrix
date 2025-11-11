@@ -34,28 +34,28 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthLoading) {
-            // Show loading
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (_) => const Center(child: CircularProgressIndicator()),
+              builder: (_) => const Center(
+                child: CircularProgressIndicator(),
+              ),
             );
           } else if (state is AuthAuthenticated) {
-            // Close loading
             Navigator.pop(context);
-            // Navigate ke home
             Navigator.pushNamedAndRemoveUntil(
               context,
               '/main',
               (route) => false,
             );
           } else if (state is AuthError) {
-            // Close loading
             Navigator.pop(context);
-            // Show error
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         },
         child: SingleChildScrollView(
@@ -98,11 +98,11 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
-                          LoginEvent(
-                            username: _usernameController.text,
-                            password: _passwordController.text,
-                          ),
-                        );
+                              LoginEvent(
+                                username: _usernameController.text,
+                                password: _passwordController.text,
+                              ),
+                            );
                       }
                     },
                   ),
@@ -136,6 +136,7 @@ class _LoginPageState extends State<LoginPage> {
                     ],
                   ),
                   const SizedBox(height: 24),
+                  // ✅ GOOGLE SIGN IN BUTTON
                   CustomFilledButton(
                     title: 'Masuk dengan Google',
                     variant: ButtonColorVariant.white,
@@ -146,7 +147,8 @@ class _LoginPageState extends State<LoginPage> {
                       height: 20,
                     ),
                     onPressed: () {
-                      // Implement Google Sign In
+                      // ✅ Trigger Google Sign In
+                      context.read<AuthBloc>().add(GoogleSignInEvent());
                     },
                   ),
                 ],
