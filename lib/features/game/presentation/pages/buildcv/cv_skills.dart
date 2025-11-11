@@ -238,7 +238,7 @@ class _CVSkillsState extends State<CVSkills> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        final barHeight = 50.0; // dibuat lebih gemuk
+        final barHeight = 50.0; 
 
         return Row(
           children: [
