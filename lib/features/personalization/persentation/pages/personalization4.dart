@@ -44,7 +44,10 @@ class Personalization4 extends StatelessWidget {
           Text(
             'Jawabanmu akan membantu kami merancang tantangan yang banar-benar sesuai dengan dirimu. Siap untuk jadi versi terbaik dari dirimu?',
             textAlign: TextAlign.center,
-            style: secondaryTextStyle.copyWith(fontSize: 14),
+            style: secondaryTextStyle.copyWith(
+              fontSize: 14,
+              fontWeight: medium,
+            ),
           ),
           const Spacer(),
           CustomFilledButton(

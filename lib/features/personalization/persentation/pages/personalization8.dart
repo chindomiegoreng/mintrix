@@ -19,7 +19,10 @@ class Personalization8 extends StatelessWidget {
           Text(
             'Langkah Terakhir Sebelum Bertualang!',
             textAlign: TextAlign.center,
-            style: primaryTextStyle.copyWith(fontSize: 20),
+            style: primaryTextStyle.copyWith(
+              fontSize: 20,
+              fontWeight: semiBold,
+            ),
           ),
           const SizedBox(height: 32),
           // Image.asset(

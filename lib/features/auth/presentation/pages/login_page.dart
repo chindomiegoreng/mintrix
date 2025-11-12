@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
 import '../bloc/auth_bloc.dart';
@@ -37,9 +38,7 @@ class _LoginPageState extends State<LoginPage> {
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (_) => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              builder: (_) => const Center(child: CircularProgressIndicator()),
             );
           } else if (state is AuthAuthenticated) {
             Navigator.pop(context);
@@ -98,11 +97,11 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
-                              LoginEvent(
-                                username: _usernameController.text,
-                                password: _passwordController.text,
-                              ),
-                            );
+                          LoginEvent(
+                            username: _usernameController.text,
+                            password: _passwordController.text,
+                          ),
+                        );
                       }
                     },
                   ),
@@ -111,12 +110,11 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     child: TextButton(
                       onPressed: () {},
-                      child: const Text(
-                        "Lupa Kata Sandimu?",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
+                      child: Text(
+                        'Lupa Kata Sandimu?',
+                        style: primaryTextStyle.copyWith(
                           fontSize: 14,
+                          fontWeight: semiBold,
                         ),
                       ),
                     ),

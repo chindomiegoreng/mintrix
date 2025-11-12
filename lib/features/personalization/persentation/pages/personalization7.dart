@@ -78,147 +78,150 @@ class _Personalization7State extends State<Personalization7> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: whiteColor,
+      resizeToAvoidBottomInset: true, // ✅ Enable keyboard avoidance
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Ceritakan Tentang Dirimu',
-                style: primaryTextStyle.copyWith(
-                  fontSize: 24,
-                  fontWeight: bold,
+        child: SingleChildScrollView(
+          // ✅ Wrap with SingleChildScrollView
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Ceritakan Tentang Dirimu',
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 24,
+                    fontWeight: bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Ceritakan tentang kepribadianmu, minat, hobi, atau hal yang membuatmu unik. '
-                'Ini akan membantu kami membuat pengalaman yang lebih personal untukmu!',
-                style: secondaryTextStyle.copyWith(fontSize: 14),
-              ),
-              const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                Text(
+                  'Ceritakan tentang kepribadianmu, minat, hobi, atau hal yang membuatmu unik. '
+                  'Ini akan membantu kami membuat pengalaman yang lebih personal untukmu!',
+                  style: secondaryTextStyle.copyWith(fontSize: 14),
+                ),
+                const SizedBox(height: 24),
 
-              // ✅ Step Indicator dengan Back Button
-              Row(
-                children: [
-                  Transform.translate(
-                    offset: const Offset(-12, 0),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      icon: const Icon(Icons.arrow_back_ios_new),
-                      onPressed: widget.onBack,
+                // ✅ Step Indicator dengan Back Button
+                Row(
+                  children: [
+                    Transform.translate(
+                      offset: const Offset(-12, 0),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: const Icon(Icons.arrow_back_ios_new),
+                        onPressed: widget.onBack,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 2),
-                  _buildStepIndicator(true, '1'),
-                  _buildStepLine(true),
-                  _buildStepIndicator(true, '2'),
-                  _buildStepLine(true),
-                  _buildStepIndicator(true, '3'),
-                ],
-              ),
-              const SizedBox(height: 24),
+                    const SizedBox(width: 2),
+                    _buildStepIndicator(true, '1'),
+                    _buildStepLine(true),
+                    _buildStepIndicator(true, '2'),
+                    _buildStepLine(true),
+                    _buildStepIndicator(true, '3'),
+                  ],
+                ),
+                const SizedBox(height: 24),
 
-              // ✅ Suggested Prompts (Scrollable)
-              SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _storyPrompts.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () => _usePrompt(_storyPrompts[index]),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: whiteColor,
-                          border: Border.all(
-                            color: bluePrimaryColor.withOpacity(0.5),
+                // ✅ Suggested Prompts (Scrollable)
+                SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _storyPrompts.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () => _usePrompt(_storyPrompts[index]),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.lightbulb_outline,
-                              size: 16,
-                              color: bluePrimaryColor,
+                          decoration: BoxDecoration(
+                            color: whiteColor,
+                            border: Border.all(
+                              color: bluePrimaryColor.withOpacity(0.5),
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _storyPrompts[index],
-                              style: primaryTextStyle.copyWith(
-                                fontSize: 12,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline,
+                                size: 16,
                                 color: bluePrimaryColor,
-                                fontWeight: medium,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ Character Counter dengan Progress Bar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Minimal $_minCharacters karakter',
-                    style: secondaryTextStyle.copyWith(fontSize: 12),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        '$_characterCount/$_maxCharacters',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: semiBold,
-                          color: _counterColor,
-                        ),
-                      ),
-                      if (_characterCount > 0) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: _clearText,
-                          child: Icon(
-                            Icons.clear,
-                            size: 20,
-                            color: Colors.grey,
+                              const SizedBox(width: 4),
+                              Text(
+                                _storyPrompts[index],
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 12,
+                                  color: bluePrimaryColor,
+                                  fontWeight: medium,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ],
+                      );
+                    },
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-
-              // ✅ Progress Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: _characterCount / _maxCharacters,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: AlwaysStoppedAnimation<Color>(_counterColor),
-                  minHeight: 6,
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // ✅ Text Area
-              Expanded(
-                child: Container(
+                // ✅ Character Counter dengan Progress Bar
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Minimal $_minCharacters karakter',
+                      style: secondaryTextStyle.copyWith(fontSize: 12),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '$_characterCount/$_maxCharacters',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: semiBold,
+                            color: _counterColor,
+                          ),
+                        ),
+                        if (_characterCount > 0) ...[
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _clearText,
+                            child: Icon(
+                              Icons.clear,
+                              size: 20,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // ✅ Progress Bar
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _characterCount / _maxCharacters,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation<Color>(_counterColor),
+                    minHeight: 6,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // ✅ Text Area - Changed from Expanded to fixed height
+                Container(
+                  height: 300, // ✅ Fixed height instead of Expanded
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFB),
@@ -254,74 +257,79 @@ class _Personalization7State extends State<Personalization7> {
                     ),
                   ),
                 ),
-              ),
 
-              // ✅ Validation Message
-              if (_characterCount > 0 && !_isValid) ...[
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                // ✅ Validation Message
+                if (_characterCount > 0 && !_isValid) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline, size: 16, color: Colors.red),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _characterCount < _minCharacters
+                                ? 'Ceritamu terlalu pendek. Tambah ${_minCharacters - _characterCount} karakter lagi!'
+                                : 'Ceritamu terlalu panjang. Kurangi ${_characterCount - _maxCharacters} karakter!',
+                            style: TextStyle(fontSize: 12, color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ],
+
+                const SizedBox(height: 16),
+
+                // ✅ Privacy Notice
+                Container(
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: bluePrimaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, size: 16, color: Colors.red),
+                      Icon(
+                        Icons.lock_outline,
+                        size: 20,
+                        color: bluePrimaryColor,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          _characterCount < _minCharacters
-                              ? 'Ceritamu terlalu pendek. Tambah ${_minCharacters - _characterCount} karakter lagi!'
-                              : 'Ceritamu terlalu panjang. Kurangi ${_characterCount - _maxCharacters} karakter!',
-                          style: TextStyle(fontSize: 12, color: Colors.red),
+                          'Ceritamu aman bersama kami. Lihat Kebijakan Privasi',
+                          style: primaryTextStyle.copyWith(
+                            fontSize: 12,
+                            color: bluePrimaryColor,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 16), // ✅ Changed from 4 to 16
+                // ✅ Button dengan Validation
+                CustomFilledButton(
+                  title: _isValid
+                      ? 'Selanjutnya'
+                      : 'Ceritamu belum cukup (${_characterCount}/$_minCharacters)',
+                  variant: ButtonColorVariant.blue,
+                  onPressed: _isValid ? widget.onNext : null,
+                ),
+                SizedBox(
+                  height: MediaQuery.of(context).viewInsets.bottom,
+                ), // ✅ Extra padding when keyboard is open
               ],
-
-              const SizedBox(height: 16),
-
-              // ✅ Privacy Notice
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: bluePrimaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.lock_outline, size: 20, color: bluePrimaryColor),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Ceritamu aman bersama kami. Lihat Kebijakan Privasi',
-                        style: primaryTextStyle.copyWith(
-                          fontSize: 12,
-                          color: bluePrimaryColor,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // ✅ Button dengan Validation
-              CustomFilledButton(
-                title: _isValid
-                    ? 'Selanjutnya'
-                    : 'Ceritamu belum cukup (${_characterCount}/$_minCharacters)',
-                variant: ButtonColorVariant.blue,
-                onPressed: _isValid ? widget.onNext : null,
-              ),
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
         ),
       ),

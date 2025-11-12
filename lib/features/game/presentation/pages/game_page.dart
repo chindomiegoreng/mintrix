@@ -21,7 +21,6 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  Map<String, double> sectionProgress = {};
   Map<String, bool> sectionLocked = {};
 
   @override
@@ -34,30 +33,16 @@ class _GamePageState extends State<GamePage> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      // Load progress untuk setiap section
-      sectionProgress['modul1_bagian1'] =
-          prefs.getDouble('modul1_bagian1_progress') ?? 0.0;
-      sectionProgress['modul1_bagian2'] =
-          prefs.getDouble('modul1_bagian2_progress') ?? 0.0;
-      sectionProgress['modul1_bagian3'] =
-          prefs.getDouble('modul1_bagian3_progress') ?? 0.0;
-      sectionProgress['modul2_bagian1'] =
-          prefs.getDouble('modul2_bagian1_progress') ?? 0.0;
-      sectionProgress['modul2_bagian2'] =
-          prefs.getDouble('modul2_bagian2_progress') ?? 0.0;
-      sectionProgress['modul2_bagian3'] =
-          prefs.getDouble('modul2_bagian3_progress') ?? 0.0;
-
       sectionLocked['modul1_bagian1'] = false; // Selalu terbuka
       sectionLocked['modul1_bagian2'] =
-          (sectionProgress['modul1_bagian1'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul1_bagian1_progress') ?? 0.0) < 1.0;
       sectionLocked['modul1_bagian3'] =
-          (sectionProgress['modul1_bagian2'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul1_bagian2_progress') ?? 0.0) < 1.0;
       sectionLocked['modul2_bagian1'] = false; // Langsung terbuka
       sectionLocked['modul2_bagian2'] =
-          (sectionProgress['modul2_bagian1'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul2_bagian1_progress') ?? 0.0) < 1.0;
       sectionLocked['modul2_bagian3'] =
-          (sectionProgress['modul2_bagian2'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul2_bagian2_progress') ?? 0.0) < 1.0;
     });
   }
 
@@ -78,7 +63,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 1",
                   "Mencari minat dan gairah",
-                  sectionProgress['modul1_bagian1'] ?? 0.0,
                   sectionLocked['modul1_bagian1'] ?? false,
                   "modul1",
                   "bagian1",
@@ -87,7 +71,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 2",
                   "Pemetaan bakat dan kompetensi",
-                  sectionProgress['modul1_bagian2'] ?? 0.0,
                   sectionLocked['modul1_bagian2'] ?? true,
                   "modul1",
                   "bagian2",
@@ -96,7 +79,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 3",
                   "Berkomunikasi",
-                  sectionProgress['modul1_bagian3'] ?? 0.0,
                   sectionLocked['modul1_bagian3'] ?? true,
                   "modul1",
                   "bagian3",
@@ -108,7 +90,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 1",
                   "Persiapan karir",
-                  sectionProgress['modul2_bagian1'] ?? 0.0,
                   sectionLocked['modul2_bagian1'] ?? true,
                   "modul2",
                   "bagian1",
@@ -117,7 +98,6 @@ class _GamePageState extends State<GamePage> {
                 //   context,
                 //   "Bagian 2",
                 //   "Personal branding",
-                //   sectionProgress['modul2_bagian2'] ?? 0.0,
                 //   sectionLocked['modul2_bagian2'] ?? true,
                 //   "modul2",
                 //   "bagian2",
@@ -126,7 +106,6 @@ class _GamePageState extends State<GamePage> {
                 //   context,
                 //   "Bagian 3",
                 //   "Wawancara kerja",
-                //   sectionProgress['modul2_bagian3'] ?? 0.0,
                 //   sectionLocked['modul2_bagian3'] ?? true,
                 //   "modul2",
                 //   "bagian3",
@@ -200,7 +179,6 @@ class _GamePageState extends State<GamePage> {
     BuildContext context,
     String title,
     String subtitle,
-    double progress,
     bool locked,
     String moduleId,
     String sectionId,
@@ -224,7 +202,8 @@ class _GamePageState extends State<GamePage> {
                 MaterialPageRoute(
                   builder: (_) => GameDetailPage(
                     sectionTitle: subtitle,
-                    progress: progress,
+                    progress:
+                        0.0, // Default value since we removed progress tracking
                     moduleId: moduleId,
                     sectionId: sectionId,
                   ),
@@ -278,28 +257,7 @@ class _GamePageState extends State<GamePage> {
             ),
             locked
                 ? const Icon(Icons.lock, color: Colors.grey)
-                : Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 6,
-                          color: Colors.lightBlue,
-                          backgroundColor: Colors.grey.shade200,
-                        ),
-                      ),
-                      Text(
-                        "${(progress * 100).toInt()}%",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                : const Icon(Icons.chevron_right, color: Colors.lightBlue),
           ],
         ),
       ),
