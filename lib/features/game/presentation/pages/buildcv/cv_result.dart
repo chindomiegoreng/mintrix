@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class CVResult extends StatefulWidget {
   final VoidCallback onComplete;
@@ -24,7 +29,34 @@ class CVResult extends StatefulWidget {
 class _CVResultState extends State<CVResult> {
   String? resumeId;
   String? resumeLink;
-  bool isLoading = false;
+  bool isGenerating = false;
+  bool isDownloading = false;
+  String? localPdfPath;
+  bool isPdfLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingState();
+  }
+
+  void _checkExistingState() {
+    final state = context.read<BuildCVBloc>().state;
+    if (state is CVSubmitSuccess) {
+      setState(() {
+        resumeId = state.cvModel.id;
+        resumeLink = state.cvModel.resumeLink;
+      });
+      
+      if (resumeLink != null && resumeLink!.isNotEmpty) {
+        _downloadPdfForPreview(resumeLink!);
+      }
+    } else if (state is CVSubmitting) {
+      setState(() {
+        isGenerating = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,193 +66,461 @@ class _CVResultState extends State<CVResult> {
           setState(() {
             resumeId = state.cvModel.id;
             resumeLink = state.cvModel.resumeLink;
-            isLoading = false;
+            isGenerating = false;
           });
 
-          // Show success message
+          if (resumeLink != null && resumeLink!.isNotEmpty) {
+            _downloadPdfForPreview(resumeLink!);
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Resume berhasil dibuat!'),
+              content: Text('✅ Resume berhasil dibuat!'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
             ),
           );
         } else if (state is CVSubmitError) {
           setState(() {
-            isLoading = false;
+            isGenerating = false;
           });
 
-          // Show error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: ${state.error}'),
+              content: Text('❌ Error: ${state.error}'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'Tutup',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
             ),
           );
         } else if (state is CVSubmitting) {
           setState(() {
-            isLoading = true;
+            isGenerating = true;
           });
         } else if (state is CVDownloadSuccess) {
           setState(() {
-            isLoading = false;
+            isDownloading = false;
           });
 
-          // Open download URL
           _launchURL(state.downloadUrl);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('📥 Membuka link download...'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
         } else if (state is CVDownloadError) {
           setState(() {
-            isLoading = false;
+            isDownloading = false;
           });
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Download error: ${state.error}'),
+              content: Text('❌ Download error: ${state.error}'),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
             ),
           );
         } else if (state is CVDownloading) {
           setState(() {
-            isLoading = true;
+            isDownloading = true;
           });
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: whiteColor,
         body: SafeArea(
-          child: isLoading
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        'Sedang memproses...',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        Text(
-                          resumeId != null
-                              ? "Yeay, AI Sudah Selesai Generate"
-                              : "Sedang memproses CV Anda...",
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        AspectRatio(
-                          aspectRatio: 3 / 4,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey.shade300),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: Image.asset(
-                              "assets/images/home_card_large.png",
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                      ],
-                    ),
-                  ),
-                ),
+          child: Column(
+            children: [
+              Expanded(
+                child: isGenerating
+                    ? _buildLoadingView()
+                    : _buildSuccessView(),
+              ),
+            ],
+          ),
         ),
-        bottomNavigationBar: SafeArea(
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+        bottomNavigationBar: isGenerating ? null : _buildBottomBar(),
+      ),
+    );
+  }
+
+  Widget _buildLoadingView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color.fromARGB(255, 141, 224, 245),
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              color: bluePrimaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "🎉 Wow, kamu super duper kece xp+20",
-                  style: TextStyle(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomFilledButton(
-                        title: isLoading ? "Loading..." : "Download",
-                        variant: ButtonColorVariant.white,
-                        onPressed: isLoading || resumeId == null
-                            ? null
-                            : () {
-                                if (resumeLink != null) {
-                                  _launchURL(resumeLink!);
-                                } else if (resumeId != null) {
-                                  context.read<BuildCVBloc>().add(
-                                    DownloadCV(resumeId!),
-                                  );
-                                }
-                              },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: CustomFilledButton(
-                        title: "Selanjutnya",
-                        variant: ButtonColorVariant.blue,
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LevelJourneyPage(
-                                moduleId: "modul2",
-                                sectionId: "bagian1",
-                                lessonIndex: 0,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
             ),
           ),
+          Text(
+            '🤖 AI sedang membuat CV kamu...',
+            style: primaryTextStyle.copyWith(
+              fontSize: 18,
+              fontWeight: semiBold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'Proses ini memakan waktu beberapa detik',
+            style: secondaryTextStyle.copyWith(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 48),
+            child: LinearProgressIndicator(
+              backgroundColor: thirdColor,
+              valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessView() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Text(
+            resumeId != null
+                ? "🎉 Yeay, CV Kamu Sudah Jadi!"
+                : "⏳ Menunggu CV dibuat...",
+            style: primaryTextStyle.copyWith(
+              fontSize: 22,
+              fontWeight: bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            resumeId != null
+                ? "CV kamu sudah siap! Download sekarang dan mulai melamar pekerjaan impianmu."
+                : "Tunggu sebentar ya, AI sedang membuat CV terbaikmu.",
+            style: secondaryTextStyle.copyWith(fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          
+          Expanded(child: _buildCVPreviewCard()),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCVPreviewCard() {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: thirdColor, width: 2),
+          color: Colors.white,
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Stack(
+          children: [
+            // PDF Preview or Placeholder
+            if (resumeLink != null && resumeLink!.isNotEmpty)
+              _buildPDFPreview(resumeLink!)
+            else
+              _buildPlaceholder(),
+            
+            // Loading Overlay
+            if (resumeId == null || isGenerating || isPdfLoading)
+              _buildLoadingOverlay(),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildPDFPreview(String pdfUrl) {
+    if (localPdfPath != null && File(localPdfPath!).existsSync()) {
+      return PDFView(
+        filePath: localPdfPath!,
+        enableSwipe: false,
+        swipeHorizontal: false,
+        autoSpacing: false,
+        pageFling: false,
+        pageSnap: false,
+        defaultPage: 0,
+        fitPolicy: FitPolicy.BOTH,
+        onError: (error) {
+          debugPrint('PDF Error: $error');
+        },
+        onPageError: (page, error) {
+          debugPrint('Page $page Error: $error');
+        },
+      );
+    }
+
+    return GestureDetector(
+      onTap: () => _launchURL(pdfUrl),
+      child: Container(
+        color: const Color(0xFFF5F5F5),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.picture_as_pdf,
+              size: 64,
+              color: Colors.red[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Tap untuk melihat CV',
+              style: primaryTextStyle.copyWith(
+                fontSize: 16,
+                fontWeight: semiBold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'PDF Preview',
+              style: secondaryTextStyle.copyWith(fontSize: 14),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceholder() {
+    return Container(
+      color: const Color(0xFFF5F5F5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.description_outlined,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'CV Preview',
+            style: primaryTextStyle.copyWith(
+              fontSize: 16,
+              fontWeight: semiBold,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Container(
+      color: Colors.white.withOpacity(0.95),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isPdfLoading ? 'Memuat preview...' : 'Membuat CV...',
+              style: primaryTextStyle.copyWith(
+                fontSize: 14,
+                fontWeight: semiBold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F5FD),
+          border: Border(top: BorderSide(color: thirdColor, width: 1)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              resumeId != null
+                  ? "🎉 Wow, kamu super duper kece! +20 XP"
+                  : "⏳ Tunggu sebentar ya...",
+              style: primaryTextStyle.copyWith(
+                fontSize: 18,
+                fontWeight: semiBold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: CustomFilledButton(
+                    title: isDownloading ? "Downloading..." : "Download CV",
+                    variant: ButtonColorVariant.white,
+                    onPressed: (isGenerating || isDownloading || resumeId == null)
+                        ? null
+                        : _handleDownload,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: CustomFilledButton(
+                    title: "Selanjutnya",
+                    variant: ButtonColorVariant.blue,
+                    onPressed: isGenerating
+                        ? null
+                        : () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LevelJourneyPage(
+                                  moduleId: "modul2",
+                                  sectionId: "bagian1",
+                                  lessonIndex: 0,
+                                ),
+                              ),
+                            );
+                          },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _handleDownload() {
+    if (resumeLink != null && resumeLink!.isNotEmpty) {
+      _launchURL(resumeLink!);
+      widget.onDownload(); 
+    } else if (resumeId != null) {
+      context.read<BuildCVBloc>().add(DownloadCV(resumeId!));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('❌ Resume ID tidak ditemukan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _downloadPdfForPreview(String url) async {
+    if (!mounted) return;
+
+    setState(() {
+      isPdfLoading = true;
+    });
+
+    try {
+      debugPrint('📥 Downloading PDF for preview from: $url');
+      
+      final response = await http.get(Uri.parse(url)).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          throw 'Download timeout';
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/preview_cv_${DateTime.now().millisecondsSinceEpoch}.pdf');
+        await file.writeAsBytes(bytes, flush: true);
+        
+        if (mounted) {
+          setState(() {
+            localPdfPath = file.path;
+            isPdfLoading = false;
+          });
+          debugPrint('✅ PDF downloaded successfully: ${file.path}');
+        }
+      } else {
+        throw 'HTTP ${response.statusCode}';
+      }
+    } catch (e) {
+      debugPrint('❌ Error downloading PDF for preview: $e');
+      if (mounted) {
+        setState(() {
+          isPdfLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _launchURL(String url) async {
     try {
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        debugPrint('✅ Launched URL: $url');
       } else {
         throw 'Could not launch $url';
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not open download link: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      debugPrint('❌ Error launching URL: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Tidak dapat membuka link: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    if (localPdfPath != null) {
+      try {
+        final file = File(localPdfPath!);
+        if (file.existsSync()) {
+          file.deleteSync();
+          debugPrint('🗑️ Temporary PDF deleted');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Error deleting temporary PDF: $e');
+      }
+    }
+    super.dispose();
   }
 }

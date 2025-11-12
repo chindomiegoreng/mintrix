@@ -2,20 +2,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/core/models/auth_response_model.dart';
-import 'package:mintrix/core/utils/debug_helper.dart';
+import 'package:mintrix/features/auth/data/services/google_sign_in_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ApiClient _apiClient;
+  final GoogleSignInService _googleSignInService;
 
-  AuthBloc({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient(),
-      super(AuthInitial()) {
+  AuthBloc({
+    ApiClient? apiClient,
+    GoogleSignInService? googleSignInService,
+  })  : _apiClient = apiClient ?? ApiClient(),
+        _googleSignInService = googleSignInService ?? GoogleSignInService(),
+        super(AuthInitial()) {
     on<LoginEvent>(_onLoginEvent);
     on<RegisterEvent>(_onRegisterEvent);
+    on<GoogleSignInEvent>(_onGoogleSignInEvent); // ✅ TAMBAHKAN
     on<LogoutEvent>(_onLogoutEvent);
-    on<UpdateProfileEvent>(_onUpdateProfileEvent); // ✅ TAMBAHKAN INI
+    on<UpdateProfileEvent>(_onUpdateProfileEvent);
   }
 
   // Handle Login
@@ -71,7 +76,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
 
-      // Debug print untuk memverifikasi data sebelum kirim
       print('🚀 Sending register request:');
       print('  - nama: ${event.username}');
       print('  - email: ${event.email}');
@@ -88,9 +92,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         print('  - foto size: $fileSize bytes');
         print('  - foto name: $fileName');
         print('  - foto extension: $fileExtension');
-        print('  - foto absolute path: ${event.foto!.absolute.path}');
 
-        // Validasi file
         if (!fileExists) {
           emit(AuthError('File gambar tidak ditemukan'));
           return;
@@ -102,7 +104,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
 
         if (fileSize > 5 * 1024 * 1024) {
-          // 5MB limit
           emit(AuthError('Ukuran file terlalu besar (max 5MB)'));
           return;
         }
@@ -114,13 +115,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           return;
         }
       }
-
-      // Log request details
-      print('📤 Making multipart request to: ${ApiEndpoints.register}');
-      print(
-        '📤 Fields: nama=${event.username}, email=${event.email}, password=***',
-      );
-      print('📤 File field: foto, File: ${event.foto?.path ?? "none"}');
 
       try {
         final response = await _apiClient.postMultipart(
@@ -151,28 +145,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         print('✅ User foto URL: ${authResponse.user.foto}');
       } catch (apiError) {
         print('❌ ApiClient failed: $apiError');
-        print('🧪 Trying manual multipart upload for debugging...');
-
-        // Test with manual multipart upload
-        await DebugHelper.testMultipartUpload(
-          endpoint: ApiEndpoints.register,
-          fields: {
-            'nama': event.username,
-            'email': event.email,
-            'password': event.password,
-          },
-          file: event.foto,
-          fileField: 'foto',
-        );
-
-        // Re-throw the original error
         throw apiError;
       }
     } catch (e, stackTrace) {
       print('❌ Register Error Full: $e');
       print('❌ Stack trace: $stackTrace');
 
-      // More specific error handling
       String errorMessage = e.toString();
       if (errorMessage.contains('Connection refused') ||
           errorMessage.contains('Failed host lookup')) {
@@ -188,7 +166,77 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  // ✅ TAMBAHKAN HANDLER INI
+  // ✅ HANDLER GOOGLE SIGN IN
+  Future<void> _onGoogleSignInEvent(
+    GoogleSignInEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      emit(AuthLoading());
+
+      print('🔵 Starting Google Sign In process...');
+
+      // Sign in with Google
+      final googleUserData = await _googleSignInService.signInWithGoogle();
+
+      if (googleUserData == null) {
+        emit(AuthInitial());
+        print('⚠️ Google Sign In cancelled by user');
+        return;
+      }
+
+      print('✅ Google Sign In successful');
+      print('  - Email: ${googleUserData['email']}');
+      print('  - Name: ${googleUserData['displayName']}');
+      print('  - Is New User: ${googleUserData['isNewUser']}');
+
+      // Kirim data ke backend untuk sinkronisasi
+      try {
+        final response = await _apiClient.post(
+          '/api/auth/google-login', // ⚠️ Sesuaikan dengan endpoint backend Anda
+          body: {
+            'firebase_uid': googleUserData['uid'],
+            'email': googleUserData['email'],
+            'nama': googleUserData['displayName'],
+            'foto': googleUserData['photoURL'],
+          },
+          requiresAuth: false,
+        );
+
+        print('📦 Backend Response: $response');
+
+        final authResponse = AuthResponseModel.fromJson(response);
+
+        emit(
+          AuthAuthenticated(
+            userId: authResponse.user.id,
+            username: authResponse.user.name,
+            photoUrl: authResponse.user.foto,
+          ),
+        );
+
+        print('✅ Google Sign In complete with backend sync');
+      } catch (e) {
+        print('⚠️ Backend sync failed, using Firebase data only: $e');
+
+        // Fallback: Gunakan data dari Firebase saja
+        emit(
+          AuthAuthenticated(
+            userId: googleUserData['uid'],
+            username: googleUserData['displayName'],
+            photoUrl: googleUserData['photoURL'],
+          ),
+        );
+
+        print('✅ Google Sign In complete (Firebase only)');
+      }
+    } catch (e) {
+      print('❌ Google Sign In Error: $e');
+      emit(AuthError(_parseError(e.toString())));
+    }
+  }
+
+  // Handle Update Profile
   Future<void> _onUpdateProfileEvent(
     UpdateProfileEvent event,
     Emitter<AuthState> emit,
@@ -212,6 +260,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       await _apiClient.clearToken();
+      await _googleSignInService.signOut(); // ✅ Logout dari Google juga
       emit(AuthInitial());
       print('✅ Logout Success');
     } catch (e) {
@@ -232,6 +281,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       return 'Server sedang bermasalah, coba lagi nanti';
     } else if (error.contains('Exception:')) {
       return error.replaceAll('Exception:', '').trim();
+    } else if (error.contains('Gagal login dengan Google')) {
+      return 'Gagal login dengan Google. Silakan coba lagi';
     }
     return error;
   }

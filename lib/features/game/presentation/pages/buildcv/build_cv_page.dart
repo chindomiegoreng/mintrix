@@ -111,11 +111,20 @@ class _BuildCVPageState extends State<BuildCVPage> {
   }
 
   Widget _buildProgressBar(BuildContext context, BuildCVState state) {
-    int step = (state is CVInProgress) ? state.currentStep : 0;
+    // Determine current step based on state
+    int step;
+    
+    if (state is CVInProgress) {
+      step = state.currentStep;
+    } else if (state is CVSubmitSuccess || state is CVSubmitting) {
+      // Force to last page when submitting or after success
+      step = 8; // Index 8 = page 9 (last page)
+    } else {
+      step = 0;
+    }
 
     bool isLastPage = step == _totalPages - 1;
-    double progress = (step + 1) / _totalPages;
-
+    double progress = isLastPage ? 1.0 : (step + 1) / _totalPages;
     bool showCloseIcon = step <= 1;
 
     return Padding(

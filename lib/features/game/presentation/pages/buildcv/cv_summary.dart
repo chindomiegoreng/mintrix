@@ -136,7 +136,6 @@ class _CVSummaryState extends State<CVSummary> {
             title: "Selanjutnya",
             variant: ButtonColorVariant.blue,
             onPressed: () {
-              // Validate summary data
               String finalSummary = summaryController.text.trim();
 
               if (finalSummary.isEmpty &&
@@ -151,8 +150,6 @@ class _CVSummaryState extends State<CVSummary> {
                 );
                 return;
               }
-
-              // Save summary data to bloc before navigating
               if (finalSummary.isEmpty &&
                   selectedIndex >= 0 &&
                   selectedIndex < templates.length) {

@@ -23,9 +23,11 @@ class RegisterEvent extends AuthEvent {
   });
 }
 
+// ✅ TAMBAHKAN EVENT BARU
+class GoogleSignInEvent extends AuthEvent {}
+
 class LogoutEvent extends AuthEvent {}
 
-// ✅ TAMBAHKAN EVENT INI
 class UpdateProfileEvent extends AuthEvent {
   final String userId;
   final String username;
