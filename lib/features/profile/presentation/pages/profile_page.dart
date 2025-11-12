@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mintrix/core/models/profile_detail_model.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
 import '../bloc/profile_bloc.dart';
