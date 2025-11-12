@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
           radius: 25,
           backgroundImage: photoUrl != null && photoUrl.isNotEmpty
               ? NetworkImage(photoUrl)
-              : const AssetImage('assets/images/logo_mintrix.png')
+              : const AssetImage('assets/images/dino_get_started.png')
                     as ImageProvider,
           backgroundColor: Colors.grey[300],
           onBackgroundImageError: (exception, stackTrace) {

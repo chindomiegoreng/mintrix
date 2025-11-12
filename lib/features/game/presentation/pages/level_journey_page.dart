@@ -155,7 +155,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         },
         {
           "key": "platform2",
-          "hasVideo": false,
+          "hasVideo": true,
           "title": "Mengatur Waktu",
           "description":
               "Belajar manajemen waktu yang efektif untuk produktivitas optimal.",
@@ -163,11 +163,39 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         },
         {
           "key": "platform3",
-          "hasVideo": false,
+          "hasVideo": true,
+          "title": "Komunikasi Efektif",
+          "description": "Komunikasi Efektif",
+          "subSection": "komunikasi_efektif",
+        },
+        {
+          "key": "platform4",
+          "hasVideo": true,
+          "title": "Kerja Sama Tim",
+          "description": "Kerja Sama Tim",
+          "subSection": "kerja_sama_tim",
+        },
+        {
+          "key": "platform5",
+          "hasVideo": true,
+          "title": "Mengelola Emosi",
+          "description": "Mengelola Emosi",
+          "subSection": "mengelola_emosi",
+        },
+        {
+          "key": "platform6",
+          "hasVideo": true,
           "title": "Berpikir Positif",
           "description":
               "Membangun mindset positif untuk menghadapi tantangan.",
           "subSection": "berpikir_positif",
+        },
+        {
+          "key": "platform7",
+          "hasVideo": true,
+          "title": "Menetepkan Tujuan",
+          "description": "Menetepkan Tujuan",
+          "subSection": "menetapkan_tujuan",
         },
       ];
     }
@@ -236,14 +264,17 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                     children: [
                       CustomPaint(size: Size(screenWidth, screenHeight)),
 
+                      // 1. button kecil
                       Positioned(
                         top: 60,
-                        left: 170,
+                        left: 150,
                         child: _buildSmallPlatform(
                           isActive: true,
                           context: context,
                         ),
                       ),
+
+                      
 
                       if (platformDataList.isNotEmpty)
                         Positioned(
