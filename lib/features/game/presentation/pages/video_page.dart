@@ -2,8 +2,9 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/resume_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
+import 'package:mintrix/features/game/data/services/youtube_services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:shimmer/shimmer.dart';
 
 class VideoPage extends StatefulWidget {
   final String title;
@@ -33,49 +34,31 @@ class _VideoPageState extends State<VideoPage> {
   bool isWatched = false;
   bool isLoadingVideo = false;
   String? directVideoUrl;
-  final YoutubeExplode _yt = YoutubeExplode();
 
-  String extractYoutubeId(String url) {
-    Uri uri = Uri.parse(url);
-    if (uri.queryParameters.containsKey('v')) {
-      return uri.queryParameters['v']!;
-    }
-    return uri.pathSegments.last.split('?').first;
+  @override
+  void initState() {
+    super.initState();
+    _preloadVideo();
   }
 
-  Future<void> _prepareVideo() async {
+  /// ✅ Preload video agar manifest sudah siap sebelum ditekan
+  Future<void> _preloadVideo() async {
+    setState(() => isLoadingVideo = true);
+    final url = await getYoutubeDirectUrl(widget.videoUrl);
+    if (!mounted) return;
     setState(() {
-      isLoadingVideo = true;
+      directVideoUrl = url;
+      isLoadingVideo = false;
     });
-
-    try {
-      final videoId = extractYoutubeId(widget.videoUrl);
-      final manifest = await _yt.videos.streamsClient.getManifest(videoId);
-      final streamInfo = manifest.muxed.bestQuality;
-
-      if (!mounted) return;
-
-      setState(() {
-        directVideoUrl = streamInfo.url.toString();
-        isLoadingVideo = false;
-      });
-
-      _openVideoPlayer();
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        isLoadingVideo = false;
-      });
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat video: $e')));
-    }
   }
 
   void _openVideoPlayer() async {
-    if (directVideoUrl == null) return;
+    if (directVideoUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Video belum siap, coba lagi.')),
+      );
+      return;
+    }
 
     final watched = await Navigator.push(
       context,
@@ -85,9 +68,7 @@ class _VideoPageState extends State<VideoPage> {
     );
 
     if (watched == true) {
-      setState(() {
-        isWatched = true;
-      });
+      setState(() => isWatched = true);
     }
   }
 
@@ -98,109 +79,96 @@ class _VideoPageState extends State<VideoPage> {
   void _handleNext() {
     if (_isModule2Section1()) {
       Navigator.pushNamed(context, '/build-cv');
-    } else {
-      if (widget.moduleId != null &&
-          widget.sectionId != null &&
-          widget.subSection != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ResumePage(
-              moduleId: widget.moduleId!,
-              sectionId: widget.sectionId!,
-              subSection: widget.subSection!,
-            ),
+    } else if (widget.moduleId != null &&
+        widget.sectionId != null &&
+        widget.subSection != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResumePage(
+            moduleId: widget.moduleId!,
+            sectionId: widget.sectionId!,
+            subSection: widget.subSection!,
           ),
-        );
-      } else {
-        Navigator.pushNamed(context, '/quizPage');
-      }
+        ),
+      );
+    } else {
+      Navigator.pushNamed(context, '/quizPage');
     }
-  }
-
-  @override
-  void dispose() {
-    _yt.close();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Video"), centerTitle: true),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: isLoadingVideo ? null : _prepareVideo,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.asset(
-                          widget.thumbnail,
-                          width: double.infinity,
-                          height: 160,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      if (isLoadingVideo)
-                        Container(
-                          width: double.infinity,
-                          height: 160,
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                      else
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.black54,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: isLoadingVideo ? null : _openVideoPlayer,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      widget.thumbnail,
+                      width: double.infinity,
+                      height: 160,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    widget.description,
-                    style: const TextStyle(fontSize: 14, color: Colors.black54),
-                  ),
-                ),
-              ],
+                  if (isLoadingVideo)
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey.shade700,
+                      highlightColor: Colors.grey.shade500,
+                      child: Container(
+                        width: double.infinity,
+                        height: 160,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade400,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.description,
+                style: const TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -243,9 +211,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     _videoController = VideoPlayerController.networkUrl(
       Uri.parse(widget.videoUrl),
     );
-
     await _videoController.initialize();
-
     if (!mounted) return;
 
     setState(() {
@@ -283,14 +249,13 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle, color: Colors.white),
-            onPressed: _isInitialized
-                ? () => Navigator.pop(context, true)
-                : null,
+            onPressed:
+                _isInitialized ? () => Navigator.pop(context, true) : null,
           ),
         ],
       ),
       body: Align(
-        alignment: Alignment(0, -0.3),
+        alignment: const Alignment(0, -0.3),
         child: _isInitialized
             ? AspectRatio(
                 aspectRatio: _videoController.value.aspectRatio,
