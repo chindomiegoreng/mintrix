@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart';
 import 'game_detail_page.dart';
 
 class GamePage extends StatefulWidget {
@@ -34,7 +37,6 @@ class _GamePageState extends State<GamePage> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      // Load progress untuk setiap section
       sectionProgress['modul1_bagian1'] =
           prefs.getDouble('modul1_bagian1_progress') ?? 0.0;
       sectionProgress['modul1_bagian2'] =
@@ -113,24 +115,6 @@ class _GamePageState extends State<GamePage> {
                   "modul2",
                   "bagian1",
                 ),
-                // _buildSection(
-                //   context,
-                //   "Bagian 2",
-                //   "Personal branding",
-                //   sectionProgress['modul2_bagian2'] ?? 0.0,
-                //   sectionLocked['modul2_bagian2'] ?? true,
-                //   "modul2",
-                //   "bagian2",
-                // ),
-                // _buildSection(
-                //   context,
-                //   "Bagian 3",
-                //   "Wawancara kerja",
-                //   sectionProgress['modul2_bagian3'] ?? 0.0,
-                //   sectionLocked['modul2_bagian3'] ?? true,
-                //   "modul2",
-                //   "bagian3",
-                // ),
               ]),
             ],
           ),
@@ -148,31 +132,59 @@ class _GamePageState extends State<GamePage> {
           backgroundImage: AssetImage('assets/images/profile.png'),
         ),
         const Spacer(),
-        const Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          widget.streak.toString(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            int streakCount = 0;
+            
+            if (profileState is ProfileLoaded) {
+              streakCount = profileState.streakCount;
+            }
+            
+            return Row(
+              children: [
+               Image.asset("assets/icons/fire.png", height: 36),
+                const SizedBox(width: 4),
+                Text(
+                  "$streakCount",
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ],
+            );
+          },
         ),
         const Spacer(),
-        const Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          widget.gems.toString(),
-          style: const TextStyle(
-            color: Colors.lightBlueAccent,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Image.asset("assets/icons/icon_diamond.png", height: 36),
+            const SizedBox(width: 4),
+            const Text(
+              "500",
+              style: TextStyle(
+                color: Colors.lightBlueAccent,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         const Spacer(),
-        Text(
-          "XP ${widget.xp}",
-          style: const TextStyle(
-            color: Colors.green,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
+        BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            int xpCount = 0;
+            
+            if (profileState is ProfileLoaded) {
+              xpCount = profileState.xp;
+            }
+            
+            return Text(
+              "XP $xpCount",
+              style: const TextStyle(
+                color: Colors.green,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            );
+          },
         ),
       ],
     );
@@ -230,8 +242,6 @@ class _GamePageState extends State<GamePage> {
                   ),
                 ),
               );
-
-              // Reload progress setelah kembali dari detail page
               if (result == true) {
                 _loadProgress();
               }

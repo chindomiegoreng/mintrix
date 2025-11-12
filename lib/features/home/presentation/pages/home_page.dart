@@ -9,6 +9,9 @@ import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart'
 import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add ProfileBloc
+import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart'; // ✅ Add ProfileState
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart'; // ✅ Add ProfileEvent
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/home_card.dart';
 
@@ -27,6 +30,8 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // ✅ Fetch profile saat HomePage pertama kali dibuka
     _fetchAndUpdateProfile();
+    // ✅ Load ProfileBloc untuk mendapatkan streak data
+    context.read<ProfileBloc>().add(LoadProfile());
   }
 
   // ✅ Fetch profile dari API dan update AuthBloc
@@ -49,6 +54,9 @@ class _HomePageState extends State<HomePage> {
               photoUrl: userData['foto'],
             ),
           );
+          
+          // ✅ Refresh ProfileBloc juga untuk update streak
+          context.read<ProfileBloc>().add(RefreshProfile());
         }
 
         print(
@@ -139,14 +147,28 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         const Spacer(),
-        const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
-        const SizedBox(width: 4),
-        Text(
-          "4",
-          style: bluePrimaryTextStyle.copyWith(
-            fontSize: 16,
-            fontWeight: semiBold,
-          ),
+        BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            int streakCount = 0;
+            
+            if (profileState is ProfileLoaded) {
+              streakCount = profileState.streakCount;
+            }
+            
+            return Row(
+              children: [
+                Image.asset("assets/icons/fire.png", height: 36),
+                const SizedBox(width: 4),
+                Text(
+                  "$streakCount",
+                  style: bluePrimaryTextStyle.copyWith(
+                    fontSize: 16,
+                    fontWeight: semiBold,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(width: 16),
         TextButton(

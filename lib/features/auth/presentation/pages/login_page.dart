@@ -37,9 +37,7 @@ class _LoginPageState extends State<LoginPage> {
             showDialog(
               context: context,
               barrierDismissible: false,
-              builder: (_) => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              builder: (_) => const Center(child: CircularProgressIndicator()),
             );
           } else if (state is AuthAuthenticated) {
             Navigator.pop(context);
@@ -98,13 +96,22 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
-                              LoginEvent(
-                                username: _usernameController.text,
-                                password: _passwordController.text,
-                              ),
-                            );
+                          LoginEvent(
+                            username: _usernameController.text,
+                            password: _passwordController.text,
+                          ),
+                        );
                       }
                     },
+                  ),
+                  const SizedBox(height: 18),
+                  CustomFilledButton(
+                    title: 'Daftar Yuk',
+                    variant: ButtonColorVariant.white,
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/register');
+                    },
+                    withShadow: true,
                   ),
                   const SizedBox(height: 4),
                   SizedBox(

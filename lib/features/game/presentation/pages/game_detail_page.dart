@@ -1,7 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
 class GameDetailPage extends StatefulWidget {
@@ -81,7 +84,6 @@ class _GameDetailPageState extends State<GameDetailPage> {
       return [
         {
           "title": "Mencari Hal Yang Kamu Suka",
-          // "dinoImage": "assets/images/dino_daily_mission.png",
           "dinoImage":
               "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(0),
@@ -89,7 +91,6 @@ class _GameDetailPageState extends State<GameDetailPage> {
         },
         {
           "title": "Mengatur Waktu",
-          // "dinoImage": "assets/images/dino_daily_mission.png",
           "dinoImage":
               "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(1),
@@ -97,7 +98,6 @@ class _GameDetailPageState extends State<GameDetailPage> {
         },
         {
           "title": "Berpikir Positif",
-          // "dinoImage": "assets/images/dino_daily_mission.png",
           "dinoImage":
               "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(2),
@@ -245,22 +245,33 @@ class GameHeader extends StatelessWidget {
             radius: 22,
             backgroundImage: AssetImage('assets/images/profile.png'),
           ),
-          Row(
-            children: const [
-              Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "4",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-            ],
+          // ✅ Dynamic Streak Counter dari ProfileBloc
+          BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, profileState) {
+              int streakCount = 0;
+              
+              if (profileState is ProfileLoaded) {
+                streakCount = profileState.streakCount;
+              }
+              
+              return Row(
+                children: [
+                 Image.asset("assets/icons/fire.png", height: 36),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$streakCount",
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              );
+            },
           ),
           Row(
-            children: const [
-              Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "200",
+            children: [
+              Image.asset("assets/icons/icon_diamond.png", height: 36),
+              const SizedBox(width: 4),
+              const Text(
+                "500",
                 style: TextStyle(
                   color: Colors.lightBlueAccent,
                   fontSize: 14,
@@ -269,13 +280,23 @@ class GameHeader extends StatelessWidget {
               ),
             ],
           ),
-          const Text(
-            "XP 520",
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+         BlocBuilder<ProfileBloc, ProfileState>(
+            builder: (context, profileState) {
+              int xpCount = 0;
+              
+              if (profileState is ProfileLoaded) {
+                xpCount = profileState.xp;
+              }
+              
+              return Text(
+                "XP $xpCount",
+                style: const TextStyle(
+                  color: Colors.green,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -417,19 +438,13 @@ class LessonCard extends StatelessWidget {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 60),
-                  child:
-                      // Image.asset(
-                      //   dinoImage,
-                      //   height: 300,
-                      //   fit: BoxFit.contain,
-                      // ),
-                      CachedNetworkImage(
-                        imageUrl: dinoImage,
-                        width: 220,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
-                      ),
+                  child: CachedNetworkImage(
+                    imageUrl: dinoImage,
+                    width: 220,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
+                  ),
                 ),
               ),
             if (locked)
