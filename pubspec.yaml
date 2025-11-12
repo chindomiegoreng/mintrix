@@ -69,6 +69,7 @@ dependencies:
   firebase_auth: ^6.1.2
   google_sign_in: ^6.2.1
   shimmer: ^3.0.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -85,6 +86,25 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/launcher/icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/launcher/icon.png"
+    background_color: "#4EBDE8"
+    theme_color: "#FFFFFF"
+  windows:
+    generate: true
+    image_path: "assets/launcher/icon.png"
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: "assets/launcher/icon.png"
+
 
 # The following section is specific to Flutter packages.
 flutter:
