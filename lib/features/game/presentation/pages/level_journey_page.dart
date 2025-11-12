@@ -274,8 +274,6 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                         ),
                       ),
 
-                      
-
                       if (platformDataList.isNotEmpty)
                         Positioned(
                           top: 120,

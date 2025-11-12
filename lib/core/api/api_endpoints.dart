@@ -1,6 +1,7 @@
 class ApiEndpoints {
   // Base URLs
-  static const String mintrixBaseUrl = 'https://mintrix.yogawanadityapratama.com';
+  static const String mintrixBaseUrl =
+      'https://mintrix.yogawanadityapratama.com';
   static const String dinoBaseUrl = 'https://dino.yogawanadityapratama.com';
 
   // Auth Endpoints
@@ -33,6 +34,9 @@ class ApiEndpoints {
   static const String leaderboard = '/api/leaderboard';
 
   static const String mission = '/api/mission';
+
+  // ✅ Stats/XP Endpoints - gunakan endpoint yang sama dengan Melihat Stats
+  static const String stats = '/api/stats';
 
   // Resume/CV Endpoints
   static const String resume = '/api/resume';
