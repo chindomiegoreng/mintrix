@@ -1,13 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mintrix/features/ai/presentation/pages/ai_history_page.dart';
-import 'package:mintrix/features/ai/data/services/ai_service.dart';
-import 'package:mintrix/features/ai/data/services/chat_history_service.dart';
+import 'package:mintrix/features/ai/data/services/dino_api_service.dart';
 import 'package:mintrix/shared/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AIPage extends StatefulWidget {
   final bool showAppBar;
+  final String? titleId;
 
-  const AIPage({super.key, this.showAppBar = true});
+  const AIPage({super.key, this.showAppBar = true, this.titleId});
 
   @override
   State<AIPage> createState() => _AIPageState();
@@ -15,9 +18,10 @@ class AIPage extends StatefulWidget {
 
 class _AIPageState extends State<AIPage> {
   final TextEditingController _messageController = TextEditingController();
-  final AIService _aiService = AIService();
-  final ChatHistoryService _historyService = ChatHistoryService();
+  late DinoApiService _apiService;
   bool _isLoading = false;
+  String? _currentTitleId;
+  bool _isInitialized = false;
 
   final List<ChatMessage> _messages = [
     ChatMessage(
@@ -31,37 +35,77 @@ class _AIPageState extends State<AIPage> {
   @override
   void initState() {
     super.initState();
-    _checkAndClearMessages();
+    _initializeService();
   }
 
-  Future<void> _checkAndClearMessages() async {
-    final shouldClear = await _historyService.shouldClearToday();
+  Future<void> _initializeService() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? ''; // ✅ Ganti dengan 'auth_token'
+    
+    if (token.isEmpty) {
+      print('❌ Token tidak ditemukan di SharedPreferences');
+      // Optional: redirect to login
+      return;
+    }
+    
+    print('✅ Token ditemukan: ${token.substring(0, 20)}...'); // Debug print
 
-    if (shouldClear && _messages.length > 1) {
-      // Save current chat before clearing
-      await _historyService.saveCurrentChat(_messages);
+    _apiService = DinoApiService(authToken: token);
+    _currentTitleId = widget.titleId;
 
-      // Clear messages except the initial greeting
+    if (_currentTitleId != null) {
+      await _loadChatHistory();
+    }
+
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  Future<void> _loadChatHistory() async {
+    if (_currentTitleId == null) return;
+
+    try {
+      final history = await _apiService.getChatHistory(_currentTitleId!);
       setState(() {
-        _messages.removeRange(1, _messages.length);
-      });
+        _messages.clear();
+        _messages.add(ChatMessage(
+          text: "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
+          isFromDino: true,
+          time: TimeOfDay.now().format(context),
+        ));
 
-      await _historyService.markClearedToday();
+        for (var msg in history.messages) {
+          String content = msg.content;
+          if (msg.role == 'assistant') {
+            try {
+              final parsed = jsonDecode(content);
+              content = parsed['reply'];
+            } catch (e) {
+              // If parsing fails, use original content
+            }
+          }
+
+          _messages.add(ChatMessage(
+            text: content,
+            isFromDino: msg.role == 'assistant',
+            time: TimeOfDay.now().format(context),
+          ));
+        }
+      });
+    } catch (e) {
+      print('Error loading chat history: $e');
     }
   }
 
   @override
   void dispose() {
-    // Save chat before disposing
-    if (_messages.length > 1) {
-      _historyService.saveCurrentChat(_messages);
-    }
     _messageController.dispose();
     super.dispose();
   }
 
   void _sendMessage() async {
-    if (_messageController.text.trim().isEmpty) return;
+    if (_messageController.text.trim().isEmpty || !_isInitialized) return;
 
     final userMessage = _messageController.text.trim();
     final currentTime = TimeOfDay.now().format(context);
@@ -76,17 +120,16 @@ class _AIPageState extends State<AIPage> {
     _messageController.clear();
 
     try {
-      // Prepare messages for API
-      final apiMessages = _messages
-          .map(
-            (msg) => {
-              'role': msg.isFromDino ? 'assistant' : 'user',
-              'content': msg.text,
-            },
-          )
-          .toList();
+      // Create new chat title if not exists
+      if (_currentTitleId == null) {
+        final firstWords = userMessage.split(' ').take(5).join(' ');
+        final title = '$firstWords ...';
+        final chatTitle = await _apiService.createChatTitle(title);
+        _currentTitleId = chatTitle.id;
+      }
 
-      final response = await _aiService.sendMessage(apiMessages);
+      // Send message
+      final response = await _apiService.sendMessage(_currentTitleId!, userMessage);
 
       setState(() {
         _messages.add(
@@ -109,17 +152,13 @@ class _AIPageState extends State<AIPage> {
         );
         _isLoading = false;
       });
+      print('Error sending message: $e');
     }
   }
 
   void _startNewChat() async {
-    // Save current chat before starting new one
-    if (_messages.length > 1) {
-      await _historyService.saveCurrentChat(_messages);
-    }
-
-    // Reset to initial state
     setState(() {
+      _currentTitleId = null;
       _messages.clear();
       _messages.add(
         ChatMessage(
@@ -146,13 +185,7 @@ class _AIPageState extends State<AIPage> {
         leading: widget.showAppBar
             ? IconButton(
                 icon: const Icon(Icons.close, color: Colors.black),
-                onPressed: () async {
-                  // Save chat before closing
-                  if (_messages.length > 1) {
-                    await _historyService.saveCurrentChat(_messages);
-                  }
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               )
             : null,
         title: Container(
@@ -179,11 +212,7 @@ class _AIPageState extends State<AIPage> {
           ),
           IconButton(
             icon: const Icon(Icons.history, color: Colors.black),
-            onPressed: () async {
-              // Save current chat before navigating
-              if (_messages.length > 1) {
-                await _historyService.saveCurrentChat(_messages);
-              }
+            onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const AIHistoryPage()),
@@ -267,8 +296,25 @@ class _AIPageState extends State<AIPage> {
                     ),
                     child: IconButton(
                       icon: const Icon(
-                        Icons.mic,
+                        Icons.send,
                         color: Colors.white,
+                        size: 24,
+                      ),
+                      onPressed: _sendMessage,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xff4DD4E8).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.mic,
+                        color: Color(0xff4DD4E8),
                         size: 24,
                       ),
                       onPressed: () {},

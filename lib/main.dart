@@ -1,13 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:mintrix/core/api/api_client.dart'; // ✅ Import ApiClient
+import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
-import 'package:mintrix/features/personalization/persentation/bloc/personalization_bloc.dart'; // ✅ Import
+import 'package:mintrix/features/personalization/persentation/bloc/personalization_bloc.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:mintrix/features/profile/presentation/pages/detail_profile_page.dart';
 import 'package:mintrix/features/profile/presentation/pages/download_cv.dart';
@@ -24,10 +23,9 @@ import 'features/main/presentation/pages/main_navigation_page.dart';
 import 'features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 import 'features/splash/presentation/pages/get_started_page.dart';
-import 'features/ai/data/models/chat_history.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ Required untuk async operations
+  WidgetsFlutterBinding.ensureInitialized();
 
   // ✅ Initialize Firebase
   try {
@@ -42,18 +40,7 @@ void main() async {
   // ✅ Initialize ApiClient
   final apiClient = ApiClient();
 
-  // Initialize Hive
-  await Hive.initFlutter();
-
-  // Register Hive adapters
-  Hive.registerAdapter(ChatHistoryAdapter());
-
-  runApp(MyApp(apiClient: apiClient)); // ✅ Pass apiClient
-
-  // ⚠️ Clear preferences (hanya untuk development testing)
-  // Hapus baris ini di production!
-  // final prefs = await SharedPreferences.getInstance();
-  // await prefs.clear();
+  runApp(MyApp(apiClient: apiClient));
 }
 
 class MyApp extends StatelessWidget {
