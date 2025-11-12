@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
@@ -227,6 +228,275 @@ class _QuizPageState extends State<QuizPage> {
         },
       ];
     }
+
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "komunikasi_efektif") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan komunikasi efektif?",
+          "options": [
+            "Berbicara sebanyak mungkin",
+            "Menyampaikan pesan dengan jelas dan dipahami",
+            "Menghindari berbicara dengan orang lain",
+            "Selalu memaksakan pendapat",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa komponen penting dalam mendengarkan aktif?",
+          "options": [
+            "Memotong pembicaraan orang lain",
+            "Fokus pada handphone saat berbicara",
+            "Memberikan perhatian penuh dan memahami",
+            "Memikirkan jawaban sambil orang bicara",
+          ],
+          "correctAnswer": 2,
+        },
+        {
+          "question": "Bagaimana body language mempengaruhi komunikasi?",
+          "options": [
+            "Tidak berpengaruh sama sekali",
+            "Dapat memperkuat atau melemahkan pesan",
+            "Hanya penting dalam presentasi",
+            "Tidak penting dalam era digital",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan komunikasi asertif?",
+          "options": [
+            "Berbicara dengan kasar",
+            "Mengekspresikan pendapat dengan sopan dan tegas",
+            "Selalu mengalah pada orang lain",
+            "Menghindari konflik dengan diam",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa hambatan umum dalam komunikasi?",
+          "options": [
+            "Terlalu banyak mendengarkan",
+            "Prasangka dan asumsi negatif",
+            "Berbicara dengan sopan",
+            "Memahami perspektif orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara memberikan kritik yang membangun?",
+          "options": [
+            "Fokus pada kesalahan orangnya",
+            "Menyampaikan di depan banyak orang",
+            "Fokus pada perilaku, bukan pribadi",
+            "Menggunakan kata-kata kasar",
+          ],
+          "correctAnswer": 2,
+        },
+      ];
+    }
+
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "kerja_sama_tim") {
+      return [
+        {
+          "question": "Apa manfaat utama bekerja dalam tim?",
+          "options": [
+            "Bisa mengandalkan orang lain sepenuhnya",
+            "Menggabungkan keahlian untuk hasil lebih baik",
+            "Menghindari tanggung jawab pribadi",
+            "Membuat pekerjaan lebih lambat",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa karakteristik anggota tim yang baik?",
+          "options": [
+            "Selalu mendominasi diskusi",
+            "Mendengarkan dan menghargai pendapat orang lain",
+            "Mengerjakan semua tugas sendiri",
+            "Menyalahkan orang lain saat ada masalah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana mengatasi konflik dalam tim?",
+          "options": [
+            "Menghindari konflik dan berpura-pura setuju",
+            "Komunikasi terbuka dan mencari solusi bersama",
+            "Memaksakan pendapat pribadi",
+            "Keluar dari tim",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran pemimpin dalam tim?",
+          "options": [
+            "Membuat semua keputusan sendiri",
+            "Mengarahkan dan memfasilitasi kolaborasi",
+            "Menyalahkan anggota yang gagal",
+            "Tidak ikut bekerja sama",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan sinergi dalam tim?",
+          "options": [
+            "Bekerja sendiri-sendiri",
+            "Hasil bersama lebih besar dari jumlah individu",
+            "Mengikuti pemimpin tanpa bertanya",
+            "Menghindari tanggung jawab",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana membangun kepercayaan dalam tim?",
+          "options": [
+            "Menyembunyikan informasi",
+            "Transparansi dan konsisten dalam tindakan",
+            "Bersaing dengan anggota lain",
+            "Tidak peduli dengan kontribusi orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengelola_emosi") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan kecerdasan emosional?",
+          "options": [
+            "Tidak pernah merasakan emosi",
+            "Kemampuan mengenali dan mengelola emosi",
+            "Selalu terlihat bahagia",
+            "Mengabaikan perasaan orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara mengenali emosi diri sendiri?",
+          "options": [
+            "Mengabaikan perasaan",
+            "Refleksi dan menyadari reaksi tubuh",
+            "Menyalahkan orang lain",
+            "Menekan semua emosi",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang sebaiknya dilakukan saat merasa marah?",
+          "options": [
+            "Melampiaskan pada orang lain",
+            "Tarik napas dalam dan tenangkan diri",
+            "Membentak siapa saja",
+            "Membanting barang",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa manfaat mengelola emosi dengan baik?",
+          "options": [
+            "Tidak ada manfaatnya",
+            "Hubungan lebih harmonis dan produktif",
+            "Menjadi orang yang kaku",
+            "Kehilangan kepribadian",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu empati?",
+          "options": [
+            "Mengabaikan perasaan orang lain",
+            "Memahami dan merasakan perasaan orang lain",
+            "Menyalahkan orang atas emosi mereka",
+            "Tidak peduli dengan orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara mengatasi stres dengan sehat?",
+          "options": [
+            "Mengonsumsi hal yang tidak sehat",
+            "Olahraga, meditasi, atau berbicara dengan teman",
+            "Menghindari semua orang",
+            "Tidur sepanjang hari",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "menetapkan_tujuan") {
+      return [
+        {
+          "question": "Apa pentingnya menetapkan tujuan dalam hidup?",
+          "options": [
+            "Tidak ada pentingnya",
+            "Memberikan arah dan motivasi",
+            "Membuat hidup lebih rumit",
+            "Hanya untuk orang ambisius",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa kepanjangan dari SMART dalam goal setting?",
+          "options": [
+            "Simple, Minimal, Achievable, Realistic, Timely",
+            "Specific, Measurable, Achievable, Relevant, Time-bound",
+            "Strong, Meaningful, Active, Ready, True",
+            "Special, Modern, Attractive, Real, Tactical",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa perbedaan tujuan jangka pendek dan jangka panjang?",
+          "options": [
+            "Tidak ada perbedaan",
+            "Waktu pencapaian dan cakupannya",
+            "Tingkat kesulitannya saja",
+            "Tujuan pendek lebih penting",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang harus dilakukan jika tujuan tidak tercapai?",
+          "options": [
+            "Menyerah sepenuhnya",
+            "Evaluasi, pelajari, dan buat strategi baru",
+            "Menyalahkan keadaan",
+            "Menghindari tujuan baru",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa penting menulis tujuan?",
+          "options": [
+            "Tidak penting, cukup diingat",
+            "Membuat komitmen lebih kuat dan terukur",
+            "Hanya untuk formalitas",
+            "Agar terlihat sibuk",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan action plan?",
+          "options": [
+            "Daftar impian tanpa rencana",
+            "Langkah konkret untuk mencapai tujuan",
+            "Menunda tujuan",
+            "Rencana tanpa tindakan",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
     return [
       {
         "question": "Pertanyaan default 1",
@@ -453,7 +723,15 @@ class _QuizPageState extends State<QuizPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    Image.asset("assets/images/dino_gramed.png", height: 250),
+                    // Image.asset("assets/images/dino_gramed.png", height: 250),
+                    CachedNetworkImage(
+                      imageUrl:
+                          'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846602/character14_tdcjvv.png',
+                      width: 150,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                    ),
                     const SizedBox(height: 24),
                     Text(
                       "Tipe kepribadianmu adalah $personalityType.",
@@ -466,9 +744,7 @@ class _QuizPageState extends State<QuizPage> {
                     Text(
                       personalityDesc,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                      ),
+                      style: const TextStyle(fontSize: 15),
                     ),
 
                     const SizedBox(height: 32),
@@ -504,7 +780,7 @@ class _QuizPageState extends State<QuizPage> {
                       variant: ButtonColorVariant.blue,
                       onPressed: () => Navigator.pop(context),
                     ),
-                    SizedBox(height: 30,)
+                    SizedBox(height: 30),
                   ],
                 ),
               ),

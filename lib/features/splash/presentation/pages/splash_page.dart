@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class SplashPage extends StatefulWidget {
@@ -25,7 +26,15 @@ class _SplashPageState extends State<SplashPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset('assets/images/logo_mintrix.png', width: 265),
+        child:
+            //Image.asset('assets/images/logo_mintrix.png', width: 265),
+            CachedNetworkImage(
+              imageUrl:
+                  'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846587/character18_auvbpd.png',
+              width: 265,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+            ),
       ),
     );
   }

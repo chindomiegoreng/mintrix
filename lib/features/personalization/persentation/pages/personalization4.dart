@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
@@ -19,18 +20,25 @@ class Personalization4 extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 20,),
+          const SizedBox(height: 20),
           Text(
             'Jadikan Petualangan Ini Milikmu Seutuhnya',
             textAlign: TextAlign.center,
             style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: bold),
           ),
           Spacer(),
-          Image.asset(
-            'assets/images/dino_personalisasi_4.png',
-            height: 350,
+          // Image.asset(
+          //   'assets/images/dino_personalisasi_4.png',
+          //   height: 350,
+          //   width: 350,
+          //   fit: BoxFit.contain,
+          // ),
+          CachedNetworkImage(
+            imageUrl:
+                'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846601/character11_kqpgwe.png',
             width: 350,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => const CircularProgressIndicator(),
           ),
           const SizedBox(height: 32),
           Text(

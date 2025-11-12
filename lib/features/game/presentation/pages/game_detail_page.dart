@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
@@ -57,7 +58,8 @@ class _GameDetailPageState extends State<GameDetailPage> {
     if (currentIndex == 0) return true;
 
     int previousIndex = currentIndex - 1;
-    String previousKey = "${widget.moduleId}_${widget.sectionId}_$previousIndex";
+    String previousKey =
+        "${widget.moduleId}_${widget.sectionId}_$previousIndex";
 
     return _lessonCompletionStatus[previousKey] ?? false;
   }
@@ -67,7 +69,8 @@ class _GameDetailPageState extends State<GameDetailPage> {
       return [
         {
           "title": "Persiapan Karir",
-          "dinoImage": "assets/images/dino_career.png",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846591/character2_h9dbhr.png",
           "locked": !_isLessonUnlocked(0),
           "lessonIndex": 0,
         },
@@ -78,19 +81,25 @@ class _GameDetailPageState extends State<GameDetailPage> {
       return [
         {
           "title": "Mencari Hal Yang Kamu Suka",
-          "dinoImage": "assets/images/dino_daily_mission.png",
+          // "dinoImage": "assets/images/dino_daily_mission.png",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(0),
           "lessonIndex": 0,
         },
         {
           "title": "Mengatur Waktu",
-          "dinoImage": "assets/images/dino_daily_mission.png",
+          // "dinoImage": "assets/images/dino_daily_mission.png",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(1),
           "lessonIndex": 1,
         },
         {
           "title": "Berpikir Positif",
-          "dinoImage": "assets/images/dino_daily_mission.png",
+          // "dinoImage": "assets/images/dino_daily_mission.png",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
           "locked": !_isLessonUnlocked(2),
           "lessonIndex": 2,
         },
@@ -207,7 +216,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                             ),
                           ),
                         );
-                        
+
                         // Reload progress setelah kembali dari journey
                         if (result == true) {
                           _loadLessonProgress();
@@ -408,11 +417,19 @@ class LessonCard extends StatelessWidget {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 60),
-                  child: Image.asset(
-                    dinoImage,
-                    height: 300,
-                    fit: BoxFit.contain,
-                  ),
+                  child:
+                      // Image.asset(
+                      //   dinoImage,
+                      //   height: 300,
+                      //   fit: BoxFit.contain,
+                      // ),
+                      CachedNetworkImage(
+                        imageUrl: dinoImage,
+                        width: 220,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(),
+                      ),
                 ),
               ),
             if (locked)

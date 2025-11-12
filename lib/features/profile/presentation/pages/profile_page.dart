@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:mintrix/core/models/profile_detail_model.dart'; // ✅ Add this
+import 'package:mintrix/core/models/profile_detail_model.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
 import '../bloc/profile_bloc.dart';
@@ -377,12 +377,60 @@ class _ProfilePageState extends State<ProfilePage> {
               spacing: 24,
               runSpacing: 24,
               children: [
-                Image.asset("assets/images/pencapaian1.png"),
-                Image.asset("assets/images/pencapaian2.png"),
-                Image.asset("assets/images/pencapaian3.png"),
-                Image.asset("assets/images/pencapaian4.png"),
-                Image.asset("assets/images/pencapaian5.png"),
-                Image.asset("assets/images/pencapaian6.png"),
+                // Image.asset("assets/images/pencapaian1.png"),
+                // Image.asset("assets/images/pencapaian2.png"),
+                // Image.asset("assets/images/pencapaian3.png"),
+                // Image.asset("assets/images/pencapaian4.png"),
+                // Image.asset("assets/images/pencapaian5.png"),
+                // Image.asset("assets/images/pencapaian6.png"),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846587/character19_ggphol.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846589/character20_oaqruy.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846588/character21_lh4c8m.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846597/character9_xyyood.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846589/character22_f5pm0n.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846588/character23_reixew.png',
+                  width: 85,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
               ],
             ),
           ),

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/shared/theme.dart';
 
@@ -70,10 +71,18 @@ class CustomHomeCardLarge extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Image.asset(
-                  "assets/images/home_card_asset.png",
+                // Image.asset(
+                //   "assets/images/home_card_asset.png",
+                //   width: 100,
+                //   height: 100,
+                // ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846591/character4_fhw416.png',
                   width: 100,
-                  height: 100,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
                 ),
               ],
             ),
@@ -119,7 +128,14 @@ class CustomHomeCardSmall extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Spacer(),
-                Image.asset(images, width: 90, height: 90),
+                // Image.asset(images, width: 90, height: 90),
+                CachedNetworkImage(
+                  imageUrl: images,
+                  width: 90,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
                 const SizedBox(height: 10),
                 Text(
                   title,

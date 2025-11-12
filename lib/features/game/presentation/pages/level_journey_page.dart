@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
@@ -107,8 +108,10 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
         "videoUrl": "https://youtu.be/JA8SjQ334CQ",
         "thumbnail": "assets/images/home_card_large.png",
-        "characterImage": "assets/images/dino_reading.png",
-        "ballImage": "assets/images/dino_ball.png",
+        "characterImage":
+            "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character6_f99qfe.png",
+        "ballImage":
+            "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character7_ejiapi.png",
       };
     } else if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
       return {
@@ -119,8 +122,10 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Video ini berisikan materi terkait persiapan karir dan strategi memasuki dunia kerja.",
         "videoUrl": "https://youtu.be/TjPhzgxe3L0?si=G3a6-fqbPu3ZikzA",
         "thumbnail": "assets/images/home_card_large.png",
-        "characterImage": "assets/images/dino_learn.png",
-        "ballImage": "assets/images/dino_career.png",
+        "characterImage":
+            "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846592/character3_f6ngcd.png",
+        "ballImage":
+            "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846591/character2_h9dbhr.png",
       };
     }
 
@@ -130,8 +135,10 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
       "videoDescription": "Video akan segera tersedia.",
       "videoUrl": "",
       "thumbnail": "assets/images/default_thumbnail.png",
-      "characterImage": "assets/images/dino_reading.png",
-      "ballImage": "assets/images/dino_ball.png",
+      "characterImage":
+          "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character6_f99qfe.png",
+      "ballImage":
+          "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character7_ejiapi.png",
     };
   }
 
@@ -148,7 +155,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         },
         {
           "key": "platform2",
-          "hasVideo": false,
+          "hasVideo": true,
           "title": "Mengatur Waktu",
           "description":
               "Belajar manajemen waktu yang efektif untuk produktivitas optimal.",
@@ -156,11 +163,39 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         },
         {
           "key": "platform3",
-          "hasVideo": false,
+          "hasVideo": true,
+          "title": "Komunikasi Efektif",
+          "description": "Komunikasi Efektif",
+          "subSection": "komunikasi_efektif",
+        },
+        {
+          "key": "platform4",
+          "hasVideo": true,
+          "title": "Kerja Sama Tim",
+          "description": "Kerja Sama Tim",
+          "subSection": "kerja_sama_tim",
+        },
+        {
+          "key": "platform5",
+          "hasVideo": true,
+          "title": "Mengelola Emosi",
+          "description": "Mengelola Emosi",
+          "subSection": "mengelola_emosi",
+        },
+        {
+          "key": "platform6",
+          "hasVideo": true,
           "title": "Berpikir Positif",
           "description":
               "Membangun mindset positif untuk menghadapi tantangan.",
           "subSection": "berpikir_positif",
+        },
+        {
+          "key": "platform7",
+          "hasVideo": true,
+          "title": "Menetepkan Tujuan",
+          "description": "Menetepkan Tujuan",
+          "subSection": "menetapkan_tujuan",
         },
       ];
     }
@@ -229,14 +264,17 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                     children: [
                       CustomPaint(size: Size(screenWidth, screenHeight)),
 
+                      // 1. button kecil
                       Positioned(
                         top: 60,
-                        left: 200,
+                        left: 150,
                         child: _buildSmallPlatform(
                           isActive: true,
                           context: context,
                         ),
                       ),
+
+                      
 
                       if (platformDataList.isNotEmpty)
                         Positioned(
@@ -373,6 +411,18 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     );
   }
 
+  // Widget _buildCharacterStage(
+  //   BuildContext context, {
+  //   required String imagePath,
+  //   required StageType stageType,
+  // }) {
+  //   return SizedBox(
+  //     width: 180,
+  //     height: 180,
+  //     child: Image.asset(imagePath, fit: BoxFit.contain),
+  //   );
+  // }
+
   Widget _buildCharacterStage(
     BuildContext context, {
     required String imagePath,
@@ -381,7 +431,13 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     return SizedBox(
       width: 180,
       height: 180,
-      child: Image.asset(imagePath, fit: BoxFit.contain),
+      child: CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.contain,
+        placeholder: (context, url) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (context, url, error) => const Icon(Icons.error),
+      ),
     );
   }
 
