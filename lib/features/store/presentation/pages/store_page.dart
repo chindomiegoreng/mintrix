@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mintrix/shared/theme.dart';
@@ -104,15 +105,24 @@ class _StorePageState extends State<StorePage>
           ),
         ),
         Positioned(
-          bottom: 11,
+          bottom: -103,
           left: 190,
           right: 0,
           child: SizedBox(
-            height: 140,
-            child: Image.asset(
-              "assets/images/store_dino.png",
-              fit: BoxFit.contain,
-            ),
+            // height: 140,
+            child:
+                // Image.asset(
+                //   "assets/images/store_dino.png",
+                //   fit: BoxFit.contain,
+                // ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846597/character25_ofdwly.png',
+                  // width: 350,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
           ),
         ),
       ],

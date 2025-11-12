@@ -5,6 +5,7 @@ import 'package:mintrix/features/leaderboard/cubit/leaderboard_cubit.dart';
 import 'package:mintrix/features/leaderboard/cubit/leaderboard_state.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/leaderboard_animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class LeaderboardPage extends StatelessWidget {
   const LeaderboardPage({super.key});
@@ -121,12 +122,33 @@ class _LeaderboardView extends StatelessWidget {
     );
   }
 
+  // Widget _buildBadges() {
+  //   return SingleChildScrollView(
+  //     scrollDirection: Axis.horizontal,
+  //     child: Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // Image.asset("assets/images/leaderboard_badges.png")
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildBadges() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Image.asset("assets/images/leaderboard_badges.png")],
+        children: [
+          CachedNetworkImage(
+            imageUrl:
+                'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762850967/character1_lamw4v.png',
+            width: 450,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+          ),
+        ],
       ),
     );
   }
@@ -177,7 +199,9 @@ class _LeaderboardView extends StatelessWidget {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: () {
-                                context.read<LeaderboardCubit>().loadLeaderboard();
+                                context
+                                    .read<LeaderboardCubit>()
+                                    .loadLeaderboard();
                               },
                               child: const Text('Coba Lagi'),
                             ),
@@ -187,23 +211,29 @@ class _LeaderboardView extends StatelessWidget {
                     } else if (state is LeaderboardLoaded) {
                       // ✅ tampilkan hanya rank 4 ke bawah
                       if (state.users.length <= 3) {
-                        return const Center(child: Text('Belum ada data lanjutan'));
+                        return const Center(
+                          child: Text('Belum ada data lanjutan'),
+                        );
                       }
 
                       final remainingUsers = state.users.skip(3).toList();
 
                       return RefreshIndicator(
-                        onRefresh: () =>
-                            context.read<LeaderboardCubit>().refreshLeaderboard(),
+                        onRefresh: () => context
+                            .read<LeaderboardCubit>()
+                            .refreshLeaderboard(),
                         child: ListView.builder(
                           controller: scrollController,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
-                          itemCount: remainingUsers.length + 1, // +1 untuk "Zona Aman"
+                          itemCount:
+                              remainingUsers.length + 1, // +1 untuk "Zona Aman"
                           itemBuilder: (context, index) {
                             // ✅ Zona Aman setelah rank 5
                             if (index == 2 && remainingUsers.length > 2) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -265,8 +295,9 @@ class _LeaderboardView extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color:
-            isHighlight ? bluePrimaryColor.withValues(alpha: 0.1) : Colors.transparent,
+        color: isHighlight
+            ? bluePrimaryColor.withValues(alpha: 0.1)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(

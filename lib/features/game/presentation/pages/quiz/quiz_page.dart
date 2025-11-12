@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
@@ -453,7 +454,15 @@ class _QuizPageState extends State<QuizPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    Image.asset("assets/images/dino_gramed.png", height: 250),
+                    // Image.asset("assets/images/dino_gramed.png", height: 250),
+                    CachedNetworkImage(
+                      imageUrl:
+                          'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846602/character14_tdcjvv.png',
+                      width: 250,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                    ),
                     const SizedBox(height: 24),
                     Text(
                       "Tipe kepribadianmu adalah $personalityType.",
@@ -466,9 +475,7 @@ class _QuizPageState extends State<QuizPage> {
                     Text(
                       personalityDesc,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 15,
-                      ),
+                      style: const TextStyle(fontSize: 15),
                     ),
 
                     const SizedBox(height: 32),
@@ -504,7 +511,7 @@ class _QuizPageState extends State<QuizPage> {
                       variant: ButtonColorVariant.blue,
                       onPressed: () => Navigator.pop(context),
                     ),
-                    SizedBox(height: 30,)
+                    SizedBox(height: 30),
                   ],
                 ),
               ),

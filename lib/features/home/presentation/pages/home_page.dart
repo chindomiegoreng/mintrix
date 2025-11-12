@@ -39,7 +39,7 @@ class _HomePageState extends State<HomePage> {
 
       if (response['data'] != null) {
         final userData = response['data'];
-        
+
         // ✅ Update AuthBloc dengan data terbaru dari database
         if (mounted) {
           context.read<AuthBloc>().add(
@@ -50,8 +50,10 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         }
-        
-        print('✅ Profile updated: ${userData['nama']}, Photo: ${userData['foto']}');
+
+        print(
+          '✅ Profile updated: ${userData['nama']}, Photo: ${userData['foto']}',
+        );
       }
     } catch (e) {
       print('❌ Failed to fetch profile: $e');
@@ -76,7 +78,7 @@ class _HomePageState extends State<HomePage> {
           builder: (context, authState) {
             String username = 'User';
             String? photoUrl;
-            
+
             if (authState is AuthAuthenticated) {
               username = authState.username;
               photoUrl = authState.photoUrl;
@@ -86,7 +88,10 @@ class _HomePageState extends State<HomePage> {
               onRefresh: _fetchAndUpdateProfile, // ✅ Pull to refresh
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -112,7 +117,8 @@ class _HomePageState extends State<HomePage> {
           radius: 25,
           backgroundImage: photoUrl != null && photoUrl.isNotEmpty
               ? NetworkImage(photoUrl)
-              : const AssetImage('assets/images/logo_mintrix.png') as ImageProvider,
+              : const AssetImage('assets/images/logo_mintrix.png')
+                    as ImageProvider,
           backgroundColor: Colors.grey[300],
           onBackgroundImageError: (exception, stackTrace) {
             print('❌ Error loading image: $exception');
@@ -185,7 +191,8 @@ class _HomePageState extends State<HomePage> {
                 context.read<NavigationBloc>().add(UpdateIndex(1));
               },
               child: CustomHomeCardSmall(
-                images: "assets/images/home_card_asset1.png",
+                images:
+                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846593/character5_v8uvxf.png",
                 title: "Permainan",
                 subTitle: "Ayo bermain dan belajar",
               ),
@@ -200,7 +207,8 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               child: const CustomHomeCardSmall(
-                images: "assets/images/home_card_asset2.png",
+                images:
+                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846600/character12_bpnhx5.png",
                 title: "Catatan harian",
                 subTitle: "Ceritakan kegiatanmu hari ini",
               ),
@@ -216,7 +224,8 @@ class _HomePageState extends State<HomePage> {
                 context.read<NavigationBloc>().add(UpdateIndex(2));
               },
               child: CustomHomeCardSmall(
-                images: "assets/images/home_card_asset3.png",
+                images:
+                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762848439/character10_hrs1i5.png",
                 title: "Assisten",
                 subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
               ),
@@ -226,7 +235,8 @@ class _HomePageState extends State<HomePage> {
                 context.read<NavigationBloc>().add(UpdateIndex(4));
               },
               child: const CustomHomeCardSmall(
-                images: "assets/images/home_card_asset4.png",
+                images:
+                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character8_uhbkoc.png",
                 title: "Toko",
                 subTitle: "Tingkatkan performa dengan membeli item",
               ),

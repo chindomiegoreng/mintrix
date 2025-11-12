@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
@@ -14,10 +15,10 @@ class DailyMissionPage extends StatefulWidget {
 
 class _DailyMissionPageState extends State<DailyMissionPage> {
   final ApiClient _apiClient = ApiClient();
-  
+
   bool _isLoading = true;
   String? _errorMessage;
-  
+
   // Mission data from API
   bool _ajakNgobrolDino = false;
   bool _lakukanHobimuHariIni = false;
@@ -46,16 +47,17 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
 
       if (response['data'] != null) {
         final missionData = response['data'];
-        
+
         setState(() {
           _ajakNgobrolDino = missionData['ajakNgobrolDino'] ?? false;
           _lakukanHobimuHariIni = missionData['lakukanHobimuHariIni'] ?? false;
-          _hubungkanAkunmuDenganOrangTua = missionData['hubungkanAkunmuDenganOrangTua'] ?? false;
+          _hubungkanAkunmuDenganOrangTua =
+              missionData['hubungkanAkunmuDenganOrangTua'] ?? false;
           _currentPoint = missionData['point'] ?? 0;
           _lastResetDaily = missionData['lastResetDailyWIB'] ?? '';
           _isLoading = false;
         });
-        
+
         print('✅ Mission data loaded successfully');
       }
     } catch (e) {
@@ -71,7 +73,7 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
   Future<void> _updateMissionStatus(String missionType) async {
     try {
       Map<String, dynamic> body = {};
-      
+
       // Tentukan field mana yang akan diupdate
       switch (missionType) {
         case 'dino':
@@ -96,13 +98,15 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
         final updatedMission = response['data'];
         setState(() {
           _ajakNgobrolDino = updatedMission['ajakNgobrolDino'] ?? false;
-          _lakukanHobimuHariIni = updatedMission['lakukanHobimuHariIni'] ?? false;
-          _hubungkanAkunmuDenganOrangTua = updatedMission['hubungkanAkunmuDenganOrangTua'] ?? false;
+          _lakukanHobimuHariIni =
+              updatedMission['lakukanHobimuHariIni'] ?? false;
+          _hubungkanAkunmuDenganOrangTua =
+              updatedMission['hubungkanAkunmuDenganOrangTua'] ?? false;
           _currentPoint = updatedMission['point'] ?? 0;
         });
-        
+
         print('✅ Mission updated successfully');
-        
+
         // Show success message
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -155,9 +159,7 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xff4DD4E8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
       child: const Text("Mulai", style: TextStyle(color: Colors.white)),
@@ -177,9 +179,7 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
               fit: BoxFit.cover,
             ),
           ),
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+          child: const Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -236,7 +236,10 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
                   onRefresh: _fetchMissionData,
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 24,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -286,18 +289,29 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
                                     Text(
                                       "$_currentPoint POIN",
                                       style: secondaryTextStyle.copyWith(
-                                          fontSize: 16, fontWeight: semiBold),
+                                        fontSize: 16,
+                                        fontWeight: semiBold,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ],
                             ),
                             Flexible(
-                              child: Image.asset(
-                                'assets/images/dino_daily_mission.png',
-                                width: 150,
-                                height: 150,
-                              ),
+                              child:
+                                  // Image.asset(
+                                  //   'assets/images/dino_daily_mission.png',
+                                  //   width: 150,
+                                  //   height: 150,
+                                  // ),
+                                  CachedNetworkImage(
+                                    imageUrl:
+                                        'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846605/character15_pet4at.png',
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                        const CircularProgressIndicator(),
+                                  ),
                             ),
                           ],
                         ),
@@ -345,7 +359,9 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
                             ),
                             const Spacer(),
                             Text(
-                              _lastResetDaily.isNotEmpty ? _lastResetDaily : 'Hari ini',
+                              _lastResetDaily.isNotEmpty
+                                  ? _lastResetDaily
+                                  : 'Hari ini',
                               style: bluePrimaryTextStyle.copyWith(
                                 fontWeight: semiBold,
                                 fontSize: 12,
@@ -406,7 +422,10 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
               // === Tombol Kembali di bawah ===
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
                 child: CustomFilledButton(
                   title: "Kembali",
                   variant: ButtonColorVariant.blue,
