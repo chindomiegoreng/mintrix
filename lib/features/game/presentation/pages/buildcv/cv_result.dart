@@ -9,6 +9,7 @@ import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:open_filex/open_filex.dart';
 
 class CVResult extends StatefulWidget {
   final VoidCallback onComplete;
@@ -47,7 +48,7 @@ class _CVResultState extends State<CVResult> {
         resumeId = state.cvModel.id;
         resumeLink = state.cvModel.resumeLink;
       });
-      
+
       if (resumeLink != null && resumeLink!.isNotEmpty) {
         _downloadPdfForPreview(resumeLink!);
       }
@@ -106,15 +107,7 @@ class _CVResultState extends State<CVResult> {
             isDownloading = false;
           });
 
-          _launchURL(state.downloadUrl);
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('📥 Membuka link download...'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
-            ),
-          );
+          _downloadAndSavePDF(state.downloadUrl);
         } else if (state is CVDownloadError) {
           setState(() {
             isDownloading = false;
@@ -139,9 +132,7 @@ class _CVResultState extends State<CVResult> {
           child: Column(
             children: [
               Expanded(
-                child: isGenerating
-                    ? _buildLoadingView()
-                    : _buildSuccessView(),
+                child: isGenerating ? _buildLoadingView() : _buildSuccessView(),
               ),
             ],
           ),
@@ -167,6 +158,7 @@ class _CVResultState extends State<CVResult> {
               valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
             ),
           ),
+          const SizedBox(height: 32),
           Text(
             '🤖 AI sedang membuat CV kamu...',
             style: primaryTextStyle.copyWith(
@@ -175,7 +167,7 @@ class _CVResultState extends State<CVResult> {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 8),
           Text(
             'Proses ini memakan waktu beberapa detik',
             style: secondaryTextStyle.copyWith(fontSize: 14),
@@ -203,10 +195,7 @@ class _CVResultState extends State<CVResult> {
             resumeId != null
                 ? "🎉 Yeay, CV Kamu Sudah Jadi!"
                 : "⏳ Menunggu CV dibuat...",
-            style: primaryTextStyle.copyWith(
-              fontSize: 22,
-              fontWeight: bold,
-            ),
+            style: primaryTextStyle.copyWith(fontSize: 22, fontWeight: bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 12),
@@ -218,7 +207,7 @@ class _CVResultState extends State<CVResult> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          
+
           Expanded(child: _buildCVPreviewCard()),
         ],
       ),
@@ -251,7 +240,7 @@ class _CVResultState extends State<CVResult> {
               _buildPDFPreview(resumeLink!)
             else
               _buildPlaceholder(),
-            
+
             // Loading Overlay
             if (resumeId == null || isGenerating || isPdfLoading)
               _buildLoadingOverlay(),
@@ -288,11 +277,7 @@ class _CVResultState extends State<CVResult> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.picture_as_pdf,
-              size: 64,
-              color: Colors.red[400],
-            ),
+            Icon(Icons.picture_as_pdf, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
               'Tap untuk melihat CV',
@@ -318,11 +303,7 @@ class _CVResultState extends State<CVResult> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.description_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
+          Icon(Icons.description_outlined, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
           Text(
             'CV Preview',
@@ -389,7 +370,8 @@ class _CVResultState extends State<CVResult> {
                   child: CustomFilledButton(
                     title: isDownloading ? "Downloading..." : "Download CV",
                     variant: ButtonColorVariant.white,
-                    onPressed: (isGenerating || isDownloading || resumeId == null)
+                    onPressed:
+                        (isGenerating || isDownloading || resumeId == null)
                         ? null
                         : _handleDownload,
                   ),
@@ -425,8 +407,8 @@ class _CVResultState extends State<CVResult> {
 
   void _handleDownload() {
     if (resumeLink != null && resumeLink!.isNotEmpty) {
-      _launchURL(resumeLink!);
-      widget.onDownload(); 
+      _downloadAndSavePDF(resumeLink!);
+      widget.onDownload();
     } else if (resumeId != null) {
       context.read<BuildCVBloc>().add(DownloadCV(resumeId!));
     } else {
@@ -439,6 +421,78 @@ class _CVResultState extends State<CVResult> {
     }
   }
 
+  Future<void> _downloadAndSavePDF(String url) async {
+    try {
+      setState(() {
+        isDownloading = true;
+      });
+
+      debugPrint('📥 Downloading PDF from: $url');
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw 'Download timeout';
+            },
+          );
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+
+        // ✅ Simpan di direktori aplikasi (aman tanpa izin)
+        final dir = await getApplicationDocumentsDirectory();
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        final fileName = 'CV_Resume_$timestamp.pdf';
+        final filePath = '${dir.path}/$fileName';
+
+        final file = File(filePath);
+        await file.writeAsBytes(bytes, flush: true);
+
+        debugPrint('✅ PDF saved to: $filePath');
+
+        if (mounted) {
+          setState(() {
+            isDownloading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('✅ CV berhasil didownload!\n$fileName'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
+              action: SnackBarAction(
+                label: 'Buka',
+                textColor: Colors.white,
+                onPressed: () async {
+                  final result = await OpenFilex.open(filePath);
+                  debugPrint('📄 OpenFile result: ${result.message}');
+                },
+              ),
+            ),
+          );
+        }
+      } else {
+        throw 'HTTP ${response.statusCode}';
+      }
+    } catch (e) {
+      debugPrint('❌ Error downloading PDF: $e');
+      if (mounted) {
+        setState(() {
+          isDownloading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Gagal download CV: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _downloadPdfForPreview(String url) async {
     if (!mounted) return;
 
@@ -448,20 +502,24 @@ class _CVResultState extends State<CVResult> {
 
     try {
       debugPrint('📥 Downloading PDF for preview from: $url');
-      
-      final response = await http.get(Uri.parse(url)).timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          throw 'Download timeout';
-        },
-      );
+
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              throw 'Download timeout';
+            },
+          );
 
       if (response.statusCode == 200) {
         final bytes = response.bodyBytes;
         final dir = await getTemporaryDirectory();
-        final file = File('${dir.path}/preview_cv_${DateTime.now().millisecondsSinceEpoch}.pdf');
+        final file = File(
+          '${dir.path}/preview_cv_${DateTime.now().millisecondsSinceEpoch}.pdf',
+        );
         await file.writeAsBytes(bytes, flush: true);
-        
+
         if (mounted) {
           setState(() {
             localPdfPath = file.path;
@@ -486,10 +544,7 @@ class _CVResultState extends State<CVResult> {
     try {
       final Uri uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
         debugPrint('✅ Launched URL: $url');
       } else {
         throw 'Could not launch $url';

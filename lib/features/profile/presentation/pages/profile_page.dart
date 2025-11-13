@@ -290,7 +290,16 @@ class _ProfilePageState extends State<ProfilePage> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset("assets/icons/fire.png", height: 36),
+              Image.asset(
+                "assets/icons/fire.png",
+                height: 36,
+                color: state.streakActive && state.streakCount > 0
+                    ? null
+                    : Colors.grey,
+                colorBlendMode: state.streakActive && state.streakCount > 0
+                    ? BlendMode.dst
+                    : BlendMode.srcIn,
+              ),
               const SizedBox(height: 2),
               Text(
                 "Runtutan",
