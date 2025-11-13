@@ -51,6 +51,7 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
+          // 🥈 Podium 2 (belakang)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
@@ -64,6 +65,23 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
               podiumImage: "assets/images/leaderboard_podium2.png",
             ),
           ),
+
+          // 🥉 Podium 3 (belakang)
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutBack,
+            bottom: showThird ? 0 : -300,
+            left: 225,
+            child: buildPodium(
+              number: 3,
+              name: third.nama,
+              xp: third.xp,
+              image: third.foto ?? "assets/images/profile_placeholder.png",
+              podiumImage: "assets/images/leaderboard_podium3.png",
+            ),
+          ),
+
+          // 🥇 Podium 1 (paling depan)
           AnimatedPositioned(
             duration: const Duration(milliseconds: 600),
             curve: Curves.easeOutBack,
@@ -75,19 +93,6 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
               image: first.foto ?? "assets/images/profile_placeholder.png",
               podiumImage: "assets/images/leaderboard_podium1.png",
               isFirst: true,
-            ),
-          ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack,
-            bottom: showThird ? 0 : -300,
-            left: 220,
-            child: buildPodium(
-              number: 3,
-              name: third.nama,
-              xp: third.xp,
-              image: third.foto ?? "assets/images/profile_placeholder.png",
-              podiumImage: "assets/images/leaderboard_podium3.png",
             ),
           ),
         ],
@@ -140,31 +145,31 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
               ),
               child: ClipOval(child: imageWidget),
             ),
-            if (isFirst)
-              Positioned(
-                bottom: -10,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: bluePrimaryColor,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "Kamu",
-                      style: whiteTextStyle.copyWith(
-                        fontSize: 12,
-                        fontWeight: bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            // if (isFirst)
+            //   Positioned(
+            //     bottom: -10,
+            //     left: 0,
+            //     right: 0,
+            //     child: Center(
+            //       child: Container(
+            //         padding: const EdgeInsets.symmetric(
+            //           horizontal: 12,
+            //           vertical: 4,
+            //         ),
+            //         decoration: BoxDecoration(
+            //           color: bluePrimaryColor,
+            //           borderRadius: BorderRadius.circular(20),
+            //         ),
+            //         child: Text(
+            //           "Kamu",
+            //           style: whiteTextStyle.copyWith(
+            //             fontSize: 12,
+            //             fontWeight: bold,
+            //           ),
+            //         ),
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
         SizedBox(height: isFirst ? 12 : 8),

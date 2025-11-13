@@ -9,12 +9,14 @@ class QuizPage extends StatefulWidget {
   final String moduleId;
   final String sectionId;
   final String subSection;
+  final int xpReward; // ✅ Add XP reward parameter
 
   const QuizPage({
     super.key,
     required this.moduleId,
     required this.sectionId,
     required this.subSection,
+    this.xpReward = 80, // ✅ Default 80 XP
   });
 
   @override
@@ -518,11 +520,11 @@ class _QuizPageState extends State<QuizPage> {
     });
 
     try {
-      print('📤 Mengirim XP: 80');
+      print('📤 Mengirim XP: ${widget.xpReward} untuk ${widget.subSection}');
 
       final response = await _apiClient.patch(
         ApiEndpoints.stats,
-        body: {'xp': 80},
+        body: {'xp': widget.xpReward},
         requiresAuth: true,
       );
 
@@ -530,14 +532,16 @@ class _QuizPageState extends State<QuizPage> {
 
       if (response['success'] == true) {
         final updatedXP = response['stats']?['xp'] ?? response['data']?['xp'];
-        print('✅ XP berhasil ditambahkan: 80 (Total: $updatedXP)');
+        print(
+          '✅ XP berhasil ditambahkan: ${widget.xpReward} (Total: $updatedXP)',
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('XP +80 berhasil ditambahkan! 🎉'),
+            SnackBar(
+              content: Text('XP +${widget.xpReward} berhasil ditambahkan! 🎉'),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 2),
             ),
           );
         }
@@ -545,7 +549,6 @@ class _QuizPageState extends State<QuizPage> {
     } catch (e) {
       print('❌ Gagal menambah XP: $e');
 
-      // Show error ke user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -746,7 +749,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Widget _buildResultPage(int totalQuestions) {
-    final xpEarned = 80;
+    final xpEarned = widget.xpReward; // ✅ Use dynamic XP
     String personalityType = "Investigatif";
     String personalityDesc =
         "Artinya, kamu seorang pemikir alami yang suka menganalisis dan memecahkan masalah. Cocok menjadi Ahli Matematika, Programmer, atau Apoteker.";
@@ -768,9 +771,11 @@ class _QuizPageState extends State<QuizPage> {
                   color: const Color(0xFF2B8DD8).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  "Runtunan telah terbuka!",
-                  style: TextStyle(
+                child: Text(
+                  xpEarned == 80
+                      ? "Runtunan telah terbuka!"
+                      : "🔄 Replay Selesai!", // ✅ Different message for replay
+                  style: const TextStyle(
                     color: Color(0xFF2B8DD8),
                     fontWeight: FontWeight.w600,
                   ),
@@ -808,12 +813,14 @@ class _QuizPageState extends State<QuizPage> {
                     const SizedBox(height: 32),
                     Column(
                       children: [
-                        // ✅ Show loading indicator saat submit XP
                         _isSubmittingXP
                             ? const CircularProgressIndicator()
-                            : const Icon(
+                            : Icon(
                                 Icons.add_circle,
-                                color: Color(0xFF2B8DD8),
+                                color: xpEarned == 80
+                                    ? const Color(0xFF2B8DD8)
+                                    : Colors
+                                          .orange, // ✅ Different color for replay
                                 size: 32,
                               ),
                         const SizedBox(height: 6),

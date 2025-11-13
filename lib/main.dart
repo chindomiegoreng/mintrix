@@ -98,6 +98,9 @@ class MyApp extends StatelessWidget {
             description: '',
             videoUrl: '',
             thumbnail: '',
+            moduleId: '',
+            sectionId: '',
+            subSection: '',
           ),
           '/quizPage': (context) =>
               const QuizPage(moduleId: '', sectionId: '', subSection: ''),
