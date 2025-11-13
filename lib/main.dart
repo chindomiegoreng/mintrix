@@ -101,6 +101,7 @@ class MyApp extends StatelessWidget {
             moduleId: '',
             sectionId: '',
             subSection: '',
+            xpReward: 0,
           ),
           '/quizPage': (context) =>
               const QuizPage(moduleId: '', sectionId: '', subSection: ''),

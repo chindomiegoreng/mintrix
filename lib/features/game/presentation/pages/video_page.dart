@@ -6,7 +6,6 @@ import 'package:mintrix/features/game/data/services/youtube_services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
 
-// ✅ Global cache untuk menyimpan URL yang sudah di-fetch
 class VideoUrlCache {
   static final Map<String, String> _cache = {};
   
@@ -24,10 +23,9 @@ class VideoPage extends StatefulWidget {
   final String description;
   final String videoUrl;
   final String thumbnail;
-  final String moduleId;
-  final String sectionId;
-  final String subSection;
-  final int xpReward; // ✅ Add XP reward parameter
+  final String? moduleId;
+  final String? sectionId;
+  final String? subSection;
 
   const VideoPage({
     super.key,
@@ -35,10 +33,9 @@ class VideoPage extends StatefulWidget {
     required this.description,
     required this.videoUrl,
     required this.thumbnail,
-    required this.moduleId,
-    required this.sectionId,
-    required this.subSection,
-    this.xpReward = 80, // ✅ Default 80 XP
+    this.moduleId,
+    this.sectionId,
+    this.subSection, required int xpReward,
   });
 
   @override
@@ -175,23 +172,22 @@ class _VideoPageState extends State<VideoPage> {
   void _handleNext() {
     if (_isModule2Section1()) {
       Navigator.pushNamed(context, '/build-cv');
-    } else {
-      _navigateToResume();
-    }
-  }
-
-  void _navigateToResume() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ResumePage(
-          moduleId: widget.moduleId,
-          sectionId: widget.sectionId,
-          subSection: widget.subSection,
-          xpReward: widget.xpReward,
+    } else if (widget.moduleId != null &&
+        widget.sectionId != null &&
+        widget.subSection != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResumePage(
+            moduleId: widget.moduleId!,
+            sectionId: widget.sectionId!,
+            subSection: widget.subSection!,
+          ),
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.pushNamed(context, '/quizPage');
+    }
   }
 
   @override
@@ -341,7 +337,7 @@ class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
 
   const VideoPlayerPage({
-    super.key,
+    super.key, 
     required this.videoController,
     required this.videoUrl,
   });
@@ -356,6 +352,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void initState() {
     super.initState();
+    // ✅ Langsung buat ChewieController tanpa async
+    // Controller video sudah ready dari parent
     _chewieController = ChewieController(
       videoPlayerController: widget.videoController,
       autoPlay: true,
@@ -369,7 +367,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 48),
+              const Icon(
+                Icons.error_outline,
+                color: Colors.white,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Error: $errorMessage',
@@ -394,7 +396,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     return PopScope(
       canPop: true,
       onPopInvoked: (didPop) {
-        if (didPop) widget.videoController.pause();
+        if (didPop) {
+          widget.videoController.pause();
+        }
       },
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -406,18 +410,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               widget.videoController.pause();
               Navigator.pop(context, false);
             },
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context, false),
-        ),
-        title: const Text("Video", style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check_circle, color: Colors.white),
-            onPressed: _isInitialized
-                ? () => Navigator.pop(context, true)
-                : null,
           ),
           title: const Text("Video", style: TextStyle(color: Colors.white)),
           centerTitle: true,
@@ -430,7 +422,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         ),
         body: Column(
           children: [
-            const Spacer(flex: 1), // sedikit ruang di atas
+            const Spacer(flex: 1), 
             Align(
               alignment: Alignment.center,
               child: AspectRatio(
@@ -438,7 +430,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 child: Chewie(controller: _chewieController),
               ),
             ),
-            const Spacer(flex: 2),
+            const Spacer(flex: 2), 
           ],
         ),
       ),
