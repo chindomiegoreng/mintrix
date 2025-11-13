@@ -209,14 +209,17 @@ class _LeaderboardView extends StatelessWidget {
                         ),
                       );
                     } else if (state is LeaderboardLoaded) {
-                      // ✅ tampilkan hanya rank 4 ke bawah
-                      if (state.users.length <= 3) {
+                      // ✅ Limit to maximum 30 users total (3 in podium + 27 in list)
+                      final maxUsers = 30;
+                      final allUsers = state.users.take(maxUsers).toList();
+
+                      if (allUsers.length <= 3) {
                         return const Center(
                           child: Text('Belum ada data lanjutan'),
                         );
                       }
 
-                      final remainingUsers = state.users.skip(3).toList();
+                      final remainingUsers = allUsers.skip(3).toList();
 
                       return RefreshIndicator(
                         onRefresh: () => context
@@ -225,10 +228,11 @@ class _LeaderboardView extends StatelessWidget {
                         child: ListView.builder(
                           controller: scrollController,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
+                          physics: const ClampingScrollPhysics(),
                           itemCount:
-                              remainingUsers.length + 1, // +1 untuk "Zona Aman"
+                              remainingUsers.length + 1, // +1 for "Zona Aman"
                           itemBuilder: (context, index) {
-                            // ✅ Zona Aman setelah rank 5
+                            // ✅ Zona Aman after rank 5 (index 2 in remainingUsers)
                             if (index == 2 && remainingUsers.length > 2) {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -258,8 +262,16 @@ class _LeaderboardView extends StatelessWidget {
                               );
                             }
 
-                            final user = remainingUsers[index];
-                            final rank = index + 4;
+                            // ✅ Adjust index to account for "Zona Aman" separator
+                            final userIndex = index > 2 ? index - 1 : index;
+
+                            // ✅ Safety check
+                            if (userIndex >= remainingUsers.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            final user = remainingUsers[userIndex];
+                            final rank = userIndex + 4;
 
                             return _buildLeaderboardItem(
                               rank: rank,
@@ -273,6 +285,7 @@ class _LeaderboardView extends StatelessWidget {
                       );
                     }
 
+                    // ✅ Default return statement
                     return const Center(child: Text('Tidak ada data'));
                   },
                 ),
