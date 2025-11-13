@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
               photoUrl: userData['foto'],
             ),
           );
-          
+
           // ✅ Refresh ProfileBloc juga untuk update streak
           context.read<ProfileBloc>().add(RefreshProfile());
         }
@@ -150,14 +150,24 @@ class _HomePageState extends State<HomePage> {
         BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, profileState) {
             int streakCount = 0;
-            
+            bool streakActive = false;
+
             if (profileState is ProfileLoaded) {
               streakCount = profileState.streakCount;
+              streakActive = profileState.streakActive;
             }
-            
+
             return Row(
               children: [
-                Image.asset("assets/icons/fire.png", height: 36),
+                Image.asset(
+                  "assets/icons/fire.png",
+                  height: 36,
+                  // 🔥 Warna berubah jika streak tidak aktif
+                  color: streakActive && streakCount > 0 ? null : Colors.grey,
+                  colorBlendMode: streakActive && streakCount > 0
+                      ? BlendMode.dst
+                      : BlendMode.srcIn,
+                ),
                 const SizedBox(width: 4),
                 Text(
                   "$streakCount",
@@ -170,6 +180,7 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
+
         const SizedBox(width: 16),
         TextButton(
           onPressed: () {

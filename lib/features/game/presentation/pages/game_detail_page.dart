@@ -1,10 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
-import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
 class GameDetailPage extends StatefulWidget {
@@ -139,7 +137,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const GameHeader(),
+            const GameHeaderWidget(),
             SectionProgressCard(
               title: _getSectionTitle(),
               subtitle: widget.sectionTitle,
@@ -226,79 +224,6 @@ class _GameDetailPageState extends State<GameDetailPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class GameHeader extends StatelessWidget {
-  const GameHeader({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundImage: AssetImage('assets/images/profile.png'),
-          ),
-          // ✅ Dynamic Streak Counter dari ProfileBloc
-          BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, profileState) {
-              int streakCount = 0;
-              
-              if (profileState is ProfileLoaded) {
-                streakCount = profileState.streakCount;
-              }
-              
-              return Row(
-                children: [
-                 Image.asset("assets/icons/fire.png", height: 36),
-                  const SizedBox(width: 4),
-                  Text(
-                    "$streakCount",
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  ),
-                ],
-              );
-            },
-          ),
-          Row(
-            children: [
-              Image.asset("assets/icons/icon_diamond.png", height: 36),
-              const SizedBox(width: 4),
-              const Text(
-                "500",
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-         BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, profileState) {
-              int xpCount = 0;
-              
-              if (profileState is ProfileLoaded) {
-                xpCount = profileState.xp;
-              }
-              
-              return Text(
-                "XP $xpCount",
-                style: const TextStyle(
-                  color: Colors.green,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              );
-            },
-          ),
-        ],
       ),
     );
   }
