@@ -11,9 +11,10 @@ class VideoPage extends StatefulWidget {
   final String description;
   final String videoUrl;
   final String thumbnail;
-  final String? moduleId;
-  final String? sectionId;
-  final String? subSection;
+  final String moduleId;
+  final String sectionId;
+  final String subSection;
+  final int xpReward; // ✅ Add XP reward parameter
 
   const VideoPage({
     super.key,
@@ -21,9 +22,10 @@ class VideoPage extends StatefulWidget {
     required this.description,
     required this.videoUrl,
     required this.thumbnail,
-    this.moduleId,
-    this.sectionId,
-    this.subSection,
+    required this.moduleId,
+    required this.sectionId,
+    required this.subSection,
+    this.xpReward = 80, // ✅ Default 80 XP
   });
 
   @override
@@ -79,22 +81,23 @@ class _VideoPageState extends State<VideoPage> {
   void _handleNext() {
     if (_isModule2Section1()) {
       Navigator.pushNamed(context, '/build-cv');
-    } else if (widget.moduleId != null &&
-        widget.sectionId != null &&
-        widget.subSection != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResumePage(
-            moduleId: widget.moduleId!,
-            sectionId: widget.sectionId!,
-            subSection: widget.subSection!,
-          ),
-        ),
-      );
     } else {
-      Navigator.pushNamed(context, '/quizPage');
+      _navigateToResume();
     }
+  }
+
+  void _navigateToResume() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ResumePage(
+          moduleId: widget.moduleId,
+          sectionId: widget.sectionId,
+          subSection: widget.subSection,
+          xpReward: widget.xpReward,
+        ),
+      ),
+    );
   }
 
   @override
@@ -249,8 +252,9 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.check_circle, color: Colors.white),
-            onPressed:
-                _isInitialized ? () => Navigator.pop(context, true) : null,
+            onPressed: _isInitialized
+                ? () => Navigator.pop(context, true)
+                : null,
           ),
         ],
       ),
