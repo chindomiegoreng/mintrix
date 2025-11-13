@@ -310,6 +310,7 @@ class ApiClient {
 
       print('📡 PATCH: $url');
       print('📦 Body: ${jsonEncode(body)}');
+      print('🔑 Headers: $headers');
 
       final response = await _client.patch(
         url,
@@ -317,7 +318,7 @@ class ApiClient {
         body: jsonEncode(body),
       );
 
-      print('✅ Response: ${response.statusCode}');
+      print('✅ Response Status: ${response.statusCode}');
       print('📄 Response Body: ${response.body}');
 
       return _handleResponse(response, requiresAuth: requiresAuth);

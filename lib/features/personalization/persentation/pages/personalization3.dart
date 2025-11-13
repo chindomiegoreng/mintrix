@@ -96,14 +96,14 @@ class Personalization3 extends StatelessWidget {
                             Text(
                               reward['title'],
                               style: primaryTextStyle.copyWith(
-                                fontSize: 14,
+                                fontSize: 16,
                                 fontWeight: semiBold,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               reward['subtitle'],
-                              style: secondaryTextStyle.copyWith(fontSize: 12),
+                              style: secondaryTextStyle.copyWith(fontSize: 14),
                             ),
                           ],
                         ),

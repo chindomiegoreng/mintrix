@@ -359,28 +359,6 @@ class SectionProgressCard extends StatelessWidget {
                 ],
               ),
             ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 6,
-                    color: Colors.lightBlue,
-                    backgroundColor: Colors.grey.shade200,
-                  ),
-                ),
-                Text(
-                  "${(progress * 100).toInt()}%",
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),

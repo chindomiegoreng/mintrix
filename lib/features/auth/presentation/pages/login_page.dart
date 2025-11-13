@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
 import '../bloc/auth_bloc.dart';
@@ -118,12 +119,11 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     child: TextButton(
                       onPressed: () {},
-                      child: const Text(
-                        "Lupa Kata Sandimu?",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w400,
+                      child: Text(
+                        'Lupa Kata Sandimu?',
+                        style: primaryTextStyle.copyWith(
                           fontSize: 14,
+                          fontWeight: semiBold,
                         ),
                       ),
                     ),

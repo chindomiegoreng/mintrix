@@ -24,6 +24,7 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _totalPages = 3;
+  bool _isNavigating = false; // ✅ Add loading state
 
   @override
   Widget build(BuildContext context) {
@@ -38,74 +39,128 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
           } else if (state is PersonalizationStage2) {
             _totalPages = 4;
           } else if (state is PersonalizationCompleted) {
-            Navigator.pushReplacementNamed(context, '/main');
+            setState(() {
+              _isNavigating = true;
+            });
+
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/main',
+                  (route) => false,
+                );
+              }
+            });
           }
         },
         builder: (context, state) {
           return Scaffold(
             backgroundColor: whiteColor,
             body: SafeArea(
-              child: Column(
+              child: Stack(
                 children: [
-                  if ([1, 2].contains(_currentPage))
-                    _buildProgressBar(context, state),
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (index) {
-                        setState(() {
-                          _currentPage = index;
-                        });
-                      },
-                      children: [
-                        Personalization1(onNext: () => _nextPage(context)),
-                        Personalization2(onNext: () => _nextPage(context)),
-                        Personalization3(
-                          onNext: () {
-                            context
-                                .read<PersonalizationBloc>()
-                                .add(CompleteFirstStage());
-                          },
-                        ),
-                        Personalization4(
-                          onStart: () {
-                            context
-                                .read<PersonalizationBloc>()
-                                .add(UpdatePersonalizationStep(0));
+                  Column(
+                    children: [
+                      if ([1, 2].contains(_currentPage))
+                        _buildProgressBar(context, state),
+                      Expanded(
+                        child: PageView(
+                          controller: _pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          onPageChanged: (index) {
                             setState(() {
-                              _totalPages = 4;
+                              _currentPage = index;
                             });
-                            _nextPage(context);
                           },
-                          onSkip: () {
-                            context
-                                .read<PersonalizationBloc>()
-                                .add(SkipSecondStage());
-                          },
+                          children: [
+                            Personalization1(onNext: () => _nextPage(context)),
+                            Personalization2(onNext: () => _nextPage(context)),
+                            Personalization3(
+                              onNext: () {
+                                context.read<PersonalizationBloc>().add(
+                                  CompleteFirstStage(),
+                                );
+                              },
+                            ),
+                            Personalization4(
+                              onStart: () {
+                                context.read<PersonalizationBloc>().add(
+                                  UpdatePersonalizationStep(0),
+                                );
+                                setState(() {
+                                  _totalPages = 4;
+                                });
+                                _nextPage(context);
+                              },
+                              onSkip: () {
+                                context.read<PersonalizationBloc>().add(
+                                  SkipSecondStage(),
+                                );
+                              },
+                            ),
+                            Personalization5(
+                              onNext: () => _nextPage(context),
+                              onBack: () => _previousPage(context),
+                            ),
+                            Personalization6(
+                              onNext: () => _nextPage(context),
+                              onBack: () => _previousPage(context),
+                            ),
+                            Personalization7(
+                              onNext: () => _nextPage(context),
+                              onBack: () => _previousPage(context),
+                            ),
+                            Personalization8(
+                              onComplete: () {
+                                context.read<PersonalizationBloc>().add(
+                                  CompletePersonalization(),
+                                );
+                              },
+                            ),
+                          ],
                         ),
-                        Personalization5(
-                          onNext: () => _nextPage(context),
-                          onBack: () => _previousPage(context),
-                        ),
-                        Personalization6(
-                          onNext: () => _nextPage(context),
-                          onBack: () => _previousPage(context),
-                        ),
-                        Personalization7(
-                          onNext: () => _nextPage(context),
-                          onBack: () => _previousPage(context),
-                        ),
-                        Personalization8(
-                          onComplete: () {
-                            context
-                                .read<PersonalizationBloc>()
-                                .add(CompletePersonalization());
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                  // ✅ Loading overlay
+                  if (_isNavigating)
+                    Container(
+                      color: Colors.black54,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(32),
+                          decoration: BoxDecoration(
+                            color: whiteColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(
+                                color: bluePrimaryColor,
+                                strokeWidth: 3,
+                              ),
+                              const SizedBox(height: 24),
+                              Text(
+                                'Menyiapkan petualanganmu...',
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: semiBold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tunggu sebentar ya! 🎉',
+                                style: secondaryTextStyle.copyWith(
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -130,7 +185,7 @@ class _PersonalizationPageState extends State<PersonalizationPage> {
         children: [
           if (step > 0)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new), 
+              icon: const Icon(Icons.arrow_back_ios_new),
               onPressed: () => _previousPage(context),
             )
           else

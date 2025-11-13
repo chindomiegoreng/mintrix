@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
 
@@ -24,6 +26,8 @@ class _QuizPageState extends State<QuizPage> {
   int? selectedAnswer;
   int correctAnswers = 0;
   bool showResult = false;
+  final ApiClient _apiClient = ApiClient();
+  bool _isSubmittingXP = false;
 
   List<Map<String, dynamic>> _getQuestions() {
     if (widget.moduleId == "modul1" &&
@@ -506,6 +510,60 @@ class _QuizPageState extends State<QuizPage> {
     ];
   }
 
+  Future<void> _submitXPToBackend() async {
+    if (_isSubmittingXP) return;
+
+    setState(() {
+      _isSubmittingXP = true;
+    });
+
+    try {
+      print('📤 Mengirim XP: 80');
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.stats,
+        body: {'xp': 80},
+        requiresAuth: true,
+      );
+
+      print('📥 Response: $response');
+
+      if (response['success'] == true) {
+        final updatedXP = response['stats']?['xp'] ?? response['data']?['xp'];
+        print('✅ XP berhasil ditambahkan: 80 (Total: $updatedXP)');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('XP +80 berhasil ditambahkan! 🎉'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Gagal menambah XP: $e');
+
+      // Show error ke user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menambah XP: ${e.toString()}'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmittingXP = false;
+        });
+      }
+    }
+  }
+
   void _submitAnswer() {
     final questions = _getQuestions();
     if (selectedAnswer == questions[currentQuestionIndex]["correctAnswer"]) {
@@ -521,6 +579,8 @@ class _QuizPageState extends State<QuizPage> {
       setState(() {
         showResult = true;
       });
+      // ✅ Kirim XP ke backend saat quiz selesai
+      _submitXPToBackend();
     }
   }
 
@@ -686,7 +746,7 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Widget _buildResultPage(int totalQuestions) {
-    final xpEarned = correctAnswers * 10;
+    final xpEarned = 80;
     String personalityType = "Investigatif";
     String personalityDesc =
         "Artinya, kamu seorang pemikir alami yang suka menganalisis dan memecahkan masalah. Cocok menjadi Ahli Matematika, Programmer, atau Apoteker.";
@@ -723,7 +783,6 @@ class _QuizPageState extends State<QuizPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    // Image.asset("assets/images/dino_gramed.png", height: 250),
                     CachedNetworkImage(
                       imageUrl:
                           'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846602/character14_tdcjvv.png',
@@ -746,16 +805,17 @@ class _QuizPageState extends State<QuizPage> {
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontSize: 15),
                     ),
-
                     const SizedBox(height: 32),
-
                     Column(
                       children: [
-                        const Icon(
-                          Icons.add_circle,
-                          color: Color(0xFF2B8DD8),
-                          size: 32,
-                        ),
+                        // ✅ Show loading indicator saat submit XP
+                        _isSubmittingXP
+                            ? const CircularProgressIndicator()
+                            : const Icon(
+                                Icons.add_circle,
+                                color: Color(0xFF2B8DD8),
+                                size: 32,
+                              ),
                         const SizedBox(height: 6),
                         Text(
                           "Total XP",
@@ -778,7 +838,9 @@ class _QuizPageState extends State<QuizPage> {
                     CustomFilledButton(
                       title: "Selanjutnya",
                       variant: ButtonColorVariant.blue,
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: _isSubmittingXP
+                          ? null
+                          : () => Navigator.pop(context),
                     ),
                     SizedBox(height: 30),
                   ],
@@ -789,5 +851,11 @@ class _QuizPageState extends State<QuizPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _apiClient.dispose();
+    super.dispose();
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'quiz_page.dart';
@@ -22,6 +24,7 @@ class ResumePage extends StatefulWidget {
 class _ResumePageState extends State<ResumePage> {
   final TextEditingController _resumeController = TextEditingController();
   bool hasText = false;
+  final ApiClient _apiClient = ApiClient();
 
   Map<String, dynamic> _getResumeData() {
     if (widget.moduleId == "modul1" &&
@@ -49,7 +52,8 @@ class _ResumePageState extends State<ResumePage> {
     return {
       "title": "Buat Resume Video",
       "subtitle": "Materi Pembelajaran",
-      "placeholder": "Tuliskan pemahamanmu tentang video yang baru saja kamu tonton...",
+      "placeholder":
+          "Tuliskan pemahamanmu tentang video yang baru saja kamu tonton...",
     };
   }
 
@@ -66,21 +70,49 @@ class _ResumePageState extends State<ResumePage> {
   @override
   void dispose() {
     _resumeController.dispose();
+    _apiClient.dispose();
     super.dispose();
   }
 
-  void _submitResume() {
-    if (hasText) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => QuizPage(
-            moduleId: widget.moduleId,
-            sectionId: widget.sectionId,
-            subSection: widget.subSection,
-          ),
-        ),
+  Future<void> _submitXPToBackend() async {
+    try {
+      print('📤 Mengirim XP dari Resume: 80');
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.stats,
+        body: {'xp': 80},
+        requiresAuth: true,
       );
+
+      print('📥 Response: $response');
+
+      if (response['success'] == true) {
+        final updatedXP = response['stats']?['xp'] ?? response['data']?['xp'];
+        print('✅ XP berhasil ditambahkan: 80 (Total: $updatedXP)');
+      }
+    } catch (e) {
+      print('❌ Gagal menambah XP dari Resume: $e');
+      // Tidak perlu show error, karena ini background operation
+    }
+  }
+
+  void _submitResume() async {
+    if (hasText) {
+      // ✅ Kirim XP ke backend sebelum navigasi
+      await _submitXPToBackend();
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => QuizPage(
+              moduleId: widget.moduleId,
+              sectionId: widget.sectionId,
+              subSection: widget.subSection,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -110,10 +142,7 @@ class _ResumePageState extends State<ResumePage> {
                     const SizedBox(height: 8),
                     Text(
                       resumeData["subtitle"],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
                     ),
                     const SizedBox(height: 24),
                     Container(
@@ -196,18 +225,13 @@ class _ResumePageState extends State<ResumePage> {
               child: LinearProgressIndicator(
                 value: 0.5,
                 backgroundColor: const Color(0xFFE5E5E5),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  bluePrimaryColor,
-                ),
+                valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
                 minHeight: 12,
               ),
             ),
           ),
           IconButton(
-            icon: const Icon(
-              Icons.local_fire_department,
-              color: Colors.grey,
-            ),
+            icon: const Icon(Icons.local_fire_department, color: Colors.grey),
             onPressed: null,
           ),
         ],

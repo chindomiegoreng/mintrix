@@ -27,10 +27,14 @@ class GetStartedPage extends StatelessWidget {
                     const CircularProgressIndicator(),
               ),
               const Spacer(),
+
               Text(
                 'Yeay, Mintrix adalah temanmu untuk membantu mengenal diri lebih lagi',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18),
+                style: primaryTextStyle.copyWith(
+                  fontSize: 18,
+                  fontWeight: semiBold,
+                ),
               ),
               const SizedBox(height: 24),
               CustomFilledButton(

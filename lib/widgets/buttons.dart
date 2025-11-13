@@ -100,7 +100,7 @@ class CustomFilledButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             side: variant == ButtonColorVariant.white
-                ? const BorderSide(color: Colors.grey)
+                ? const BorderSide(color: Color(0xFFE5E5E5))
                 : BorderSide.none,
           ),
           padding: EdgeInsets.zero,
@@ -109,10 +109,7 @@ class CustomFilledButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (icon != null) ...[
-              icon!,
-              const SizedBox(width: 10),
-            ],
+            if (icon != null) ...[icon!, const SizedBox(width: 10)],
             Text(title, style: _getTextStyle()),
           ],
         ),
@@ -120,7 +117,6 @@ class CustomFilledButton extends StatelessWidget {
     );
   }
 }
-
 
 // // usage
 

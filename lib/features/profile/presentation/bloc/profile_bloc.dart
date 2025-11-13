@@ -38,7 +38,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final profileData = profileResponse['data'] ?? profileResponse;
       final profile = ProfileModel.fromJson(profileData);
 
-      // 2. Load profile stats (liga, xp, streak)
+      // 2. Load profile stats (liga, xp, streak) - ✅ XP akan otomatis terupdate
       print('📡 Loading profile stats...');
 
       final statsResponse = await _apiClient.get(
@@ -71,20 +71,17 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           email: profile.email,
           foto: profile.foto,
           liga: stats.liga,
-          xp: stats.xp,
+          xp: stats.xp, // ✅ XP terbaru dari database
           streakCount: stats.streakCount,
           point: stats.point,
           streakActive: stats.streakActive,
-          personality: profileDetail.personality, // ✅ Add personality
+          personality: profileDetail.personality,
         ),
       );
 
       print('🎉 Profile loaded: ${profile.name}');
       print(
         '📊 Stats: Liga=${stats.liga}, XP=${stats.xp}, Streak=${stats.streakCount}',
-      );
-      print(
-        '🎨 Personality: Kreatifitas=${profileDetail.personality.kreatifitas}, Keberanian=${profileDetail.personality.keberanian}',
       );
     } catch (e) {
       print('❌ Profile error: $e');

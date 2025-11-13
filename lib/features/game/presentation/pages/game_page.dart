@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
-import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart';
 import 'game_detail_page.dart';
 
 class GamePage extends StatefulWidget {
@@ -24,7 +21,6 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  Map<String, double> sectionProgress = {};
   Map<String, bool> sectionLocked = {};
 
   @override
@@ -37,29 +33,16 @@ class _GamePageState extends State<GamePage> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      sectionProgress['modul1_bagian1'] =
-          prefs.getDouble('modul1_bagian1_progress') ?? 0.0;
-      sectionProgress['modul1_bagian2'] =
-          prefs.getDouble('modul1_bagian2_progress') ?? 0.0;
-      sectionProgress['modul1_bagian3'] =
-          prefs.getDouble('modul1_bagian3_progress') ?? 0.0;
-      sectionProgress['modul2_bagian1'] =
-          prefs.getDouble('modul2_bagian1_progress') ?? 0.0;
-      sectionProgress['modul2_bagian2'] =
-          prefs.getDouble('modul2_bagian2_progress') ?? 0.0;
-      sectionProgress['modul2_bagian3'] =
-          prefs.getDouble('modul2_bagian3_progress') ?? 0.0;
-
       sectionLocked['modul1_bagian1'] = false; // Selalu terbuka
       sectionLocked['modul1_bagian2'] =
-          (sectionProgress['modul1_bagian1'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul1_bagian1_progress') ?? 0.0) < 1.0;
       sectionLocked['modul1_bagian3'] =
-          (sectionProgress['modul1_bagian2'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul1_bagian2_progress') ?? 0.0) < 1.0;
       sectionLocked['modul2_bagian1'] = false; // Langsung terbuka
       sectionLocked['modul2_bagian2'] =
-          (sectionProgress['modul2_bagian1'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul2_bagian1_progress') ?? 0.0) < 1.0;
       sectionLocked['modul2_bagian3'] =
-          (sectionProgress['modul2_bagian2'] ?? 0.0) < 1.0;
+          (prefs.getDouble('modul2_bagian2_progress') ?? 0.0) < 1.0;
     });
   }
 
@@ -80,7 +63,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 1",
                   "Mencari minat dan gairah",
-                  sectionProgress['modul1_bagian1'] ?? 0.0,
                   sectionLocked['modul1_bagian1'] ?? false,
                   "modul1",
                   "bagian1",
@@ -89,7 +71,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 2",
                   "Pemetaan bakat dan kompetensi",
-                  sectionProgress['modul1_bagian2'] ?? 0.0,
                   sectionLocked['modul1_bagian2'] ?? true,
                   "modul1",
                   "bagian2",
@@ -98,7 +79,6 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 3",
                   "Berkomunikasi",
-                  sectionProgress['modul1_bagian3'] ?? 0.0,
                   sectionLocked['modul1_bagian3'] ?? true,
                   "modul1",
                   "bagian3",
@@ -110,11 +90,26 @@ class _GamePageState extends State<GamePage> {
                   context,
                   "Bagian 1",
                   "Persiapan karir",
-                  sectionProgress['modul2_bagian1'] ?? 0.0,
                   sectionLocked['modul2_bagian1'] ?? true,
                   "modul2",
                   "bagian1",
                 ),
+                // _buildSection(
+                //   context,
+                //   "Bagian 2",
+                //   "Personal branding",
+                //   sectionLocked['modul2_bagian2'] ?? true,
+                //   "modul2",
+                //   "bagian2",
+                // ),
+                // _buildSection(
+                //   context,
+                //   "Bagian 3",
+                //   "Wawancara kerja",
+                //   sectionLocked['modul2_bagian3'] ?? true,
+                //   "modul2",
+                //   "bagian3",
+                // ),
               ]),
             ],
           ),
@@ -132,59 +127,31 @@ class _GamePageState extends State<GamePage> {
           backgroundImage: AssetImage('assets/images/profile.png'),
         ),
         const Spacer(),
-        BlocBuilder<ProfileBloc, ProfileState>(
-          builder: (context, profileState) {
-            int streakCount = 0;
-            
-            if (profileState is ProfileLoaded) {
-              streakCount = profileState.streakCount;
-            }
-            
-            return Row(
-              children: [
-               Image.asset("assets/icons/fire.png", height: 36),
-                const SizedBox(width: 4),
-                Text(
-                  "$streakCount",
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-              ],
-            );
-          },
+        const Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
+        const SizedBox(width: 4),
+        Text(
+          widget.streak.toString(),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
         const Spacer(),
-        Row(
-          children: [
-            Image.asset("assets/icons/icon_diamond.png", height: 36),
-            const SizedBox(width: 4),
-            const Text(
-              "500",
-              style: TextStyle(
-                color: Colors.lightBlueAccent,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        const Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
+        const SizedBox(width: 4),
+        Text(
+          widget.gems.toString(),
+          style: const TextStyle(
+            color: Colors.lightBlueAccent,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const Spacer(),
-        BlocBuilder<ProfileBloc, ProfileState>(
-          builder: (context, profileState) {
-            int xpCount = 0;
-            
-            if (profileState is ProfileLoaded) {
-              xpCount = profileState.xp;
-            }
-            
-            return Text(
-              "XP $xpCount",
-              style: const TextStyle(
-                color: Colors.green,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            );
-          },
+        Text(
+          "XP ${widget.xp}",
+          style: const TextStyle(
+            color: Colors.green,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ],
     );
@@ -212,7 +179,6 @@ class _GamePageState extends State<GamePage> {
     BuildContext context,
     String title,
     String subtitle,
-    double progress,
     bool locked,
     String moduleId,
     String sectionId,
@@ -236,12 +202,15 @@ class _GamePageState extends State<GamePage> {
                 MaterialPageRoute(
                   builder: (_) => GameDetailPage(
                     sectionTitle: subtitle,
-                    progress: progress,
+                    progress:
+                        0.0, // Default value since we removed progress tracking
                     moduleId: moduleId,
                     sectionId: sectionId,
                   ),
                 ),
               );
+
+              // Reload progress setelah kembali dari detail page
               if (result == true) {
                 _loadProgress();
               }
@@ -288,28 +257,7 @@ class _GamePageState extends State<GamePage> {
             ),
             locked
                 ? const Icon(Icons.lock, color: Colors.grey)
-                : Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 6,
-                          color: Colors.lightBlue,
-                          backgroundColor: Colors.grey.shade200,
-                        ),
-                      ),
-                      Text(
-                        "${(progress * 100).toInt()}%",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                : const Icon(Icons.chevron_right, color: Colors.lightBlue),
           ],
         ),
       ),
