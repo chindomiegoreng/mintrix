@@ -6,6 +6,19 @@ import 'package:mintrix/features/game/data/services/youtube_services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
 
+// ✅ Global cache untuk menyimpan URL yang sudah di-fetch
+class VideoUrlCache {
+  static final Map<String, String> _cache = {};
+  
+  static String? get(String youtubeUrl) => _cache[youtubeUrl];
+  
+  static void set(String youtubeUrl, String directUrl) {
+    _cache[youtubeUrl] = directUrl;
+  }
+  
+  static void clear() => _cache.clear();
+}
+
 class VideoPage extends StatefulWidget {
   final String title;
   final String description;
@@ -34,6 +47,8 @@ class _VideoPageState extends State<VideoPage> {
   bool isWatched = false;
   bool isLoadingVideo = false;
   String? directVideoUrl;
+  VideoPlayerController? _preloadedController;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -41,32 +56,111 @@ class _VideoPageState extends State<VideoPage> {
     _preloadVideo();
   }
 
-  /// ✅ Preload video agar manifest sudah siap sebelum ditekan
+  /// ✅ Preload video dengan caching mechanism
   Future<void> _preloadVideo() async {
-    setState(() => isLoadingVideo = true);
-    final url = await getYoutubeDirectUrl(widget.videoUrl);
-    if (!mounted) return;
     setState(() {
-      directVideoUrl = url;
-      isLoadingVideo = false;
+      isLoadingVideo = true;
+      _errorMessage = null;
     });
+    
+    try {
+      String? url;
+      
+      // Cek cache terlebih dahulu
+      url = VideoUrlCache.get(widget.videoUrl);
+      
+      if (url == null) {
+        // Jika tidak ada di cache, fetch dari YouTube
+        print('🔄 Fetching YouTube URL...');
+        url = await getYoutubeDirectUrl(widget.videoUrl);
+        
+        if (url != null && url.isNotEmpty) {
+          // Simpan ke cache
+          VideoUrlCache.set(widget.videoUrl, url);
+          print('✅ URL cached successfully');
+        }
+      } else {
+        print('⚡ URL loaded from cache');
+      }
+      
+      if (!mounted) return;
+      
+      // Validasi URL
+      if (url == null || url.isEmpty) {
+        throw Exception('URL video tidak valid');
+      }
+      
+      // Initialize video controller di background
+      print('🎬 Initializing video controller...');
+      _preloadedController = VideoPlayerController.networkUrl(
+        Uri.parse(url),
+        videoPlayerOptions: VideoPlayerOptions(
+          mixWithOthers: true,
+          allowBackgroundPlayback: false,
+        ),
+      );
+      
+      // Initialize controller dengan timeout
+      await _preloadedController!.initialize().timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          throw Exception('Timeout saat memuat video');
+        },
+      );
+      
+      if (!mounted) return;
+      
+      print('✅ Video ready to play');
+      setState(() {
+        directVideoUrl = url;
+        isLoadingVideo = false;
+      });
+    } catch (e) {
+      print('❌ Error: $e');
+      if (!mounted) return;
+      setState(() {
+        isLoadingVideo = false;
+        _errorMessage = 'Gagal memuat video: ${e.toString()}';
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat video: $e'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: _preloadVideo,
+          ),
+        ),
+      );
+    }
   }
 
   void _openVideoPlayer() async {
-    if (directVideoUrl == null) {
+    if (_preloadedController == null || directVideoUrl == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Video belum siap, coba lagi.')),
+        SnackBar(
+          content: const Text('Video belum siap, coba lagi.'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: _preloadVideo,
+          ),
+        ),
       );
       return;
     }
 
+    // Pass controller yang sudah diinisialisasi
     final watched = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => VideoPlayerPage(videoUrl: directVideoUrl!),
+        builder: (_) => VideoPlayerPage(
+          videoController: _preloadedController!,
+          videoUrl: directVideoUrl!,
+        ),
       ),
     );
 
+    // Jika video ditonton sampai selesai
     if (watched == true) {
       setState(() => isWatched = true);
     }
@@ -95,6 +189,12 @@ class _VideoPageState extends State<VideoPage> {
     } else {
       Navigator.pushNamed(context, '/quizPage');
     }
+  }
+
+  @override
+  void dispose() {
+    _preloadedController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -130,6 +230,52 @@ class _VideoPageState extends State<VideoPage> {
                           color: Colors.grey.shade400,
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (_errorMessage != null)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Gagal memuat',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          ElevatedButton(
+                            onPressed: _preloadVideo,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                            ),
+                            child: const Text(
+                              'Coba Lagi',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
                       ),
                     )
                   else
@@ -188,80 +334,98 @@ class _VideoPageState extends State<VideoPage> {
 }
 
 class VideoPlayerPage extends StatefulWidget {
+  final VideoPlayerController videoController;
   final String videoUrl;
 
-  const VideoPlayerPage({super.key, required this.videoUrl});
+  const VideoPlayerPage({
+    super.key,
+    required this.videoController,
+    required this.videoUrl,
+  });
 
   @override
   State<VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
-  late VideoPlayerController _videoController;
-  ChewieController? _chewieController;
-  bool _isInitialized = false;
+  late ChewieController _chewieController;
 
   @override
   void initState() {
     super.initState();
-    _initializePlayer();
-  }
-
-  Future<void> _initializePlayer() async {
-    _videoController = VideoPlayerController.networkUrl(
-      Uri.parse(widget.videoUrl),
+    _chewieController = ChewieController(
+      videoPlayerController: widget.videoController,
+      autoPlay: true,
+      looping: false,
+      allowFullScreen: true,
+      allowMuting: true,
+      showControls: true,
+      aspectRatio: widget.videoController.value.aspectRatio,
+      errorBuilder: (context, errorMessage) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                'Error: $errorMessage',
+                style: const TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
     );
-    await _videoController.initialize();
-    if (!mounted) return;
-
-    setState(() {
-      _chewieController = ChewieController(
-        videoPlayerController: _videoController,
-        autoPlay: true,
-        looping: false,
-        allowFullScreen: true,
-        allowMuting: true,
-        aspectRatio: _videoController.value.aspectRatio,
-      );
-      _isInitialized = true;
-    });
   }
 
   @override
   void dispose() {
-    _videoController.dispose();
-    _chewieController?.dispose();
+    _chewieController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) widget.videoController.pause();
+      },
+      child: Scaffold(
         backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context, false),
-        ),
-        title: const Text("Video", style: TextStyle(color: Colors.white)),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check_circle, color: Colors.white),
-            onPressed:
-                _isInitialized ? () => Navigator.pop(context, true) : null,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              widget.videoController.pause();
+              Navigator.pop(context, false);
+            },
           ),
-        ],
-      ),
-      body: Align(
-        alignment: const Alignment(0, -0.3),
-        child: _isInitialized
-            ? AspectRatio(
-                aspectRatio: _videoController.value.aspectRatio,
-                child: Chewie(controller: _chewieController!),
-              )
-            : const CircularProgressIndicator(color: Colors.white),
+          title: const Text("Video", style: TextStyle(color: Colors.white)),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.check_circle, color: Colors.white),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            const Spacer(flex: 1), // sedikit ruang di atas
+            Align(
+              alignment: Alignment.center,
+              child: AspectRatio(
+                aspectRatio: widget.videoController.value.aspectRatio,
+                child: Chewie(controller: _chewieController),
+              ),
+            ),
+            const Spacer(flex: 2),
+          ],
+        ),
       ),
     );
   }
