@@ -70,6 +70,7 @@ dependencies:
   google_sign_in: ^6.2.1
   shimmer: ^3.0.0
   flutter_launcher_icons: ^0.14.4
+  open_filex: ^4.7.0
 
 dev_dependencies:
   flutter_test:
