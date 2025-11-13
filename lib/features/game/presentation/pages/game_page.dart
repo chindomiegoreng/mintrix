@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'game_detail_page.dart';
 
@@ -56,7 +57,7 @@ class _GamePageState extends State<GamePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              const GameHeaderWidget(),
               const SizedBox(height: 24),
               _buildModule(context, "Modul 1", [
                 _buildSection(
@@ -117,46 +118,6 @@ class _GamePageState extends State<GamePage> {
       ),
     );
   }
-
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const CircleAvatar(
-          radius: 22,
-          backgroundImage: AssetImage('assets/images/profile.png'),
-        ),
-        const Spacer(),
-        const Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          widget.streak.toString(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const Spacer(),
-        const Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          widget.gems.toString(),
-          style: const TextStyle(
-            color: Colors.lightBlueAccent,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const Spacer(),
-        Text(
-          "XP ${widget.xp}",
-          style: const TextStyle(
-            color: Colors.green,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildModule(
     BuildContext context,
     String title,

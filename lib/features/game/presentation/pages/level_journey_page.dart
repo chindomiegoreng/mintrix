@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
@@ -255,7 +256,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         body: SafeArea(
           child: Column(
             children: [
-              const JourneyHeader(),
+              const GameHeaderWidget(),
               Expanded(
                 child: SizedBox(
                   width: screenWidth,
@@ -665,58 +666,6 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 }
 
 enum StageType { active, inProgress, completed, incoming, inactive }
-
-class JourneyHeader extends StatelessWidget {
-  const JourneyHeader({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: const [
-          CircleAvatar(
-            radius: 22,
-            backgroundImage: AssetImage('assets/images/profile.png'),
-          ),
-          Row(
-            children: [
-              Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "4",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "200",
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          Text(
-            "XP 520",
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // class _JourneyPathPainter extends CustomPainter {
 //   final double screenWidth;
