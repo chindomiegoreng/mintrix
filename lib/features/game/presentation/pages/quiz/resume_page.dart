@@ -9,12 +9,14 @@ class ResumePage extends StatefulWidget {
   final String moduleId;
   final String sectionId;
   final String subSection;
+  final int xpReward;
 
   const ResumePage({
     super.key,
     required this.moduleId,
     required this.sectionId,
     required this.subSection,
+    this.xpReward = 80,
   });
 
   @override
@@ -76,11 +78,11 @@ class _ResumePageState extends State<ResumePage> {
 
   Future<void> _submitXPToBackend() async {
     try {
-      print('📤 Mengirim XP dari Resume: 80');
+      print('📤 Mengirim XP dari Resume: ${widget.xpReward}');
 
       final response = await _apiClient.patch(
         ApiEndpoints.stats,
-        body: {'xp': 80},
+        body: {'xp': widget.xpReward}, // ✅ Use dynamic XP
         requiresAuth: true,
       );
 
@@ -88,17 +90,17 @@ class _ResumePageState extends State<ResumePage> {
 
       if (response['success'] == true) {
         final updatedXP = response['stats']?['xp'] ?? response['data']?['xp'];
-        print('✅ XP berhasil ditambahkan: 80 (Total: $updatedXP)');
+        print(
+          '✅ XP berhasil ditambahkan: ${widget.xpReward} (Total: $updatedXP)',
+        );
       }
     } catch (e) {
       print('❌ Gagal menambah XP dari Resume: $e');
-      // Tidak perlu show error, karena ini background operation
     }
   }
 
   void _submitResume() async {
     if (hasText) {
-      // ✅ Kirim XP ke backend sebelum navigasi
       await _submitXPToBackend();
 
       if (mounted) {
@@ -109,6 +111,7 @@ class _ResumePageState extends State<ResumePage> {
               moduleId: widget.moduleId,
               sectionId: widget.sectionId,
               subSection: widget.subSection,
+              xpReward: widget.xpReward, // ✅ Pass XP to QuizPage
             ),
           ),
         );
@@ -196,7 +199,7 @@ class _ResumePageState extends State<ResumePage> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: CustomFilledButton(
-                title: "Lanjut ke Soal +80 XP",
+                title: "Lanjut ke Soal +${widget.xpReward} XP", // ✅ Dynamic XP
                 variant: hasText
                     ? ButtonColorVariant.blue
                     : ButtonColorVariant.secondary,

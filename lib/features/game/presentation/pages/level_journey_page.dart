@@ -23,6 +23,7 @@ class LevelJourneyPage extends StatefulWidget {
 
 class _LevelJourneyPageState extends State<LevelJourneyPage> {
   Map<String, bool> platformStatus = {};
+  Map<String, bool> subSectionFirstTimeCompleted = {}; // ✅ Track by subSection
 
   @override
   void initState() {
@@ -42,6 +43,28 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         'platform3': prefs.getBool('${lessonKey}_platform3') ?? false,
       };
     });
+
+    // ✅ Load first time completion status for ALL subSections
+    final allSubSections = [
+      'mencari_hal_yang_kamu_suka',
+      'mengatur_waktu',
+      'komunikasi_efektif',
+      'kerja_sama_tim',
+      'mengelola_emosi',
+      'berpikir_positif',
+      'menetapkan_tujuan',
+      'persiapan_karir',
+    ];
+
+    for (var subSection in allSubSections) {
+      final key =
+          'first_completed_${widget.moduleId}_${widget.sectionId}_$subSection';
+      final isCompleted = prefs.getBool(key) ?? false;
+      subSectionFirstTimeCompleted[subSection] = isCompleted;
+      print('📖 Loaded: $key = $isCompleted');
+    }
+
+    print('📊 All first-time status: $subSectionFirstTimeCompleted');
   }
 
   Future<void> _savePlatformStatus(String platformKey, bool status) async {
@@ -461,6 +484,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         asset = "assets/images/platform_large_inactive.png";
         break;
     }
+
     if (!hasData) {
       return Image.asset(asset, width: 110, height: 70, fit: BoxFit.contain);
     }
@@ -479,16 +503,33 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
           return;
         }
 
+        // ✅ Check if first time or replay by subSection
+        final subSection = platformData["subSection"] as String;
+        final isFirstTime = _isFirstTimePlay(subSection);
+        final xpReward = isFirstTime ? 80 : 2;
+
+        print('🎯 Large Platform - SubSection: $subSection');
+        print('   First Time: $isFirstTime, XP: $xpReward');
+
         _showLessonPopup(
           context,
           title: platformData["title"],
           description: platformData["description"],
+          xpReward: xpReward,
+          isReplay: !isFirstTime,
           onStart: () async {
+            final platformKey = platformData["key"];
+
+            // ✅ Mark as played IMMEDIATELY when user clicks "Mulai"
+            if (isFirstTime) {
+              await _markSubSectionAsPlayed(subSection);
+            }
+
             setState(() {
-              platformStatus[platformData["key"]] = true;
+              platformStatus[platformKey] = true;
             });
 
-            await _savePlatformStatus(platformData["key"], true);
+            await _savePlatformStatus(platformKey, true);
 
             if (platformData["hasVideo"]) {
               final result = await Navigator.push(
@@ -501,7 +542,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                     thumbnail: videoData["thumbnail"],
                     moduleId: widget.moduleId,
                     sectionId: widget.sectionId,
-                    subSection: platformData["subSection"],
+                    subSection: subSection,
+                    xpReward: xpReward,
                   ),
                 ),
               );
@@ -516,7 +558,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                   builder: (_) => QuizPage(
                     moduleId: widget.moduleId,
                     sectionId: widget.sectionId,
-                    subSection: platformData["subSection"],
+                    subSection: subSection,
+                    xpReward: xpReward,
                   ),
                 ),
               );
@@ -555,11 +598,26 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             return;
           }
 
+          // ✅ Check if first time or replay by subSection
+          final subSection = platformData["subSection"] as String;
+          final isFirstTime = _isFirstTimePlay(subSection);
+          final xpReward = isFirstTime ? 80 : 2;
+
+          print('🎯 Small Platform - SubSection: $subSection');
+          print('   First Time: $isFirstTime, XP: $xpReward');
+
           _showLessonPopup(
             context,
             title: platformData["title"],
             description: platformData["description"],
+            xpReward: xpReward,
+            isReplay: !isFirstTime,
             onStart: () async {
+              // ✅ Mark as played IMMEDIATELY when user clicks "Mulai"
+              if (isFirstTime) {
+                await _markSubSectionAsPlayed(subSection);
+              }
+
               setState(() {
                 platformStatus[platformData["key"]] = true;
               });
@@ -572,7 +630,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                   builder: (_) => QuizPage(
                     moduleId: widget.moduleId,
                     sectionId: widget.sectionId,
-                    subSection: platformData["subSection"],
+                    subSection: subSection,
+                    xpReward: xpReward,
                   ),
                 ),
               );
@@ -606,10 +665,38 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     return false;
   }
 
+  // ✅ Mark subSection as completed - call this BEFORE navigation
+  Future<void> _markSubSectionAsPlayed(String subSection) async {
+    if (subSection == "default" || subSection.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        'first_completed_${widget.moduleId}_${widget.sectionId}_$subSection';
+
+    // Only mark if it's actually first time
+    if (!subSectionFirstTimeCompleted[subSection]!) {
+      await prefs.setBool(key, true);
+      setState(() {
+        subSectionFirstTimeCompleted[subSection] = true;
+      });
+      print('✅ Marked $subSection as played (key: $key)');
+    }
+  }
+
+  // ✅ Check if this subSection is first time play
+  bool _isFirstTimePlay(String subSection) {
+    if (subSection == "default" || subSection.isEmpty) return false;
+    final isFirstTime = !(subSectionFirstTimeCompleted[subSection] ?? false);
+    print('🎮 SubSection: $subSection, First Time: $isFirstTime');
+    return isFirstTime;
+  }
+
   void _showLessonPopup(
     BuildContext context, {
     required String title,
     required String description,
+    required int xpReward, // ✅ Add XP parameter
+    required bool isReplay, // ✅ Add replay status
     required VoidCallback onStart,
   }) {
     showDialog(
@@ -626,6 +713,27 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // ✅ Show replay badge if replaying
+                if (isReplay)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      "🔄 Replay Mode",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
                 Text(
                   title,
                   textAlign: TextAlign.center,
@@ -647,7 +755,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                 ),
                 const SizedBox(height: 24),
                 CustomFilledButton(
-                  title: "Mulai +80 XP",
+                  title: "Mulai +$xpReward XP", // ✅ Dynamic XP display
                   variant: ButtonColorVariant.white,
                   height: 50,
                   onPressed: () {
