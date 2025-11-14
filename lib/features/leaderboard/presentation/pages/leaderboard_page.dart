@@ -69,54 +69,67 @@ class _LeaderboardView extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocBuilder<LeaderboardCubit, LeaderboardState>(
+      builder: (context, state) {
+        // ✅ Ambil daysLeft dari state
+        int daysLeft = 0;
+        if (state is LeaderboardLoaded) {
+          daysLeft = state.daysLeft;
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Liga Mintrix",
-              style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Liga Mintrix",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 24,
+                    fontWeight: bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "5 besar akan melaju ke babak selanjutnya",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 12,
+                    fontWeight: medium,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              "5 besar akan melaju ke babak selanjutnya",
-              style: primaryTextStyle.copyWith(
-                fontSize: 12,
-                fontWeight: medium,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$daysLeft", // ✅ Dynamic days left
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                  Text(
+                    " Hari",
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: whiteColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
-              const SizedBox(width: 4),
-              Text(
-                "3",
-                style: bluePrimaryTextStyle.copyWith(
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-              Text(
-                " Hari",
-                style: bluePrimaryTextStyle.copyWith(
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

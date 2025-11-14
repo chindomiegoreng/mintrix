@@ -8,8 +8,8 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   final ApiClient _apiClient;
 
   LeaderboardCubit({ApiClient? apiClient})
-      : _apiClient = apiClient ?? ApiClient(),
-        super(LeaderboardInitial());
+    : _apiClient = apiClient ?? ApiClient(),
+      super(LeaderboardInitial());
 
   // ✅ Fetch leaderboard data
   Future<void> loadLeaderboard() async {
@@ -23,13 +23,27 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
       if (response['success'] == true && response['data'] != null) {
         final List<dynamic> data = response['data'];
-        final users = data.map((json) => LeaderboardUser.fromJson(json)).toList();
+        final users = data
+            .map((json) => LeaderboardUser.fromJson(json))
+            .toList();
 
-        // ✅ Optional: Cari ranking user yang login
-        // Jika API mengembalikan info user, bisa ditambahkan logic di sini
+        // ✅ Hitung hari tersisa sampai akhir bulan
+        final now = DateTime.now();
+        final lastDayOfMonth = DateTime(
+          now.year,
+          now.month + 1,
+          0,
+        ); // Hari terakhir bulan ini
+        final daysLeft = lastDayOfMonth.difference(now).inDays;
 
-        emit(LeaderboardLoaded(users: users));
+        emit(
+          LeaderboardLoaded(
+            users: users,
+            daysLeft: daysLeft > 0 ? daysLeft : 0, // ✅ Pastikan tidak negatif
+          ),
+        );
         print('✅ Loaded ${users.length} leaderboard users');
+        print('📅 Days left in month: $daysLeft');
       } else {
         emit(const LeaderboardError('Data leaderboard tidak tersedia'));
       }
