@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/services/token_storage_service.dart';
+import 'package:mintrix/features/auth/data/repositories/auth_repository.dart';
 import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
@@ -17,6 +19,7 @@ import 'package:mintrix/firebase_options.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/features/personalization/persentation/pages/personalization_page.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
 import 'features/main/presentation/pages/main_navigation_page.dart';
@@ -26,6 +29,11 @@ import 'features/splash/presentation/pages/get_started_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Initialize Token Storage
+  final tokenStorageService = TokenStorageService();
+  await tokenStorageService.init();
+  print('✅ Token storage initialized');
 
   // ✅ Initialize Firebase
   try {
@@ -40,20 +48,36 @@ void main() async {
   // ✅ Initialize ApiClient
   final apiClient = ApiClient();
 
-  runApp(MyApp(apiClient: apiClient));
+  runApp(MyApp(
+    apiClient: apiClient,
+    tokenStorageService: tokenStorageService,
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final ApiClient apiClient; // ✅ Accept apiClient
+  final TokenStorageService tokenStorageService;
 
-  const MyApp({super.key, required this.apiClient}); // ✅ Constructor
+  const MyApp({
+    super.key,
+    required this.apiClient,
+    required this.tokenStorageService,
+  }); // ✅ Constructor
 
   @override
   Widget build(BuildContext context) {
+    final authRepository = AuthRepository(tokenStorageService: tokenStorageService);
+
     return MultiBlocProvider(
       providers: [
-        // ✅ AuthBloc dengan ApiClient
-        BlocProvider(create: (context) => AuthBloc(apiClient: apiClient)),
+        // ✅ AuthBloc dengan ApiClient dan AuthRepository
+        BlocProvider(
+          create: (context) => AuthBloc(
+            apiClient: apiClient,
+            tokenStorageService: tokenStorageService,
+            authRepository: authRepository,
+          ),
+        ),
         // ✅ PersonalizationBloc dengan ApiClient
         BlocProvider(
           create: (context) => PersonalizationBloc(apiClient: apiClient),
@@ -86,7 +110,19 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/personalization': (context) => const PersonalizationPage(),
           '/register': (context) => const RegisterPage(),
-          '/main': (context) => const MainNavigationPage(),
+          '/main': (context) => BlocListener<AuthBloc, AuthState>(
+            listener: (context, state) {
+              // ✅ If user logs out while on main page, navigate to get-started
+              if (state is AuthUnauthenticated) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/get-started',
+                  (route) => false,
+                );
+              }
+            },
+            child: const MainNavigationPage(),
+          ),
           '/detail-profile': (context) => const DetailProfilePage(),
           '/settings': (context) => const SettingsPage(),
           '/settings-connect': (context) => const SettingsConnectPage(),

@@ -8,15 +8,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/services/token_storage_service.dart';
 import 'package:mintrix/main.dart';
 
 void main() {
   // ✅ Simple test yang tidak check navigation
   testWidgets('App initializes correctly', (WidgetTester tester) async {
     final apiClient = ApiClient();
+    final tokenStorageService = TokenStorageService();
 
     // Build app
-    await tester.pumpWidget(MyApp(apiClient: apiClient));
+    await tester.pumpWidget(MyApp(
+      apiClient: apiClient,
+      tokenStorageService: tokenStorageService,
+    ));
 
     // Verify MaterialApp is built
     expect(find.byType(MaterialApp), findsOneWidget);

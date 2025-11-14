@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -122,7 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Akun Terhubung",
                       subtitle: "Hubungkan dengan orang tua",
                       onTap: () {
-                        Navigator.pushNamed(context, "/settings-connect");
+                        // Navigator.pushNamed(context, "/settings-connect");
                       },
                     ),
                     Divider(
@@ -136,7 +139,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Edit Profil",
                       subtitle: "Edit Avatar dan Nama Panggilanmu",
                       onTap: () {
-                        Navigator.pushNamed(context, "/edit-profile");
+                        // Navigator.pushNamed(context, "/edit-profile");
                       },
                     ),
                     Divider(
@@ -150,7 +153,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Ubah Kata Sandi",
                       subtitle: "Ubah kata sandi anda secara berkala",
                       onTap: () {
-                        Navigator.pushNamed(context, "/change-password");
+                        // Navigator.pushNamed(context, "/change-password");
                       },
                     ),
                     Divider(
@@ -178,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Bahasa",
                       subtitle: "Pilih bahasa yang digunakan",
                       onTap: () {
-                        Navigator.pushNamed(context, "/language-settings");
+                        // Navigator.pushNamed(context, "/language-settings");
                       },
                     ),
                     Divider(
@@ -242,7 +245,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Pusat Bantuan",
                       subtitle: "Bantuan & Dukungan",
                       onTap: () {
-                        Navigator.pushNamed(context, "/help-center");
+                        // Navigator.pushNamed(context, "/help-center");
                       },
                     ),
                     Divider(
@@ -256,7 +259,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: "Tentang Aplikasi",
                       subtitle: "Versi aplikasi v.0.1",
                       onTap: () {
-                        Navigator.pushNamed(context, "/about-app");
+                        // Navigator.pushNamed(context, "/about-app");
                       },
                     ),
                     Divider(
@@ -286,12 +289,15 @@ class _SettingsPageState extends State<SettingsPage> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  // Tambahkan logika logout di sini
-                                  Navigator.pushNamedAndRemoveUntil(
-                                    context,
-                                    "/login",
-                                    (route) => false,
-                                  );
+                                  // ✅ Trigger logout event dan listen untuk state change
+                                  context.read<AuthBloc>().add(LogoutEvent());
+                                  
+                                  // Listen for logout completion via BLoC state
+                                  Future.microtask(() {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Logging out...')),
+                                    );
+                                  });
                                 },
                                 child: const Text("Keluar"),
                               ),
