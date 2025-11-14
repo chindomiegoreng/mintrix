@@ -28,6 +28,8 @@ class GoogleSignInEvent extends AuthEvent {}
 
 class LogoutEvent extends AuthEvent {}
 
+class CheckTokenEvent extends AuthEvent {}
+
 class UpdateProfileEvent extends AuthEvent {
   final String userId;
   final String username;

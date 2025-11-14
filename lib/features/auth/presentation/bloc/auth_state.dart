@@ -11,6 +11,8 @@ class AuthInitial extends AuthState {}
 
 class AuthLoading extends AuthState {}
 
+class AuthCheckingToken extends AuthState {}
+
 class AuthAuthenticated extends AuthState {
   final String userId;
   final String username;

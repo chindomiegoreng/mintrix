@@ -2,6 +2,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/core/models/auth_response_model.dart';
+import 'package:mintrix/core/services/token_storage_service.dart';
+import 'package:mintrix/features/auth/data/repositories/auth_repository.dart';
 import 'package:mintrix/features/auth/data/services/google_sign_in_service.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -9,17 +11,24 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ApiClient _apiClient;
   final GoogleSignInService _googleSignInService;
+  final AuthRepository _authRepository;
 
   AuthBloc({
     ApiClient? apiClient,
     GoogleSignInService? googleSignInService,
+    TokenStorageService? tokenStorageService,
+    AuthRepository? authRepository,
   })  : _apiClient = apiClient ?? ApiClient(),
         _googleSignInService = googleSignInService ?? GoogleSignInService(),
+        _authRepository = authRepository ?? AuthRepository(
+          tokenStorageService: tokenStorageService ?? TokenStorageService(),
+        ),
         super(AuthInitial()) {
     on<LoginEvent>(_onLoginEvent);
     on<RegisterEvent>(_onRegisterEvent);
     on<GoogleSignInEvent>(_onGoogleSignInEvent); // ✅ TAMBAHKAN
     on<LogoutEvent>(_onLogoutEvent);
+    on<CheckTokenEvent>(_onCheckTokenEvent);
     on<UpdateProfileEvent>(_onUpdateProfileEvent);
   }
 
@@ -36,6 +45,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       final authResponse = AuthResponseModel.fromJson(response);
 
+      // ✅ Save token to local storage
+      print('💾 Saving token...');
+      print('  - Token: ${authResponse.token.substring(0, 20)}...');
+      print('  - User ID: ${authResponse.user.id}');
+      print('  - Username: ${authResponse.user.name}');
+      
+      final saveSuccess = await _authRepository.saveLoginData(
+        accessToken: authResponse.token,
+        userId: authResponse.user.id,
+        username: authResponse.user.name,
+        expiryDuration: const Duration(hours: 24),
+      );
+      
+      print('💾 Token saved: $saveSuccess');
+
       emit(
         AuthAuthenticated(
           userId: authResponse.user.id,
@@ -45,6 +69,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       print('✅ Login Success: ${authResponse.message}');
+      print('✅ Token saved to local storage');
     } catch (e) {
       emit(AuthError(_parseError(e.toString())));
       print('❌ Login Error: $e');
@@ -133,6 +158,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
         final authResponse = AuthResponseModel.fromJson(response);
 
+        // ✅ Save token to local storage
+        await _authRepository.saveLoginData(
+          accessToken: authResponse.token,
+          userId: authResponse.user.id,
+          username: authResponse.user.name,
+          expiryDuration: const Duration(hours: 24),
+        );
+
         emit(
           AuthAuthenticated(
             userId: authResponse.user.id,
@@ -142,6 +175,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         print('✅ Register Success: ${authResponse.message}');
+        print('✅ Token saved to local storage');
         print('✅ User foto URL: ${authResponse.user.foto}');
       } catch (apiError) {
         print('❌ ApiClient failed: $apiError');
@@ -253,6 +287,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
+  // Handle Check Token
+  Future<void> _onCheckTokenEvent(
+    CheckTokenEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      emit(AuthCheckingToken());
+      print('🔍 Checking token...');
+
+      // Check if token exists and is valid
+      if (_authRepository.isLoggedIn()) {
+        print('✅ Token found in storage');
+        // Check if token is expired
+        if (_authRepository.isTokenExpired()) {
+          // Token expired, logout
+          print('⚠️ Token expired, clearing storage');
+          await _authRepository.logout();
+          emit(AuthUnauthenticated());
+          print('⚠️ Token expired, user logged out');
+        } else {
+          // Token is still valid, restore user data
+          final userData = _authRepository.getUserData();
+          print('✅ Token is valid');
+          print('📦 User data: $userData');
+          emit(
+            AuthAuthenticated(
+              userId: userData['userId'] ?? '',
+              username: userData['username'] ?? '',
+            ),
+          );
+          print('✅ Token is valid, user restored');
+        }
+      } else {
+        // No token found
+        print('ℹ️ No valid token found in storage');
+        emit(AuthUnauthenticated());
+        print('ℹ️ No valid token found');
+      }
+    } catch (e, stackTrace) {
+      print('❌ Token check error: $e');
+      print('❌ Stack trace: $stackTrace');
+      emit(AuthUnauthenticated());
+    }
+  }
+
   // Handle Logout
   Future<void> _onLogoutEvent(
     LogoutEvent event,
@@ -260,8 +339,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       await _apiClient.clearToken();
+      await _authRepository.logout();
       await _googleSignInService.signOut(); // ✅ Logout dari Google juga
-      emit(AuthInitial());
+      emit(AuthUnauthenticated());
       print('✅ Logout Success');
     } catch (e) {
       emit(AuthError(e.toString()));
