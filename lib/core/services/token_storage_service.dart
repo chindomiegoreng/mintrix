@@ -6,6 +6,7 @@ class TokenStorageService {
   static const String _tokenExpiryKey = 'token_expiry';
   static const String _userIdKey = 'user_id';
   static const String _usernameKey = 'username';
+  static const String _fotoKey = 'user_foto'; // ✅ TAMBAHKAN
 
   late SharedPreferences _prefs;
 
@@ -19,6 +20,7 @@ class TokenStorageService {
     String? refreshToken,
     String? userId,
     String? username,
+    String? foto, // ✅ TAMBAHKAN
     Duration? expiryDuration,
   }) async {
     try {
@@ -34,6 +36,10 @@ class TokenStorageService {
 
       if (username != null) {
         await _prefs.setString(_usernameKey, username);
+      }
+
+      if (foto != null) { // ✅ TAMBAHKAN
+        await _prefs.setString(_fotoKey, foto);
       }
 
       if (expiryDuration != null) {
@@ -66,6 +72,11 @@ class TokenStorageService {
   // Get username
   String? getUsername() {
     return _prefs.getString(_usernameKey);
+  }
+
+  // Get user photo ✅ TAMBAHKAN
+  String? getFoto() {
+    return _prefs.getString(_fotoKey);
   }
 
   // Check if token exists and is valid
@@ -104,6 +115,7 @@ class TokenStorageService {
       await _prefs.remove(_tokenExpiryKey);
       await _prefs.remove(_userIdKey);
       await _prefs.remove(_usernameKey);
+      await _prefs.remove(_fotoKey); // ✅ TAMBAHKAN
       return true;
     } catch (e) {
       return false;
@@ -117,6 +129,7 @@ class TokenStorageService {
       'refreshToken': getRefreshToken(),
       'userId': getUserId(),
       'username': getUsername(),
+      'foto': getFoto(), // ✅ TAMBAHKAN
     };
   }
 }

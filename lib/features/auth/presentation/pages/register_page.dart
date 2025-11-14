@@ -1,10 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
+import '../bloc/auth_bloc.dart';
+import '../bloc/auth_event.dart';
+import '../bloc/auth_state.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -201,232 +205,234 @@ class _RegisterPageState extends State<RegisterPage> {
           style: primaryTextStyle.copyWith(fontSize: 26, fontWeight: bold),
         ),
       ),
-      body: Stack(
-        children: [
-          IgnorePointer(
-            ignoring: _isLoading,
-            child: Opacity(
-              opacity: _isLoading ? 0.6 : 1.0,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Profile Image Picker
-                      Stack(
-                        alignment: Alignment.bottomRight,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF81D4FA), Color(0xFF4FC3F7)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: CircleAvatar(
-                                radius: 55,
-                                backgroundColor: Colors.grey[200],
-                                backgroundImage: _profileImage != null
-                                    ? FileImage(_profileImage!)
-                                    : null,
-                                child: _profileImage == null
-                                    ? const Icon(
-                                        Icons.person,
-                                        size: 60,
-                                        color: Colors.grey,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 12,
-                            child: InkWell(
-                              onTap: _isLoading ? null : _pickImage,
-                              child: Container(
-                                padding: const EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: _isLoading
-                                      ? Colors.grey
-                                      : const Color(0xFF4FC3F7),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 30),
-
-                      // Username Field
-                      CustomFormField(
-                        title: 'Nama Kerenmu',
-                        type: FormFieldType.text,
-                        controller:
-                            _namaController, // Changed from _usernameController
-                        hintText: 'Masukkan nama kerenmu',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Nama tidak boleh kosong';
-                          }
-                          if (value.length < 3) {
-                            return 'Nama minimal 3 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Email Field
-                      CustomFormField(
-                        title: 'Emailmu',
-                        controller: _emailController,
-                        hintText: 'Masukkan email kamu',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Email tidak boleh kosong';
-                          }
-                          if (!RegExp(
-                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                          ).hasMatch(value)) {
-                            return 'Format email tidak valid';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password Field
-                      CustomFormField(
-                        title: 'Kata Sandi',
-                        type: FormFieldType.password,
-                        controller: _passwordController,
-                        hintText: 'Minimal 6 karakter',
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kata sandi tidak boleh kosong';
-                          }
-                          if (value.length < 6) {
-                            return 'Kata sandi minimal 6 karakter';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 26),
-
-                      // Register Button
-                      CustomFilledButton(
-                        title: _isLoading ? 'Mendaftar...' : 'Gabung Sekarang',
-                        variant: ButtonColorVariant.blue,
-                        onPressed: _isLoading ? null : _handleRegister,
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Login Button
-                      CustomFilledButton(
-                        title: 'Masuk Yuk',
-                        variant: ButtonColorVariant.white,
-                        onPressed: _isLoading
-                            ? null
-                            : () {
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  '/login',
-                                );
-                              },
-                        withShadow: true,
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Divider
-                      Row(
-                        children: [
-                          Expanded(child: Divider(color: Colors.grey[300])),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Text(
-                              'atau',
-                              style: secondaryTextStyle.copyWith(
-                                fontSize: 16,
-                                fontWeight: semiBold,
-                              ),
-                            ),
-                          ),
-                          Expanded(child: Divider(color: Colors.grey[300])),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Google Sign In Button
-                      CustomFilledButton(
-                        title: 'Masuk dengan Google',
-                        variant: ButtonColorVariant.white,
-                        icon: Image.asset(
-                          'assets/icons/logo_google.png',
-                          width: 20,
-                          height: 20,
-                        ),
-                        onPressed: _isLoading ? null : () {},
-                        withShadow: true,
-                      ),
-                    ],
-                  ),
-                ),
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoading) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+          } else if (state is AuthAuthenticated) {
+            Navigator.pop(context); // Close loading dialog
+            Navigator.pushNamedAndRemoveUntil(
+              context,
+              '/main',
+              (route) => false,
+            );
+          } else if (state is AuthError) {
+            Navigator.pop(context); // Close loading dialog
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
               ),
-            ),
-          ),
-
-          // Loading Overlay
-          if (_isLoading)
-            Container(
-              color: Colors.black26,
-              child: Center(
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
+            );
+          }
+        },
+        child: Stack(
+          children: [
+            IgnorePointer(
+              ignoring: _isLoading,
+              child: Opacity(
+                opacity: _isLoading ? 0.6 : 1.0,
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.all(24.0),
+                  child: Form(
+                    key: _formKey,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text(
-                          'Mendaftarkan akun...',
-                          style: secondaryTextStyle.copyWith(
-                            fontSize: 14,
-                            fontWeight: semiBold,
+                        // Profile Image Picker
+                        Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF81D4FA), Color(0xFF4FC3F7)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: CircleAvatar(
+                                  radius: 55,
+                                  backgroundColor: Colors.grey[200],
+                                  backgroundImage: _profileImage != null
+                                      ? FileImage(_profileImage!)
+                                      : null,
+                                  child: _profileImage == null
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 60,
+                                          color: Colors.grey,
+                                        )
+                                      : null,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 12,
+                              child: InkWell(
+                                onTap: _isLoading ? null : _pickImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    color: _isLoading
+                                        ? Colors.grey
+                                        : const Color(0xFF4FC3F7),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Username Field
+                        CustomFormField(
+                          title: 'Nama Kerenmu',
+                          type: FormFieldType.text,
+                          controller:
+                              _namaController, // Changed from _usernameController
+                          hintText: 'Masukkan nama kerenmu',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Nama tidak boleh kosong';
+                            }
+                            if (value.length < 3) {
+                              return 'Nama minimal 3 karakter';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Email Field
+                        CustomFormField(
+                          title: 'Emailmu',
+                          controller: _emailController,
+                          hintText: 'Masukkan email kamu',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Email tidak boleh kosong';
+                            }
+                            if (!RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                            ).hasMatch(value)) {
+                              return 'Format email tidak valid';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password Field
+                        CustomFormField(
+                          title: 'Kata Sandi',
+                          type: FormFieldType.password,
+                          controller: _passwordController,
+                          hintText: 'Minimal 6 karakter',
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Kata sandi tidak boleh kosong';
+                            }
+                            if (value.length < 6) {
+                              return 'Kata sandi minimal 6 karakter';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 26),
+
+                        // Register Button
+                        CustomFilledButton(
+                          title: _isLoading ? 'Mendaftar...' : 'Gabung Sekarang',
+                          variant: ButtonColorVariant.blue,
+                          onPressed: _isLoading ? null : _handleRegister,
+                        ),
+                        const SizedBox(height: 18),
+
+                        // Login Button
+                        CustomFilledButton(
+                          title: 'Masuk Yuk',
+                          variant: ButtonColorVariant.white,
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/login',
+                                  );
+                                },
+                          withShadow: true,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Divider
+                        Row(
+                          children: [
+                            Expanded(child: Divider(color: Colors.grey[300])),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'atau',
+                                style: secondaryTextStyle.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: semiBold,
+                                ),
+                              ),
+                            ),
+                            Expanded(child: Divider(color: Colors.grey[300])),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Google Sign In Button
+                        CustomFilledButton(
+                          title: 'Daftar dengan Google',
+                          variant: ButtonColorVariant.white,
+                          icon: Image.asset(
+                            'assets/icons/logo_google.png',
+                            width: 20,
+                            height: 20,
                           ),
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  context.read<AuthBloc>().add(GoogleSignInEvent());
+                                },
+                          withShadow: true,
                         ),
                       ],
                     ),
@@ -434,7 +440,35 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
             ),
-        ],
+
+            // Loading Overlay
+            if (_isLoading)
+              Container(
+                color: Colors.black26,
+                child: Center(
+                  child: Card(
+                    child: Padding(
+                      padding: EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Mendaftarkan akun...',
+                            style: secondaryTextStyle.copyWith(
+                              fontSize: 14,
+                              fontWeight: semiBold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
