@@ -24,6 +24,15 @@ class TokenStorageService {
     Duration? expiryDuration,
   }) async {
     try {
+      // ✅ Check if userId is different from stored userId
+      final storedUserId = getUserId();
+      if (userId != null && storedUserId != null && storedUserId != userId) {
+        print('🔄 New user detected! Clearing old game progress...');
+        print('   Old user: $storedUserId');
+        print('   New user: $userId');
+        await clearGameProgress();
+      }
+
       await _prefs.setString(_accessTokenKey, accessToken);
 
       if (refreshToken != null) {
@@ -38,13 +47,15 @@ class TokenStorageService {
         await _prefs.setString(_usernameKey, username);
       }
 
-      if (foto != null) { // ✅ TAMBAHKAN
+      if (foto != null) {
+        // ✅ TAMBAHKAN
         await _prefs.setString(_fotoKey, foto);
       }
 
       if (expiryDuration != null) {
-        final expiryTime =
-            DateTime.now().add(expiryDuration).millisecondsSinceEpoch;
+        final expiryTime = DateTime.now()
+            .add(expiryDuration)
+            .millisecondsSinceEpoch;
         await _prefs.setInt(_tokenExpiryKey, expiryTime);
       }
 
@@ -107,6 +118,32 @@ class TokenStorageService {
     return now >= expiryTime;
   }
 
+  // Clear all game progress data
+  Future<bool> clearGameProgress() async {
+    try {
+      final keys = _prefs.getKeys();
+
+      // Remove all keys related to game progress
+      for (final key in keys) {
+        // Platform status, lesson completion, section progress, first completion, streak
+        if (key.contains('modul') ||
+            key.contains('platform') ||
+            key.contains('_progress') ||
+            key.contains('first_completed') ||
+            key.contains('last_streak_update')) {
+          await _prefs.remove(key);
+          print('🗑️ Removed game progress key: $key');
+        }
+      }
+
+      print('✅ All game progress cleared');
+      return true;
+    } catch (e) {
+      print('❌ Failed to clear game progress: $e');
+      return false;
+    }
+  }
+
   // Clear all tokens
   Future<bool> clearToken() async {
     try {
@@ -116,6 +153,10 @@ class TokenStorageService {
       await _prefs.remove(_userIdKey);
       await _prefs.remove(_usernameKey);
       await _prefs.remove(_fotoKey); // ✅ TAMBAHKAN
+
+      // ✅ Clear game progress when logging out
+      await clearGameProgress();
+
       return true;
     } catch (e) {
       return false;

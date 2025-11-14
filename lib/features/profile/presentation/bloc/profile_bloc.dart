@@ -16,6 +16,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     on<LoadProfile>(_onLoadProfile);
     on<RefreshProfile>(_onRefreshProfile);
     on<UpdateProfile>(_onUpdateProfile);
+    on<UpdateStreak>(_onUpdateStreak);
   }
 
   Future<void> _onLoadProfile(
@@ -206,5 +207,34 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       return error.replaceAll('Exception:', '').trim();
     }
     return error;
+  }
+
+  Future<void> _onUpdateStreak(
+    UpdateStreak event,
+    Emitter<ProfileState> emit,
+  ) async {
+    try {
+      print('📡 Updating streak...');
+
+      // Call PATCH /api/stats to update streak
+      final response = await _apiClient.patch(
+        ApiEndpoints.stats,
+        body: {
+          "streakCount": 1, // Increment streak by 1
+          "streakActive": true, // Activate streak for today
+        },
+        requiresAuth: true,
+      );
+
+      print('✅ Streak update response: $response');
+
+      // Refresh profile to get updated stats
+      add(RefreshProfile());
+
+      print('🔥 Streak updated successfully');
+    } catch (e) {
+      print('❌ Update streak error: $e');
+      // Don't emit error, just log it
+    }
   }
 }

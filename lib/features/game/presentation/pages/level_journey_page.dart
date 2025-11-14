@@ -667,6 +667,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 
               if (result == true) {
                 _loadPlatformStatus();
+                // ✅ Update streak when completing first game of the day
+                await _checkAndUpdateStreak();
               }
             } else {
               final result = await Navigator.push(
@@ -683,6 +685,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 
               if (result == true) {
                 _loadPlatformStatus();
+                // ✅ Update streak when completing first game of the day
+                await _checkAndUpdateStreak();
               }
             }
           },
@@ -763,6 +767,8 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 
               if (result == true) {
                 _loadPlatformStatus();
+                // ✅ Update streak when completing first game of the day
+                await _checkAndUpdateStreak();
               }
             },
           );
@@ -825,6 +831,33 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
       print('✅ Marked $subSection as played (key: $key)');
     } else {
       print('⚠️ $subSection already marked as completed');
+    }
+  }
+
+  // ✅ Check and update streak for today
+  Future<void> _checkAndUpdateStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    final lastStreakUpdateKey = 'last_streak_update_date';
+
+    final lastUpdateDate = prefs.getString(lastStreakUpdateKey);
+
+    print('🔥 Checking streak: Today=$todayKey, Last=$lastUpdateDate');
+
+    // Only update streak once per day
+    if (lastUpdateDate != todayKey) {
+      print('✅ First game completion today, updating streak...');
+
+      // Update streak via ProfileBloc
+      context.read<ProfileBloc>().add(UpdateStreak());
+
+      // Save today's date to prevent multiple updates
+      await prefs.setString(lastStreakUpdateKey, todayKey);
+
+      print('🎉 Streak update triggered!');
+    } else {
+      print('⏭️ Streak already updated today');
     }
   }
 
