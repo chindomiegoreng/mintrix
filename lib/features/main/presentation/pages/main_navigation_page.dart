@@ -12,7 +12,7 @@ import 'package:mintrix/features/profile/presentation/pages/profile_page.dart';
 import 'package:mintrix/features/store/presentation/pages/store_page.dart';
 import 'package:mintrix/shared/theme.dart';
 
-// Model nggo Navigation Item
+// Model
 class NavItem {
   final String iconPath;
   final Widget page;
@@ -20,7 +20,6 @@ class NavItem {
   const NavItem({required this.iconPath, required this.page});
 }
 
-// Constants nggo Main Navigation
 class _MainNavigationConstants {
   static const double iconSize = 28.0;
   static const double bottomNavHeight = 70.0;
@@ -44,21 +43,45 @@ class _MainNavigationConstants {
   ];
 }
 
-class MainNavigationPage extends StatelessWidget {
+class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
+
+  @override
+  State<MainNavigationPage> createState() => _MainNavigationPageState();
+}
+
+class _MainNavigationPageState extends State<MainNavigationPage> {
+  /// History untuk back button
+  final List<int> _history = [0];
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
-        return Scaffold(
-          body: _buildBody(state.index),
-          bottomNavigationBar: _buildBottomNavigationBar(context, state.index),
+        return WillPopScope(
+          onWillPop: () async {
+            if (_history.length > 1) {
+              _history.removeLast();
+              final lastIndex = _history.last;
+
+              context.read<NavigationBloc>().add(UpdateIndex(lastIndex));
+              return false; // jangan keluar app
+            }
+            return true; // boleh keluar kalau history sudah habis
+          },
+          child: Scaffold(
+            body: _buildBody(state.index),
+            bottomNavigationBar: _buildBottomNavigationBar(
+              context,
+              state.index,
+            ),
+          ),
         );
       },
     );
   }
 
+  // Body
   Widget _buildBody(int currentIndex) {
     return IndexedStack(
       index: currentIndex,
@@ -68,10 +91,11 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
+  // Bottom Navbar
   Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Container(
-      height: _MainNavigationConstants.bottomNavHeight + 10, 
-      padding: const EdgeInsets.only(bottom: 9), 
+      height: _MainNavigationConstants.bottomNavHeight + 10,
+      padding: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
         color: whiteColor,
         border: Border(
@@ -85,7 +109,7 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
-  // Build navigation items karo custom SVG icons
+  // Semua item nav
   List<Widget> _buildNavigationItems(BuildContext context, int currentIndex) {
     return List.generate(_MainNavigationConstants.navItems.length, (index) {
       final item = _MainNavigationConstants.navItems[index];
@@ -100,7 +124,7 @@ class MainNavigationPage extends StatelessWidget {
     });
   }
 
-  // Build single navigation item
+  // Satu item nav
   Widget _buildNavItem({
     required BuildContext context,
     required String iconPath,
@@ -124,7 +148,7 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
-  // Build custom SVG icon karo color change
+  // Icon SVG
   Widget _buildNavIcon({required String iconPath, required bool isActive}) {
     return SvgPicture.asset(
       iconPath,
@@ -137,8 +161,14 @@ class MainNavigationPage extends StatelessWidget {
     );
   }
 
-  // Handle navigation tap
+  // Logika onTap
   void _handleNavigation(BuildContext context, int index) {
-    context.read<NavigationBloc>().add(UpdateIndex(index));
+    final bloc = context.read<NavigationBloc>();
+
+    if (bloc.state.index != index) {
+      _history.add(index);
+    }
+
+    bloc.add(UpdateIndex(index));
   }
 }

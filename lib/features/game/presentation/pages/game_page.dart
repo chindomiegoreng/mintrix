@@ -53,68 +53,60 @@ class _GamePageState extends State<GamePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const GameHeaderWidget(),
-              const SizedBox(height: 24),
-              _buildModule(context, "Modul 1", [
-                _buildSection(
-                  context,
-                  "Bagian 1",
-                  "Mencari minat dan gairah",
-                  sectionLocked['modul1_bagian1'] ?? false,
-                  "modul1",
-                  "bagian1",
+        child: Column(
+          children: [
+            const GameHeaderWidget(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
                 ),
-                _buildSection(
-                  context,
-                  "Bagian 2",
-                  "Pemetaan bakat dan kompetensi",
-                  sectionLocked['modul1_bagian2'] ?? true,
-                  "modul1",
-                  "bagian2",
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildModule(context, "Modul 1", [
+                      _buildSection(
+                        context,
+                        "Bagian 1",
+                        "Mencari minat dan gairah",
+                        sectionLocked['modul1_bagian1'] ?? false,
+                        "modul1",
+                        "bagian1",
+                      ),
+                      _buildSection(
+                        context,
+                        "Bagian 2",
+                        "Pemetaan bakat dan kompetensi",
+                        sectionLocked['modul1_bagian2'] ?? true,
+                        "modul1",
+                        "bagian2",
+                      ),
+                      _buildSection(
+                        context,
+                        "Bagian 3",
+                        "Berkomunikasi",
+                        sectionLocked['modul1_bagian3'] ?? true,
+                        "modul1",
+                        "bagian3",
+                      ),
+                    ]),
+                    const SizedBox(height: 20),
+                    _buildModule(context, "Modul 2", [
+                      _buildSection(
+                        context,
+                        "Bagian 1",
+                        "Persiapan karir",
+                        sectionLocked['modul2_bagian1'] ?? true,
+                        "modul2",
+                        "bagian1",
+                      ),
+                    ]),
+                  ],
                 ),
-                _buildSection(
-                  context,
-                  "Bagian 3",
-                  "Berkomunikasi",
-                  sectionLocked['modul1_bagian3'] ?? true,
-                  "modul1",
-                  "bagian3",
-                ),
-              ]),
-              const SizedBox(height: 20),
-              _buildModule(context, "Modul 2", [
-                _buildSection(
-                  context,
-                  "Bagian 1",
-                  "Persiapan karir",
-                  sectionLocked['modul2_bagian1'] ?? true,
-                  "modul2",
-                  "bagian1",
-                ),
-                // _buildSection(
-                //   context,
-                //   "Bagian 2",
-                //   "Personal branding",
-                //   sectionLocked['modul2_bagian2'] ?? true,
-                //   "modul2",
-                //   "bagian2",
-                // ),
-                // _buildSection(
-                //   context,
-                //   "Bagian 3",
-                //   "Wawancara kerja",
-                //   sectionLocked['modul2_bagian3'] ?? true,
-                //   "modul2",
-                //   "bagian3",
-                // ),
-              ]),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );

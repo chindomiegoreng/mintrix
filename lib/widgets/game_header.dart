@@ -31,10 +31,16 @@ class GameHeaderWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundColor: Colors.grey,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
           ),
           _buildStreakSection(0, false),
           _buildGemsSection(0),
@@ -65,9 +71,14 @@ class GameHeaderWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundImage: AssetImage('assets/images/profile.png'),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.person, size: 22, color: Colors.grey[600]),
           ),
           _buildStreakSection(0, false),
           _buildGemsSection(0),
@@ -79,21 +90,44 @@ class GameHeaderWidget extends StatelessWidget {
 
   Widget _buildProfileAvatar(String? foto) {
     if (foto != null && foto.isNotEmpty) {
-      return CircleAvatar(
-        radius: 22,
-        backgroundImage: CachedNetworkImageProvider(foto),
-        backgroundColor: Colors.grey[200],
-        onBackgroundImageError: (_, __) {},
-        child: foto.isEmpty
-            ? const Icon(Icons.person, size: 22, color: Colors.grey)
-            : null,
+      return ClipOval(
+        child: CachedNetworkImage(
+          imageUrl: foto,
+          width: 44,
+          height: 44,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.person, size: 22, color: Colors.grey[600]),
+          ),
+        ),
       );
     }
 
-    return const CircleAvatar(
-      radius: 22,
-      backgroundImage: AssetImage('assets/images/profile.png'),
-      backgroundColor: Colors.grey,
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        shape: BoxShape.circle,
+      ),
+      child: Icon(Icons.person, size: 22, color: Colors.grey[600]),
     );
   }
 
