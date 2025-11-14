@@ -142,7 +142,7 @@ class _CVAdditionalState extends State<CVAdditional> {
     return BlocListener<BuildCVBloc, BuildCVState>(
       listener: (context, state) {
         debugPrint('🎧 CVAdditional BLoC Listener: ${state.runtimeType}');
-        
+
         if (state is CVSubmitting) {
           debugPrint('⏳ CV is being submitted...');
           setState(() {
@@ -152,11 +152,11 @@ class _CVAdditionalState extends State<CVAdditional> {
           debugPrint('✅ CV Submit Success! Navigating to result...');
           debugPrint('📄 Resume ID: ${state.cvModel.id}');
           debugPrint('🔗 Resume Link: ${state.cvModel.resumeLink}');
-          
+
           setState(() {
             _isSubmitting = false;
           });
-          
+
           // Tunggu sebentar untuk memastikan state sudah tersimpan
           Future.delayed(const Duration(milliseconds: 300), () {
             if (mounted) {
@@ -165,11 +165,11 @@ class _CVAdditionalState extends State<CVAdditional> {
           });
         } else if (state is CVSubmitError) {
           debugPrint('❌ CV Submit Error: ${state.error}');
-          
+
           setState(() {
             _isSubmitting = false;
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -179,7 +179,10 @@ class _CVAdditionalState extends State<CVAdditional> {
                   Expanded(
                     child: Text(
                       'Gagal menyimpan CV: ${state.error}',
-                      style: const TextStyle(fontSize: 14),
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 14,
+                        fontWeight: semiBold,
+                      ),
                     ),
                   ),
                 ],
@@ -254,7 +257,8 @@ class _CVAdditionalState extends State<CVAdditional> {
                                   "Tambahkan kredensial yang mendukung keahlian Anda.",
                               itemCount: certControllers.length,
                               expanded: showCert,
-                              onToggle: () => setState(() => showCert = !showCert),
+                              onToggle: () =>
+                                  setState(() => showCert = !showCert),
                               onDeleteCategory: clearCert,
                               children: showCert
                                   ? List.generate(
@@ -298,7 +302,8 @@ class _CVAdditionalState extends State<CVAdditional> {
                               title: "Situs Web dan media sosial",
                               desc: "LinkedIn, Portofolio, Github, dll.",
                               expanded: showLink,
-                              onToggle: () => setState(() => showLink = !showLink),
+                              onToggle: () =>
+                                  setState(() => showLink = !showLink),
                               onDeleteCategory: clearLink,
                               itemCount: linkControllers.length,
                               children: showLink
@@ -346,7 +351,7 @@ class _CVAdditionalState extends State<CVAdditional> {
                 ),
               ),
             ),
-            
+
             // Loading Overlay
             if (_isSubmitting)
               Container(
@@ -362,7 +367,9 @@ class _CVAdditionalState extends State<CVAdditional> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            bluePrimaryColor,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Text(
@@ -408,35 +415,26 @@ class _CVAdditionalState extends State<CVAdditional> {
     }
 
     debugPrint('🔵 Periksa button pressed');
-    
-    final languages = List.generate(
-      languageControllers.length,
-      (index) {
-        final languageName = languageControllers[index].text;
-        if (languageName.isNotEmpty) {
-          return CVBahasa(
-            namaBahasa: languageName,
-            level: index < levels.length ? levels[index] : 1,
-          );
-        }
-        return null;
-      },
-    ).whereType<CVBahasa>().toList();
+
+    final languages = List.generate(languageControllers.length, (index) {
+      final languageName = languageControllers[index].text;
+      if (languageName.isNotEmpty) {
+        return CVBahasa(
+          namaBahasa: languageName,
+          level: index < levels.length ? levels[index] : 1,
+        );
+      }
+      return null;
+    }).whereType<CVBahasa>().toList();
 
     final certifications = certControllers
         .where((controller) => controller.text.isNotEmpty)
-        .map(
-          (controller) =>
-              CVSertifikasi(namaSertifikasi: controller.text),
-        )
+        .map((controller) => CVSertifikasi(namaSertifikasi: controller.text))
         .toList();
 
     final awards = awardControllers
         .where((controller) => controller.text.isNotEmpty)
-        .map(
-          (controller) =>
-              CVPenghargaan(namaPenghargaan: controller.text),
-        )
+        .map((controller) => CVPenghargaan(namaPenghargaan: controller.text))
         .toList();
 
     final socialMedia = linkControllers
@@ -468,13 +466,13 @@ class _CVAdditionalState extends State<CVAdditional> {
 
     // Update additional data first
     context.read<BuildCVBloc>().add(
-          UpdateAdditionalData(
-            languages: languages,
-            certifications: certifications,
-            awards: awards,
-            socialMedia: socialMedia,
-          ),
-        );
+      UpdateAdditionalData(
+        languages: languages,
+        certifications: certifications,
+        awards: awards,
+        socialMedia: socialMedia,
+      ),
+    );
 
     // Wait a bit to ensure data is updated in bloc
     Future.delayed(const Duration(milliseconds: 100), () {

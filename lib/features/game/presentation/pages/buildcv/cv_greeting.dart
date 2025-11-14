@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
 class CVGreeting extends StatelessWidget {
   final VoidCallback onNext;
 
-  const CVGreeting({
-    super.key,
-    required this.onNext,
-  });
+  const CVGreeting({super.key, required this.onNext});
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +16,20 @@ class CVGreeting extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Spacer(),
-          const Text(
+          Text(
             'Yuk, Cobain Bikin CV-mu Sendiri',
-            style: TextStyle(
+            style: secondaryTextStyle.copyWith(
               fontSize: 20,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey
+              fontWeight: regular,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Ceritain pengalaman dan keahlianmu lewat CV, terus biarain AI yang review hasilnya. Nanti kamu bakal dapat versi yang lebih kece, rapi, dan sesuai dengan kebutuhan dunia kerja',
-            style: TextStyle(
+            style: secondaryTextStyle.copyWith(
               fontSize: 16,
+              fontWeight: regular,
             ),
             textAlign: TextAlign.center,
           ),

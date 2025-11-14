@@ -613,18 +613,17 @@ class _QuizPageState extends State<QuizPage> {
                   children: [
                     Text(
                       "Soal ${currentQuestionIndex + 1} dari $totalQuestions",
-                      style: const TextStyle(
+                      style: secondaryTextStyle.copyWith(
                         fontSize: 14,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: medium,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       currentQuestion["question"],
-                      style: const TextStyle(
+                      style: primaryTextStyle.copyWith(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: semiBold,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -734,11 +733,9 @@ class _QuizPageState extends State<QuizPage> {
             Expanded(
               child: Text(
                 text,
-                style: TextStyle(
+                style: primaryTextStyle.copyWith(
                   fontSize: 15,
-                  fontWeight: selectedAnswer == index
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+                  fontWeight: selectedAnswer == index ? semiBold : regular,
                 ),
               ),
             ),
@@ -774,10 +771,10 @@ class _QuizPageState extends State<QuizPage> {
                 child: Text(
                   xpEarned == 80
                       ? "Runtunan telah terbuka!"
-                      : "🔄 Replay Selesai!", // ✅ Different message for replay
-                  style: const TextStyle(
-                    color: Color(0xFF2B8DD8),
-                    fontWeight: FontWeight.w600,
+                      : "🔄 Replay Selesai!",
+                  style: bluePrimaryTextStyle.copyWith(
+                    fontSize: 14,
+                    fontWeight: semiBold,
                   ),
                 ),
               ),
@@ -800,15 +797,18 @@ class _QuizPageState extends State<QuizPage> {
                     Text(
                       "Tipe kepribadianmu adalah $personalityType.",
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: primaryTextStyle.copyWith(
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: bold,
                       ),
                     ),
                     Text(
                       personalityDesc,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 15),
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 15,
+                        fontWeight: regular,
+                      ),
                     ),
                     const SizedBox(height: 32),
                     Column(
@@ -826,17 +826,17 @@ class _QuizPageState extends State<QuizPage> {
                         const SizedBox(height: 6),
                         Text(
                           "Total XP",
-                          style: TextStyle(
+                          style: secondaryTextStyle.copyWith(
                             fontSize: 14,
-                            color: Colors.grey.shade600,
+                            fontWeight: medium,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           "$xpEarned",
-                          style: const TextStyle(
+                          style: primaryTextStyle.copyWith(
                             fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: bold,
                           ),
                         ),
                       ],

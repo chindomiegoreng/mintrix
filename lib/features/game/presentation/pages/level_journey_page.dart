@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
@@ -866,32 +867,29 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                       color: Colors.orange.withOpacity(0.3),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
+                    child: Text(
                       "🔄 Replay Mode",
-                      style: TextStyle(
-                        color: Colors.white,
+                      style: whiteTextStyle.copyWith(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: semiBold,
                       ),
                     ),
                   ),
                 Text(
                   title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: whiteTextStyle.copyWith(
                     fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontWeight: bold,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   description,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: secondaryTextStyle.copyWith(
                     fontSize: 14,
-                    color: Colors.white,
-                    height: 1.5,
+                    fontWeight: medium,
                   ),
                 ),
                 const SizedBox(height: 24),

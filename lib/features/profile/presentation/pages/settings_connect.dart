@@ -89,7 +89,13 @@ class _SettingsConnectPageState extends State<SettingsConnectPage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadQRCode,
-                    child: const Text('Coba Lagi'),
+                    child: Text(
+                      'Coba Lagi',
+                      style: whiteTextStyle.copyWith(
+                        fontSize: 14,
+                        fontWeight: semiBold,
+                      ),
+                    ),
                   ),
                 ],
               ),

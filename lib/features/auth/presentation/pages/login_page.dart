@@ -27,9 +27,9 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Masuk',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
+          style: primaryTextStyle.copyWith(fontSize: 26, fontWeight: semiBold),
         ),
       ),
       body: BlocListener<AuthBloc, AuthState>(
@@ -136,7 +136,10 @@ class _LoginPageState extends State<LoginPage> {
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'atau',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: secondaryTextStyle.copyWith(
+                            fontSize: 14,
+                            fontWeight: regular,
+                          ),
                         ),
                       ),
                       Expanded(child: Divider(color: Colors.grey[300])),

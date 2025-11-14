@@ -190,8 +190,7 @@ class _DetailProfilePageState extends State<DetailProfilePage> {
                         preferredSize: const Size.fromRadius(15),
                         child: Text(
                           labels[i],
-                          style: TextStyle(
-                            color: bluePrimaryColor,
+                          style: bluePrimaryTextStyle.copyWith(
                             fontSize: 14,
                             fontWeight: semiBold,
                           ),

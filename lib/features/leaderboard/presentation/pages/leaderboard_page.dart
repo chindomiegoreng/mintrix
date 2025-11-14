@@ -101,16 +101,14 @@ class _LeaderboardView extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 "3",
-                style: TextStyle(
-                  color: bluePrimaryColor,
+                style: bluePrimaryTextStyle.copyWith(
                   fontSize: 12,
                   fontWeight: bold,
                 ),
               ),
               Text(
                 " Hari",
-                style: TextStyle(
-                  color: bluePrimaryColor,
+                style: bluePrimaryTextStyle.copyWith(
                   fontSize: 12,
                   fontWeight: bold,
                 ),
@@ -193,7 +191,11 @@ class _LeaderboardView extends StatelessWidget {
                           children: [
                             Text(
                               state.message,
-                              style: const TextStyle(color: Colors.red),
+                              style: primaryTextStyle.copyWith(
+                                color: Colors.red,
+                                fontSize: 14,
+                                fontWeight: medium,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
@@ -203,7 +205,13 @@ class _LeaderboardView extends StatelessWidget {
                                     .read<LeaderboardCubit>()
                                     .loadLeaderboard();
                               },
-                              child: const Text('Coba Lagi'),
+                              child: Text(
+                                'Coba Lagi',
+                                style: whiteTextStyle.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: semiBold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -247,7 +255,7 @@ class _LeaderboardView extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       "Zona aman",
-                                      style: TextStyle(
+                                      style: primaryTextStyle.copyWith(
                                         color: greenColor,
                                         fontSize: 16,
                                         fontWeight: bold,

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
@@ -267,18 +268,17 @@ class SectionProgressCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
+                    style: primaryTextStyle.copyWith(
                       fontSize: 16,
+                      fontWeight: medium,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Colors.lightBlue,
+                    style: bluePrimaryTextStyle.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: regular,
                     ),
                   ),
                 ],
@@ -330,10 +330,9 @@ class LessonCard extends StatelessWidget {
               child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: primaryTextStyle.copyWith(
                   fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
+                  fontWeight: extraBold,
                 ),
               ),
             ),

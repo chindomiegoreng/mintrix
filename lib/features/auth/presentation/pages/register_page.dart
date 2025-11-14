@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/widgets/form.dart';
 
@@ -195,9 +196,9 @@ class _RegisterPageState extends State<RegisterPage> {
         backgroundColor: Colors.white,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Daftar Akun',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: primaryTextStyle.copyWith(fontSize: 26, fontWeight: bold),
         ),
       ),
       body: Stack(
@@ -207,7 +208,7 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Opacity(
               opacity: _isLoading ? 0.6 : 1.0,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -377,7 +378,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(
                               'atau',
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: secondaryTextStyle.copyWith(
+                                fontSize: 16,
+                                fontWeight: semiBold,
+                              ),
                             ),
                           ),
                           Expanded(child: Divider(color: Colors.grey[300])),
@@ -408,7 +412,7 @@ class _RegisterPageState extends State<RegisterPage> {
           if (_isLoading)
             Container(
               color: Colors.black26,
-              child: const Center(
+              child: Center(
                 child: Card(
                   child: Padding(
                     padding: EdgeInsets.all(20),
@@ -419,9 +423,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         SizedBox(height: 16),
                         Text(
                           'Mendaftarkan akun...',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                          style: secondaryTextStyle.copyWith(
+                            fontSize: 14,
+                            fontWeight: semiBold,
                           ),
                         ),
                       ],

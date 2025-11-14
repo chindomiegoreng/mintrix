@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'game_detail_page.dart';
@@ -118,6 +119,7 @@ class _GamePageState extends State<GamePage> {
       ),
     );
   }
+
   Widget _buildModule(
     BuildContext context,
     String title,
@@ -128,7 +130,7 @@ class _GamePageState extends State<GamePage> {
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: semiBold),
         ),
         const SizedBox(height: 10),
         ...sections,
@@ -148,9 +150,13 @@ class _GamePageState extends State<GamePage> {
       onTap: locked
           ? () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text(
                     'Selesaikan bagian sebelumnya terlebih dahulu!',
+                    style: whiteTextStyle.copyWith(
+                      fontSize: 14,
+                      fontWeight: medium,
+                    ),
                   ),
                   duration: Duration(seconds: 2),
                   backgroundColor: Colors.orange,
@@ -199,18 +205,17 @@ class _GamePageState extends State<GamePage> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                    style: primaryTextStyle.copyWith(
+                      fontSize: 18,
+                      fontWeight: bold,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Colors.lightBlue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: semiBold,
                     ),
                   ),
                 ],

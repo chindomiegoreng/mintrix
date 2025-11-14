@@ -184,7 +184,7 @@ class _Personalization7State extends State<Personalization7> {
                       children: [
                         Text(
                           '$_characterCount/$_maxCharacters',
-                          style: TextStyle(
+                          style: primaryTextStyle.copyWith(
                             fontSize: 12,
                             fontWeight: semiBold,
                             color: _counterColor,
@@ -279,7 +279,11 @@ class _Personalization7State extends State<Personalization7> {
                             _characterCount < _minCharacters
                                 ? 'Ceritamu terlalu pendek. Tambah ${_minCharacters - _characterCount} karakter lagi!'
                                 : 'Ceritamu terlalu panjang. Kurangi ${_characterCount - _maxCharacters} karakter!',
-                            style: TextStyle(fontSize: 12, color: Colors.red),
+                            style: primaryTextStyle.copyWith(
+                              fontSize: 12,
+                              color: Colors.red,
+                              fontWeight: medium,
+                            ),
                           ),
                         ),
                       ],
