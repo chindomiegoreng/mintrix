@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add this
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart'; // ✅ Add this
 
 class LevelJourneyPage extends StatefulWidget {
   final String moduleId;
@@ -897,9 +900,15 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                   title: "Mulai +$xpReward XP", // ✅ Dynamic XP display
                   variant: ButtonColorVariant.white,
                   height: 50,
-                  onPressed: () {
+                  onPressed: () async {
                     Navigator.pop(context);
                     onStart();
+
+                    // ✅ Wait for activity to complete then refresh
+                    await Future.delayed(const Duration(milliseconds: 500));
+                    if (context.mounted) {
+                      context.read<ProfileBloc>().add(RefreshProfile());
+                    }
                   },
                 ),
               ],

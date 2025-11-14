@@ -26,11 +26,14 @@ class ProfileModel {
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    print('🔍 Parsing ProfileModel from JSON');
+    print('📷 Foto URL: ${json['foto']}'); // ✅ Debug log
+
     return ProfileModel(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['nama'] ?? json['name'] ?? '',
       email: json['email'] ?? '',
-      foto: json['foto'],
+      foto: json['foto'], // ✅ Pastikan field ini ada
       personalization: json['personalization'] as bool?, // ✅ Cast to bool
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
