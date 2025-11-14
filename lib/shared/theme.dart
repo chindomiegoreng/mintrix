@@ -41,6 +41,11 @@ TextStyle bluePrimaryTextStyle = TextStyle(
   fontFamily: 'VisbyRound',
 );
 
+TextStyle greenTextStyle = TextStyle(
+  color: greenColor,
+  fontFamily: 'VisbyRound',
+);
+
 // inisialisasi ketebalan text
 
 FontWeight extraLight = FontWeight.w200;

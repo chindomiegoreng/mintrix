@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart';
+import 'package:mintrix/shared/theme.dart';
 
 class GameHeaderWidget extends StatelessWidget {
   const GameHeaderWidget({super.key});
@@ -103,11 +104,11 @@ class GameHeaderWidget extends StatelessWidget {
         Image.asset(
           "assets/icons/fire.png",
           height: 36,
-          color: isActive && streakCount > 0 
+          color: isActive && streakCount > 0
               ? null // Gunakan warna asli (orange/merah)
               : Colors.grey, // Abu-abu jika tidak aktif
-          colorBlendMode: isActive && streakCount > 0 
-              ? BlendMode.dst 
+          colorBlendMode: isActive && streakCount > 0
+              ? BlendMode.dst
               : BlendMode.srcIn,
         ),
         const SizedBox(width: 4),
@@ -116,9 +117,7 @@ class GameHeaderWidget extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isActive && streakCount > 0 
-                ? Colors.black87 
-                : Colors.grey,
+            color: isActive && streakCount > 0 ? Colors.black87 : Colors.grey,
           ),
         ),
       ],
@@ -145,11 +144,7 @@ class GameHeaderWidget extends StatelessWidget {
   Widget _buildXPSection(int xp) {
     return Text(
       "XP $xp",
-      style: const TextStyle(
-        color: Colors.green,
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-      ),
+      style: greenTextStyle.copyWith(fontSize: 14, fontWeight: bold),
     );
   }
 }
