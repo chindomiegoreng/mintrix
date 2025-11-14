@@ -162,7 +162,10 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
-      child: const Text("Mulai", style: TextStyle(color: Colors.white)),
+      child: Text(
+        "Mulai",
+        style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: semiBold),
+      ),
     );
   }
 
@@ -260,12 +263,11 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     "November",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
+                                    style: primaryTextStyle.copyWith(
+                                      fontWeight: medium,
                                       fontSize: 16,
-                                      color: Colors.black,
                                     ),
                                   ),
                                 ),

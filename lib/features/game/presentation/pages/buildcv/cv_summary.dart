@@ -40,14 +40,17 @@ class _CVSummaryState extends State<CVSummary> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               'Ringkasan',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: bold),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Tulis perkenalan singkat yang menyoroti pengalaman, keterampilan utama, dan tujuan karier Anda.',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
+              style: secondaryTextStyle.copyWith(
+                fontSize: 14,
+                fontWeight: medium,
+              ),
             ),
             const SizedBox(height: 20),
             Container(
@@ -67,9 +70,12 @@ class _CVSummaryState extends State<CVSummary> {
             ),
 
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Struktur ringkasan yang disarankan',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: primaryTextStyle.copyWith(
+                fontSize: 16,
+                fontWeight: semiBold,
+              ),
             ),
             const SizedBox(height: 12),
 
@@ -112,7 +118,10 @@ class _CVSummaryState extends State<CVSummary> {
                             Expanded(
                               child: Text(
                                 templates[index],
-                                style: const TextStyle(fontSize: 14),
+                                style: primaryTextStyle.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: regular,
+                                ),
                               ),
                             ),
                           ],

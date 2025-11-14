@@ -69,56 +69,67 @@ class _LeaderboardView extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return BlocBuilder<LeaderboardCubit, LeaderboardState>(
+      builder: (context, state) {
+        // ✅ Ambil daysLeft dari state
+        int daysLeft = 0;
+        if (state is LeaderboardLoaded) {
+          daysLeft = state.daysLeft;
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Liga Mintrix",
-              style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Liga Mintrix",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 24,
+                    fontWeight: bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "5 besar akan melaju ke babak selanjutnya",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 12,
+                    fontWeight: medium,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              "5 besar akan melaju ke babak selanjutnya",
-              style: primaryTextStyle.copyWith(
-                fontSize: 12,
-                fontWeight: medium,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$daysLeft", // ✅ Dynamic days left
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                  Text(
+                    " Hari",
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: whiteColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
-              const SizedBox(width: 4),
-              Text(
-                "3",
-                style: TextStyle(
-                  color: bluePrimaryColor,
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-              Text(
-                " Hari",
-                style: TextStyle(
-                  color: bluePrimaryColor,
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -193,7 +204,11 @@ class _LeaderboardView extends StatelessWidget {
                           children: [
                             Text(
                               state.message,
-                              style: const TextStyle(color: Colors.red),
+                              style: primaryTextStyle.copyWith(
+                                color: Colors.red,
+                                fontSize: 14,
+                                fontWeight: medium,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
@@ -203,7 +218,13 @@ class _LeaderboardView extends StatelessWidget {
                                     .read<LeaderboardCubit>()
                                     .loadLeaderboard();
                               },
-                              child: const Text('Coba Lagi'),
+                              child: Text(
+                                'Coba Lagi',
+                                style: whiteTextStyle.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: semiBold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -247,7 +268,7 @@ class _LeaderboardView extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       "Zona aman",
-                                      style: TextStyle(
+                                      style: primaryTextStyle.copyWith(
                                         color: greenColor,
                                         fontSize: 16,
                                         fontWeight: bold,

@@ -65,9 +65,8 @@ class _StorePageState extends State<StorePage>
                     SvgPicture.asset("assets/icons/obsidian.svg"),
                     const SizedBox(width: 8),
                     Text(
-                      "200",
-                      style: TextStyle(
-                        color: bluePrimaryColor,
+                      "0",
+                      style: bluePrimaryTextStyle.copyWith(
                         fontSize: 16,
                         fontWeight: bold,
                       ),
@@ -76,20 +75,18 @@ class _StorePageState extends State<StorePage>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 "Toko Poin",
-                style: TextStyle(
-                  color: Color(0xff275e73),
+                style: primaryTextStyle.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: bold,
                 ),
               ),
-              const Text(
+              Text(
                 "Naik level lebih cepat!",
-                style: TextStyle(
-                  color: Color(0xff275e73),
+                style: primaryTextStyle.copyWith(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: medium,
                 ),
               ),
             ],
@@ -105,7 +102,7 @@ class _StorePageState extends State<StorePage>
           ),
         ),
         Positioned(
-          bottom: -103,
+          bottom: -113,
           left: 190,
           right: 0,
           child: SizedBox(

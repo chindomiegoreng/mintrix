@@ -137,15 +137,18 @@ class _ResumePageState extends State<ResumePage> {
                   children: [
                     Text(
                       resumeData["title"],
-                      style: const TextStyle(
+                      style: primaryTextStyle.copyWith(
                         fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       resumeData["subtitle"],
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      style: secondaryTextStyle.copyWith(
+                        fontSize: 16,
+                        fontWeight: semiBold,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     Container(
@@ -162,9 +165,9 @@ class _ResumePageState extends State<ResumePage> {
                         maxLines: 15,
                         decoration: InputDecoration(
                           hintText: resumeData["placeholder"],
-                          hintStyle: TextStyle(
-                            color: Colors.grey.shade400,
+                          hintStyle: secondaryTextStyle.copyWith(
                             fontSize: 14,
+                            fontWeight: medium,
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.all(16),
@@ -184,9 +187,9 @@ class _ResumePageState extends State<ResumePage> {
                         Expanded(
                           child: Text(
                             "Tips: Tulis minimal 3 poin penting yang kamu pelajari",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey.shade600,
+                            style: secondaryTextStyle.copyWith(
+                              fontSize: 14,
+                              fontWeight: semiBold,
                             ),
                           ),
                         ),

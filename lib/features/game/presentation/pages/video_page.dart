@@ -1,6 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/resume_page.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/features/game/data/services/youtube_services.dart';
 import 'package:video_player/video_player.dart';
@@ -8,13 +9,13 @@ import 'package:shimmer/shimmer.dart';
 
 class VideoUrlCache {
   static final Map<String, String> _cache = {};
-  
+
   static String? get(String youtubeUrl) => _cache[youtubeUrl];
-  
+
   static void set(String youtubeUrl, String directUrl) {
     _cache[youtubeUrl] = directUrl;
   }
-  
+
   static void clear() => _cache.clear();
 }
 
@@ -35,7 +36,8 @@ class VideoPage extends StatefulWidget {
     required this.thumbnail,
     this.moduleId,
     this.sectionId,
-    this.subSection, required int xpReward,
+    this.subSection,
+    required int xpReward,
   });
 
   @override
@@ -61,18 +63,18 @@ class _VideoPageState extends State<VideoPage> {
       isLoadingVideo = true;
       _errorMessage = null;
     });
-    
+
     try {
       String? url;
-      
+
       // Cek cache terlebih dahulu
       url = VideoUrlCache.get(widget.videoUrl);
-      
+
       if (url == null) {
         // Jika tidak ada di cache, fetch dari YouTube
         print('🔄 Fetching YouTube URL...');
         url = await getYoutubeDirectUrl(widget.videoUrl);
-        
+
         if (url != null && url.isNotEmpty) {
           // Simpan ke cache
           VideoUrlCache.set(widget.videoUrl, url);
@@ -81,14 +83,14 @@ class _VideoPageState extends State<VideoPage> {
       } else {
         print('⚡ URL loaded from cache');
       }
-      
+
       if (!mounted) return;
-      
+
       // Validasi URL
       if (url == null || url.isEmpty) {
         throw Exception('URL video tidak valid');
       }
-      
+
       // Initialize video controller di background
       print('🎬 Initializing video controller...');
       _preloadedController = VideoPlayerController.networkUrl(
@@ -98,7 +100,7 @@ class _VideoPageState extends State<VideoPage> {
           allowBackgroundPlayback: false,
         ),
       );
-      
+
       // Initialize controller dengan timeout
       await _preloadedController!.initialize().timeout(
         const Duration(seconds: 15),
@@ -106,9 +108,9 @@ class _VideoPageState extends State<VideoPage> {
           throw Exception('Timeout saat memuat video');
         },
       );
-      
+
       if (!mounted) return;
-      
+
       print('✅ Video ready to play');
       setState(() {
         directVideoUrl = url;
@@ -121,14 +123,11 @@ class _VideoPageState extends State<VideoPage> {
         isLoadingVideo = false;
         _errorMessage = 'Gagal memuat video: ${e.toString()}';
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal memuat video: $e'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: _preloadVideo,
-          ),
+          action: SnackBarAction(label: 'Retry', onPressed: _preloadVideo),
         ),
       );
     }
@@ -139,10 +138,7 @@ class _VideoPageState extends State<VideoPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Video belum siap, coba lagi.'),
-          action: SnackBarAction(
-            label: 'Retry',
-            onPressed: _preloadVideo,
-          ),
+          action: SnackBarAction(label: 'Retry', onPressed: _preloadVideo),
         ),
       );
       return;
@@ -230,9 +226,7 @@ class _VideoPageState extends State<VideoPage> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(color: Colors.white),
                         ),
                       ),
                     )
@@ -252,11 +246,11 @@ class _VideoPageState extends State<VideoPage> {
                             size: 40,
                           ),
                           const SizedBox(height: 8),
-                          const Text(
+                          Text(
                             'Gagal memuat',
-                            style: TextStyle(
-                              color: Colors.white,
+                            style: whiteTextStyle.copyWith(
                               fontSize: 12,
+                              fontWeight: medium,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -269,9 +263,12 @@ class _VideoPageState extends State<VideoPage> {
                                 vertical: 8,
                               ),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Coba Lagi',
-                              style: TextStyle(fontSize: 12),
+                              style: secondaryTextStyle.copyWith(
+                                fontSize: 12,
+                                fontWeight: semiBold,
+                              ),
                             ),
                           ),
                         ],
@@ -298,9 +295,9 @@ class _VideoPageState extends State<VideoPage> {
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.title,
-                style: const TextStyle(
+                style: secondaryTextStyle.copyWith(
                   fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: bold,
                 ),
               ),
             ),
@@ -309,7 +306,10 @@ class _VideoPageState extends State<VideoPage> {
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.description,
-                style: const TextStyle(fontSize: 14, color: Colors.black54),
+                style: primaryTextStyle.copyWith(
+                  fontSize: 14,
+                  fontWeight: semiBold,
+                ),
               ),
             ),
           ],
@@ -337,7 +337,7 @@ class VideoPlayerPage extends StatefulWidget {
   final String videoUrl;
 
   const VideoPlayerPage({
-    super.key, 
+    super.key,
     required this.videoController,
     required this.videoUrl,
   });
@@ -367,11 +367,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: Colors.white,
-                size: 48,
-              ),
+              const Icon(Icons.error_outline, color: Colors.white, size: 48),
               const SizedBox(height: 16),
               Text(
                 'Error: $errorMessage',
@@ -422,7 +418,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         ),
         body: Column(
           children: [
-            const Spacer(flex: 1), 
+            const Spacer(flex: 1),
             Align(
               alignment: Alignment.center,
               child: AspectRatio(
@@ -430,7 +426,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 child: Chewie(controller: _chewieController),
               ),
             ),
-            const Spacer(flex: 2), 
+            const Spacer(flex: 2),
           ],
         ),
       ),

@@ -15,14 +15,16 @@ class LeaderboardLoading extends LeaderboardState {}
 class LeaderboardLoaded extends LeaderboardState {
   final List<LeaderboardUser> users;
   final int? myRank; // Ranking user yang login (optional)
+  final int daysLeft; // ✅ Hari tersisa dalam periode leaderboard
 
   const LeaderboardLoaded({
     required this.users,
     this.myRank,
+    this.daysLeft = 0, // ✅ Default 0
   });
 
   @override
-  List<Object?> get props => [users, myRank];
+  List<Object?> get props => [users, myRank, daysLeft];
 }
 
 class LeaderboardError extends LeaderboardState {

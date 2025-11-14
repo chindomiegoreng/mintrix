@@ -103,7 +103,10 @@ class Personalization3 extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               reward['subtitle'],
-                              style: secondaryTextStyle.copyWith(fontSize: 14),
+                              style: secondaryTextStyle.copyWith(
+                                fontSize: 14,
+                                fontWeight: medium,
+                              ),
                             ),
                           ],
                         ),

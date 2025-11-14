@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/success_toast.dart';
 import '../bloc/daily_notes_bloc.dart';
 import '../../../core/models/note_model.dart';
@@ -57,7 +58,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         updatedAt: DateTime.now(),
       );
       context.read<DailyNotesBloc>().add(AddDailyNote(newNote));
-      
+
       // ✅ Show success toast
       final overlay = Overlay.of(context);
       final entry = OverlayEntry(
@@ -140,10 +141,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         ),
         title: Text(
           isEditing ? 'Edit Catatan' : 'Catatan Baru',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: primaryTextStyle.copyWith(fontWeight: bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
@@ -170,9 +168,12 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Tuliskan Pengalamanmu',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              style: primaryTextStyle.copyWith(
+                fontSize: 20,
+                fontWeight: semiBold,
+              ),
             ),
             const SizedBox(height: 8),
             Expanded(
