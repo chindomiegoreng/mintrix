@@ -2,7 +2,7 @@ class UserModel {
   final String id;
   final String name;
   final String email;
-  final String? foto;
+  String? foto; // Changed to non-final untuk bisa di-update
 
   UserModel({
     required this.id,
@@ -29,5 +29,10 @@ class UserModel {
       'email': email,
       'foto': foto,
     };
+  }
+
+  // Method untuk set photo URL dari Firebase
+  void setPhotoUrl(String? photoUrl) {
+    foto = photoUrl;
   }
 }

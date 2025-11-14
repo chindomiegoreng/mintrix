@@ -12,6 +12,7 @@ class AuthRepository {
     String? refreshToken,
     String? userId,
     String? username,
+    String? foto, // ✅ TAMBAHKAN
     Duration? expiryDuration,
   }) async {
     return await _tokenStorageService.saveToken(
@@ -19,6 +20,7 @@ class AuthRepository {
       refreshToken: refreshToken,
       userId: userId,
       username: username,
+      foto: foto, // ✅ TAMBAHKAN
       expiryDuration: expiryDuration,
     );
   }

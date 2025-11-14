@@ -55,6 +55,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         accessToken: authResponse.token,
         userId: authResponse.user.id,
         username: authResponse.user.name,
+        foto: authResponse.user.foto, // ✅ TAMBAHKAN
         expiryDuration: const Duration(hours: 24),
       );
       
@@ -222,47 +223,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       print('✅ Google Sign In successful');
       print('  - Email: ${googleUserData['email']}');
       print('  - Name: ${googleUserData['displayName']}');
-      print('  - Is New User: ${googleUserData['isNewUser']}');
+      print('  - Photo: ${googleUserData['photoURL']}');
 
-      // Kirim data ke backend untuk sinkronisasi
+      // Sinkronisasi dengan backend (register jika user baru, login jika sudah ada)
       try {
-        final response = await _apiClient.post(
-          '/api/auth/google-login', // ⚠️ Sesuaikan dengan endpoint backend Anda
-          body: {
-            'firebase_uid': googleUserData['uid'],
-            'email': googleUserData['email'],
-            'nama': googleUserData['displayName'],
-            'foto': googleUserData['photoURL'],
-          },
-          requiresAuth: false,
+        final authResponse = await _googleSignInService.syncGoogleUserToBackend(
+          firebaseUid: googleUserData['uid'],
+          email: googleUserData['email'],
+          name: googleUserData['displayName'],
+          photoURL: googleUserData['photoURL'],
         );
 
-        print('📦 Backend Response: $response');
+        print('💾 Saving token to local storage...');
+        
+        // Ambil photo URL dari Firebase, bukan dari backend
+        final firebasePhotoUrl = googleUserData['photoURL'];
+        
+        final saveSuccess = await _authRepository.saveLoginData(
+          accessToken: authResponse.token,
+          userId: authResponse.user.id,
+          username: authResponse.user.name,
+          foto: firebasePhotoUrl, // ✅ Gunakan foto dari Firebase
+          expiryDuration: const Duration(hours: 24),
+        );
 
-        final authResponse = AuthResponseModel.fromJson(response);
+        print('💾 Token saved: $saveSuccess');
+        print('📸 Photo URL from Firebase: $firebasePhotoUrl');
 
         emit(
           AuthAuthenticated(
             userId: authResponse.user.id,
             username: authResponse.user.name,
-            photoUrl: authResponse.user.foto,
+            photoUrl: firebasePhotoUrl, // ✅ Gunakan foto dari Firebase
           ),
         );
 
         print('✅ Google Sign In complete with backend sync');
-      } catch (e) {
-        print('⚠️ Backend sync failed, using Firebase data only: $e');
-
-        // Fallback: Gunakan data dari Firebase saja
-        emit(
-          AuthAuthenticated(
-            userId: googleUserData['uid'],
-            username: googleUserData['displayName'],
-            photoUrl: googleUserData['photoURL'],
-          ),
-        );
-
-        print('✅ Google Sign In complete (Firebase only)');
+      } catch (backendError) {
+        print('❌ Backend sync failed: $backendError');
+        emit(AuthError(_parseError(backendError.toString())));
       }
     } catch (e) {
       print('❌ Google Sign In Error: $e');
@@ -315,6 +314,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             AuthAuthenticated(
               userId: userData['userId'] ?? '',
               username: userData['username'] ?? '',
+              photoUrl: userData['foto'], // ✅ TAMBAHKAN
             ),
           );
           print('✅ Token is valid, user restored');
