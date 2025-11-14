@@ -30,7 +30,7 @@ import 'features/splash/presentation/pages/get_started_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // ✅ Initialize Token Storage
+  // ✅ Initialize Token Stora
   final tokenStorageService = TokenStorageService();
   await tokenStorageService.init();
   print('✅ Token storage initialized');
@@ -48,10 +48,7 @@ void main() async {
   // ✅ Initialize ApiClient
   final apiClient = ApiClient();
 
-  runApp(MyApp(
-    apiClient: apiClient,
-    tokenStorageService: tokenStorageService,
-  ));
+  runApp(MyApp(apiClient: apiClient, tokenStorageService: tokenStorageService));
 }
 
 class MyApp extends StatelessWidget {
@@ -66,7 +63,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authRepository = AuthRepository(tokenStorageService: tokenStorageService);
+    final authRepository = AuthRepository(
+      tokenStorageService: tokenStorageService,
+    );
 
     return MultiBlocProvider(
       providers: [
