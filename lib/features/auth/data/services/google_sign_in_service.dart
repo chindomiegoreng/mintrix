@@ -62,6 +62,7 @@ class GoogleSignInService {
   }
 
   /// Register atau login user dari Google ke backend
+  /// Foto diambil dari Firebase, tidak dikirim ke backend
   Future<AuthResponseModel> syncGoogleUserToBackend({
     required String firebaseUid,
     required String email,
@@ -73,7 +74,7 @@ class GoogleSignInService {
       print('  - Firebase UID: $firebaseUid');
       print('  - Email: $email');
       print('  - Name: $name');
-      print('  - Photo URL: $photoURL');
+      print('  - Photo URL: $photoURL (dari Firebase, tidak dikirim ke backend)');
 
       // Coba login dengan email terlebih dahulu
       try {
@@ -93,6 +94,7 @@ class GoogleSignInService {
 
         print('✅ User already registered, logging in...');
         final authResponse = AuthResponseModel.fromJson(loginResponse);
+        
         return authResponse;
       } catch (loginError) {
         print('⚠️ User not found, will register...');
@@ -112,6 +114,7 @@ class GoogleSignInService {
   }
 
   /// Daftar user baru dari Google
+  /// Foto hanya disimpan dari Firebase, tidak dikirim ke backend
   Future<AuthResponseModel> _registerGoogleUser({
     required String email,
     required String name,
@@ -121,12 +124,11 @@ class GoogleSignInService {
     try {
       print('📝 Registering new Google user to backend...');
 
-      // Prepare data untuk register
+      // Prepare data untuk register (tanpa mengirim foto)
       final registerData = {
         'nama': name,
         'email': email,
         'password': 'google_$firebaseUid', // Password dummy dari firebase_uid
-        if (photoURL != null) 'foto_url': photoURL, // Kirim URL foto
       };
 
       final response = await _apiClient.post(
@@ -137,6 +139,7 @@ class GoogleSignInService {
 
       print('✅ Google user registered successfully');
       final authResponse = AuthResponseModel.fromJson(response);
+      
       return authResponse;
     } catch (e) {
       print('❌ Unexpected registration error: $e');

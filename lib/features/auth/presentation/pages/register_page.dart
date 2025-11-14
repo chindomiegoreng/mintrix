@@ -420,7 +420,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         // Google Sign In Button
                         CustomFilledButton(
-                          title: 'Daftar dengan Google',
+                          title: 'Masuk dengan Google',
                           variant: ButtonColorVariant.white,
                           icon: Image.asset(
                             'assets/icons/logo_google.png',
