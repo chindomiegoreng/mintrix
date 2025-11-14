@@ -71,6 +71,8 @@ dependencies:
   shimmer: ^3.0.0
   flutter_launcher_icons: ^0.14.4
   open_filex: ^4.7.0
+  path_provider: ^2.1.5
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
@@ -105,7 +107,6 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/launcher/icon.png"
-
 
 # The following section is specific to Flutter packages.
 flutter:
