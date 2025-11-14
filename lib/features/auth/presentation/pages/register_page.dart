@@ -39,7 +39,15 @@ class _RegisterPageState extends State<RegisterPage> {
         // Verify file exists and has size
         if (await file.exists()) {
           final fileSize = await file.length();
-          print('📷 Image picked: ${file.path}, Size: ${fileSize} bytes');
+          print('📷 Image picked: ${file.path}');
+          print(
+            '📏 File size: ${fileSize} bytes (${(fileSize / 1024).toStringAsFixed(2)} KB)',
+          );
+
+          // ✅ Verify it's a valid image file
+          if (fileSize == 0) {
+            throw Exception('File gambar kosong');
+          }
 
           setState(() {
             _profileImage = file;
@@ -85,6 +93,25 @@ class _RegisterPageState extends State<RegisterPage> {
       );
       return;
     }
+
+    // ✅ Verify file still exists before sending
+    if (!await _profileImage!.exists()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('File foto tidak ditemukan, pilih ulang'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() {
+        _profileImage = null;
+      });
+      return;
+    }
+
+    print('🚀 Starting registration...');
+    print('📝 Username: ${_namaController.text.trim()}');
+    print('📧 Email: ${_emailController.text.trim()}');
+    print('📷 Photo: ${_profileImage!.path}');
 
     // ✅ Trigger RegisterEvent via BLoC
     context.read<AuthBloc>().add(

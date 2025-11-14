@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart'; // ✅ Add this import
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_endpoints.dart';
 
@@ -192,6 +193,7 @@ class ApiClient {
 
       print('📡 POST Multipart: $url');
       print('📦 Fields: $fields');
+      print('📎 File field name: $fileField');
 
       var request = http.MultipartRequest('POST', url);
 
@@ -206,14 +208,61 @@ class ApiClient {
 
       // Tambahkan fields
       request.fields.addAll(fields);
+      print('✅ Fields added: ${request.fields.keys.join(", ")}');
 
       // Tambahkan file jika ada
       if (file != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(fileField, file.path),
+        if (!await file.exists()) {
+          throw Exception('File tidak ditemukan: ${file.path}');
+        }
+
+        final fileSize = await file.length();
+        final fileName = file.path.split('/').last;
+
+        // ✅ Detect MIME type
+        String mimeType = 'image/jpeg';
+        final extension = fileName.split('.').last.toLowerCase();
+
+        if (extension == 'png') {
+          mimeType = 'image/png';
+        } else if (extension == 'jpg' || extension == 'jpeg') {
+          mimeType = 'image/jpeg';
+        } else if (extension == 'gif') {
+          mimeType = 'image/gif';
+        } else if (extension == 'webp') {
+          mimeType = 'image/webp';
+        }
+
+        print('📎 File details:');
+        print('  - Path: ${file.path}');
+        print('  - Name: $fileName');
+        print(
+          '  - Size: $fileSize bytes (${(fileSize / 1024).toStringAsFixed(2)} KB)',
         );
-        print('📎 File attached: ${file.path}');
+        print('  - MIME Type: $mimeType');
+        print('  - Field name: $fileField');
+
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileField,
+            file.path,
+            contentType: MediaType.parse(
+              mimeType,
+            ), // ✅ Set content type explicitly
+          ),
+        );
+
+        print('✅ File attached successfully');
+        print('📋 Total files in request: ${request.files.length}');
+      } else {
+        print('⚠️ No file provided for upload');
       }
+
+      print('🚀 Sending multipart request...');
+      print('📋 Request fields: ${request.fields}');
+      print(
+        '📋 Request files: ${request.files.map((f) => '${f.field}: ${f.filename}').join(", ")}',
+      );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);

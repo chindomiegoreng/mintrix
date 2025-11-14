@@ -18,12 +18,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     GoogleSignInService? googleSignInService,
     TokenStorageService? tokenStorageService,
     AuthRepository? authRepository,
-  })  : _apiClient = apiClient ?? ApiClient(),
-        _googleSignInService = googleSignInService ?? GoogleSignInService(),
-        _authRepository = authRepository ?? AuthRepository(
-          tokenStorageService: tokenStorageService ?? TokenStorageService(),
-        ),
-        super(AuthInitial()) {
+  }) : _apiClient = apiClient ?? ApiClient(),
+       _googleSignInService = googleSignInService ?? GoogleSignInService(),
+       _authRepository =
+           authRepository ??
+           AuthRepository(
+             tokenStorageService: tokenStorageService ?? TokenStorageService(),
+           ),
+       super(AuthInitial()) {
     on<LoginEvent>(_onLoginEvent);
     on<RegisterEvent>(_onRegisterEvent);
     on<GoogleSignInEvent>(_onGoogleSignInEvent); // ✅ TAMBAHKAN
@@ -50,14 +52,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       print('  - Token: ${authResponse.token.substring(0, 20)}...');
       print('  - User ID: ${authResponse.user.id}');
       print('  - Username: ${authResponse.user.name}');
-      
+
       final saveSuccess = await _authRepository.saveLoginData(
         accessToken: authResponse.token,
         userId: authResponse.user.id,
         username: authResponse.user.name,
         expiryDuration: const Duration(hours: 24),
       );
-      
+
       print('💾 Token saved: $saveSuccess');
 
       emit(
@@ -142,6 +144,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
 
       try {
+        // ✅ Try different field names if 'foto' doesn't work
         final response = await _apiClient.postMultipart(
           ApiEndpoints.register,
           fields: {
@@ -150,7 +153,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
             'password': event.password,
           },
           file: event.foto,
-          fileField: 'foto',
+          fileField:
+              'foto', // ✅ Try: 'photo', 'image', 'profile_picture', 'avatar'
           requiresAuth: false,
         );
 
