@@ -8,10 +8,18 @@ class TokenStorageService {
   static const String _usernameKey = 'username';
   static const String _fotoKey = 'user_foto'; // ✅ TAMBAHKAN
 
-  late SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+  }
+
+  // Helper to ensure _prefs is initialized
+  Future<SharedPreferences> _getPrefs() async {
+    if (_prefs == null) {
+      _prefs = await SharedPreferences.getInstance();
+    }
+    return _prefs!;
   }
 
   // Save token and related data
@@ -24,28 +32,49 @@ class TokenStorageService {
     Duration? expiryDuration,
   }) async {
     try {
-      await _prefs.setString(_accessTokenKey, accessToken);
+      final prefs = await _getPrefs();
+
+      print('💾 Saving token for userId: $userId');
+
+      // ✅ Check if userId is different from stored userId (BEFORE saving new data)
+      final storedUserId = prefs.getString(_userIdKey);
+      print('   Stored userId in prefs: $storedUserId');
+
+      if (userId != null && storedUserId != null && storedUserId != userId) {
+        print('🔄 New user detected! Clearing old game progress...');
+        print('   Old user: $storedUserId');
+        print('   New user: $userId');
+        await clearGameProgress();
+      } else if (userId != null && storedUserId == userId) {
+        print('✅ Same user detected, keeping existing progress');
+      } else {
+        print('ℹ️ First time login or no stored userId');
+      }
+
+      await prefs.setString(_accessTokenKey, accessToken);
 
       if (refreshToken != null) {
-        await _prefs.setString(_refreshTokenKey, refreshToken);
+        await prefs.setString(_refreshTokenKey, refreshToken);
       }
 
       if (userId != null) {
-        await _prefs.setString(_userIdKey, userId);
+        await prefs.setString(_userIdKey, userId);
       }
 
       if (username != null) {
-        await _prefs.setString(_usernameKey, username);
+        await prefs.setString(_usernameKey, username);
       }
 
-      if (foto != null) { // ✅ TAMBAHKAN
-        await _prefs.setString(_fotoKey, foto);
+      if (foto != null) {
+        // ✅ TAMBAHKAN
+        await prefs.setString(_fotoKey, foto);
       }
 
       if (expiryDuration != null) {
-        final expiryTime =
-            DateTime.now().add(expiryDuration).millisecondsSinceEpoch;
-        await _prefs.setInt(_tokenExpiryKey, expiryTime);
+        final expiryTime = DateTime.now()
+            .add(expiryDuration)
+            .millisecondsSinceEpoch;
+        await prefs.setInt(_tokenExpiryKey, expiryTime);
       }
 
       return true;
@@ -56,27 +85,27 @@ class TokenStorageService {
 
   // Get access token
   String? getAccessToken() {
-    return _prefs.getString(_accessTokenKey);
+    return _prefs?.getString(_accessTokenKey);
   }
 
   // Get refresh token
   String? getRefreshToken() {
-    return _prefs.getString(_refreshTokenKey);
+    return _prefs?.getString(_refreshTokenKey);
   }
 
   // Get user ID
   String? getUserId() {
-    return _prefs.getString(_userIdKey);
+    return _prefs?.getString(_userIdKey);
   }
 
   // Get username
   String? getUsername() {
-    return _prefs.getString(_usernameKey);
+    return _prefs?.getString(_usernameKey);
   }
 
   // Get user photo ✅ TAMBAHKAN
   String? getFoto() {
-    return _prefs.getString(_fotoKey);
+    return _prefs?.getString(_fotoKey);
   }
 
   // Check if token exists and is valid
@@ -86,7 +115,7 @@ class TokenStorageService {
       return false;
     }
 
-    final expiryTime = _prefs.getInt(_tokenExpiryKey);
+    final expiryTime = _prefs?.getInt(_tokenExpiryKey);
     if (expiryTime == null) {
       // If no expiry time is set, assume token is valid
       return true;
@@ -98,7 +127,7 @@ class TokenStorageService {
 
   // Check if token is expired
   bool isTokenExpired() {
-    final expiryTime = _prefs.getInt(_tokenExpiryKey);
+    final expiryTime = _prefs?.getInt(_tokenExpiryKey);
     if (expiryTime == null) {
       return false;
     }
@@ -107,17 +136,60 @@ class TokenStorageService {
     return now >= expiryTime;
   }
 
+  // Clear all game progress data
+  Future<bool> clearGameProgress() async {
+    try {
+      final prefs = await _getPrefs();
+      final keys = prefs.getKeys();
+
+      // Remove all keys related to game progress
+      for (final key in keys) {
+        // Platform status, lesson completion, section progress, first completion, streak
+        if (key.contains('modul') ||
+            key.contains('platform') ||
+            key.contains('_progress') ||
+            key.contains('first_completed') ||
+            key.contains('last_streak_update')) {
+          await prefs.remove(key);
+          print('🗑️ Removed game progress key: $key');
+        }
+      }
+
+      print('✅ All game progress cleared');
+      return true;
+    } catch (e) {
+      print('❌ Failed to clear game progress: $e');
+      return false;
+    }
+  }
+
   // Clear all tokens
   Future<bool> clearToken() async {
     try {
-      await _prefs.remove(_accessTokenKey);
-      await _prefs.remove(_refreshTokenKey);
-      await _prefs.remove(_tokenExpiryKey);
-      await _prefs.remove(_userIdKey);
-      await _prefs.remove(_usernameKey);
-      await _prefs.remove(_fotoKey); // ✅ TAMBAHKAN
+      final prefs = await _getPrefs();
+
+      print('🔓 Starting logout process...');
+      print('   Current userId before clear: ${prefs.getString(_userIdKey)}');
+
+      await prefs.remove(_accessTokenKey);
+      await prefs.remove(_refreshTokenKey);
+      await prefs.remove(_tokenExpiryKey);
+      // ✅ DON'T remove userId - keep it to detect user change on next login
+      // await prefs.remove(_userIdKey);
+      await prefs.remove(_usernameKey);
+      await prefs.remove(_fotoKey);
+
+      print('🗑️ Tokens cleared (userId kept for progress tracking)');
+
+      // ❌ REMOVED: Don't clear game progress on logout
+      // User might login again with same account
+      // Progress will only be cleared when DIFFERENT user logs in
+
+      print('✅ Logout complete - progress preserved for re-login');
+
       return true;
     } catch (e) {
+      print('❌ Logout failed: $e');
       return false;
     }
   }

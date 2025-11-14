@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "190448865971-6s3e1r0ne78uv3fsi6fi5v134dbevlug.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mintrix",
+            "certificate_hash": "77ecb319ca3badec489bd2765905e1d85c11ce00"
+          }
+        },
+        {
           "client_id": "190448865971-q5l177857iqh2d2p70062sn2bb9u9mv3.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

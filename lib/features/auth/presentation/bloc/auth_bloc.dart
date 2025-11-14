@@ -239,26 +239,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
 
         print('💾 Saving token to local storage...');
-        
-        // Ambil photo URL dari Firebase, bukan dari backend
-        final firebasePhotoUrl = googleUserData['photoURL'];
-        
+
+        // ✅ Gunakan foto dari backend response (sudah diupload saat register)
+        // Fallback ke Firebase photo jika backend tidak ada
+        final photoUrl = authResponse.user.foto ?? googleUserData['photoURL'];
+
         final saveSuccess = await _authRepository.saveLoginData(
           accessToken: authResponse.token,
           userId: authResponse.user.id,
           username: authResponse.user.name,
-          foto: firebasePhotoUrl, // ✅ Gunakan foto dari Firebase
+          foto: photoUrl,
           expiryDuration: const Duration(hours: 24),
         );
 
         print('💾 Token saved: $saveSuccess');
-        print('📸 Photo URL from Firebase: $firebasePhotoUrl');
+        print('📸 Photo URL saved: $photoUrl');
+        print('  - Backend photo: ${authResponse.user.foto}');
+        print('  - Firebase photo: ${googleUserData['photoURL']}');
 
         emit(
           AuthAuthenticated(
             userId: authResponse.user.id,
             username: authResponse.user.name,
-            photoUrl: firebasePhotoUrl, // ✅ Gunakan foto dari Firebase
+            photoUrl: photoUrl,
           ),
         );
 

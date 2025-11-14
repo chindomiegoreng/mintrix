@@ -11,9 +11,12 @@ class StreakService {
     try {
       print('🔥 Updating streak via API...');
 
-      final response = await _apiClient.put(
+      final response = await _apiClient.patch(
         ApiEndpoints.stats,
-        body: {"streakActive": true},
+        body: {
+          "streakCount": 1, // Increment streak by 1
+          "streakActive": true, // Activate streak
+        },
         requiresAuth: true,
       );
 

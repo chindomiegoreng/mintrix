@@ -10,3 +10,7 @@ class UpdateProfile extends ProfileEvent {
 
   UpdateProfile({required this.name, this.foto});
 }
+
+class UpdateStreak extends ProfileEvent {
+  UpdateStreak();
+}
