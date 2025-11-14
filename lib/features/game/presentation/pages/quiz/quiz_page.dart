@@ -1,7 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
+import 'package:mintrix/core/services/streak_service.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
 
@@ -29,6 +33,7 @@ class _QuizPageState extends State<QuizPage> {
   int correctAnswers = 0;
   bool showResult = false;
   final ApiClient _apiClient = ApiClient();
+  final StreakService _streakService = StreakService();
   bool _isSubmittingXP = false;
 
   List<Map<String, dynamic>> _getQuestions() {
@@ -567,7 +572,7 @@ class _QuizPageState extends State<QuizPage> {
     }
   }
 
-  void _submitAnswer() {
+  void _submitQuiz() async {
     final questions = _getQuestions();
     if (selectedAnswer == questions[currentQuestionIndex]["correctAnswer"]) {
       correctAnswers++;
@@ -583,7 +588,17 @@ class _QuizPageState extends State<QuizPage> {
         showResult = true;
       });
       // ✅ Kirim XP ke backend saat quiz selesai
-      _submitXPToBackend();
+      await _submitXPToBackend();
+
+      // ✅ Update streak via API setelah quiz selesai
+      print('🎮 Quiz completed, updating streak...');
+      final streakUpdated = await _streakService.updateStreak();
+
+      if (streakUpdated && mounted) {
+        // ✅ Refresh ProfileBloc untuk update UI (fire icon & streak count)
+        context.read<ProfileBloc>().add(RefreshProfile());
+        print('🔥 Streak updated and profile refreshed!');
+      }
     }
   }
 
@@ -642,7 +657,7 @@ class _QuizPageState extends State<QuizPage> {
                       variant: selectedAnswer != null
                           ? ButtonColorVariant.blue
                           : ButtonColorVariant.secondary,
-                      onPressed: selectedAnswer != null ? _submitAnswer : null,
+                      onPressed: selectedAnswer != null ? _submitQuiz : null,
                       withShadow: selectedAnswer != null,
                       height: 55,
                     ),

@@ -1,6 +1,10 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/services/streak_service.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/resume_page.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/features/game/data/services/youtube_services.dart';
@@ -50,6 +54,7 @@ class _VideoPageState extends State<VideoPage> {
   String? directVideoUrl;
   VideoPlayerController? _preloadedController;
   String? _errorMessage;
+  final StreakService _streakService = StreakService();
 
   @override
   void initState() {
@@ -166,6 +171,40 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   void _handleNext() {
+    if (_isModule2Section1()) {
+      Navigator.pushNamed(context, '/build-cv');
+    } else if (widget.moduleId != null &&
+        widget.sectionId != null &&
+        widget.subSection != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ResumePage(
+            moduleId: widget.moduleId!,
+            sectionId: widget.sectionId!,
+            subSection: widget.subSection!,
+          ),
+        ),
+      );
+    } else {
+      Navigator.pushNamed(context, '/quizPage');
+    }
+  }
+
+  Future<void> _onVideoComplete() async {
+    print('✅ Video completed!');
+
+    // ✅ Update streak via API
+    print('🎮 Video watched, updating streak...');
+    final streakUpdated = await _streakService.updateStreak();
+
+    if (streakUpdated && mounted) {
+      // ✅ Refresh ProfileBloc untuk update UI
+      context.read<ProfileBloc>().add(RefreshProfile());
+      print('🔥 Streak updated after video completion!');
+    }
+
+    // Navigasi setelah video selesai
     if (_isModule2Section1()) {
       Navigator.pushNamed(context, '/build-cv');
     } else if (widget.moduleId != null &&
