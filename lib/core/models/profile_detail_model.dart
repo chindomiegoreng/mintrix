@@ -1,5 +1,3 @@
-import 'dart:math';
-
 class ProfileDetailModel {
   final UserDetailModel user;
   final StatsDetailModel stats;
@@ -100,24 +98,15 @@ class PersonalityDetailModel {
   });
 
   factory PersonalityDetailModel.fromJson(Map<String, dynamic> json) {
-    // ✅ Generate random seed based on userId for consistency
-    final userId = json['userId'] ?? '';
-    final random = Random(userId.hashCode);
-
-    // ✅ Generate random values between 50-90
-    int generateRandomValue() {
-      return 50 + random.nextInt(41); // 50 + (0 to 40) = 50 to 90
-    }
-
     return PersonalityDetailModel(
       id: json['_id'] ?? '',
-      userId: userId,
-      kreatifitas: generateRandomValue(),
-      keberanian: generateRandomValue(),
-      empati: generateRandomValue(),
-      kerjaSama: generateRandomValue(),
-      tanggungJawab: generateRandomValue(),
-      hobiDanMinat: json['hobiDanMinat'] ?? 'Belum ada data hobi dan minat.',
+      userId: json['userId'] ?? '',
+      kreatifitas: json['kreatifitas'] ?? 0,
+      keberanian: json['keberanian'] ?? 0,
+      empati: json['empati'] ?? 0,
+      kerjaSama: json['kerjaSama'] ?? 0,
+      tanggungJawab: json['tanggungJawab'] ?? 0,
+      hobiDanMinat: json['hobiDanMinat'] ?? '',
     );
   }
 
