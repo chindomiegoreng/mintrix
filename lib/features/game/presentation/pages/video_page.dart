@@ -191,7 +191,7 @@ class _VideoPageState extends State<VideoPage> {
     }
   }
 
-  Future<void> _onVideoComplete() async {
+  Future<void> onVideoComplete() async {
     print('✅ Video completed!');
 
     // ✅ Update streak via API
