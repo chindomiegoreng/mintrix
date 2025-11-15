@@ -276,33 +276,121 @@ class _SettingsPageState extends State<SettingsPage> {
                         // Tambahkan dialog konfirmasi logout
                         showDialog(
                           context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Keluar Akun"),
-                            content: const Text(
-                              "Apakah Anda yakin ingin keluar?",
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Batal"),
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  // ✅ Trigger logout event dan listen untuk state change
-                                  context.read<AuthBloc>().add(LogoutEvent());
-                                  
-                                  // Listen for logout completion via BLoC state
-                                  Future.microtask(() {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Logging out...')),
-                                    );
-                                  });
-                                },
-                                child: const Text("Keluar"),
+                              child: Container(
+                                padding: const EdgeInsets.all(22),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Keluar Akun",
+                                      style: primaryTextStyle.copyWith(
+                                        fontSize: 20,
+                                        fontWeight: semiBold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      "Apakah kamu yakin ingin keluar dari aplikasi?",
+                                      style: secondaryTextStyle.copyWith(
+                                        fontSize: 16,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    Row(
+                                      children: [
+                                        // ❌ BELUM
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                color: bluePrimaryColor,
+                                                width: 1.4,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                            child: Text(
+                                              "Belum",
+                                              style: bluePrimaryTextStyle
+                                                  .copyWith(
+                                                    fontSize: 15,
+                                                    fontWeight: semiBold,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+
+                                        // ✅ YA, LOGOUT
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+
+                                              context.read<AuthBloc>().add(
+                                                LogoutEvent(),
+                                              );
+
+                                              Future.microtask(() {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      "Logging out...",
+                                                    ),
+                                                  ),
+                                                );
+                                              });
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: bluePrimaryColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                            child: Text(
+                                              "Ya",
+                                              style: whiteTextStyle.copyWith(
+                                                fontSize: 15,
+                                                fontWeight: semiBold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
                     ),
