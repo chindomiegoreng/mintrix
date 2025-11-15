@@ -123,46 +123,46 @@ class CustomHomeCardSmall extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                // Image.asset(images, width: 90, height: 90),
-                CachedNetworkImage(
-                  imageUrl: images,
-                  width: 90,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      const CircularProgressIndicator(),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: bluePrimaryTextStyle.copyWith(
-                    fontWeight: bold,
-                    fontSize: 18,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: images,
+                    width: 90,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: 32,
-                  child: Text(
-                    subTitle,
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
                     textAlign: TextAlign.center,
                     style: bluePrimaryTextStyle.copyWith(
-                      fontWeight: medium,
-                      fontSize: 12,
+                      fontWeight: bold,
+                      fontSize: 18,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const Spacer(),
-              ],
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 32,
+                    child: Text(
+                      subTitle,
+                      textAlign: TextAlign.center,
+                      style: bluePrimaryTextStyle.copyWith(
+                        fontWeight: medium,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
