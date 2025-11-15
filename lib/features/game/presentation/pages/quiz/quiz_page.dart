@@ -37,9 +37,10 @@ class _QuizPageState extends State<QuizPage> {
   bool _isSubmittingXP = false;
 
   List<Map<String, dynamic>> _getQuestions() {
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 1
     if (widget.moduleId == "modul1" &&
         widget.sectionId == "bagian1" &&
-        widget.subSection == "mencari_hal_yang_kamu_suka") {
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz1") {
       return [
         {
           "question": "Apa yang dimaksud dengan minat?",
@@ -104,9 +105,149 @@ class _QuizPageState extends State<QuizPage> {
       ];
     }
 
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 2 (Eksplorasi Diri)
     if (widget.moduleId == "modul1" &&
         widget.sectionId == "bagian1" &&
-        widget.subSection == "mengatur_waktu") {
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz2") {
+      return [
+        {
+          "question":
+              "Apa yang dimaksud dengan self-awareness (kesadaran diri)?",
+          "options": [
+            "Kemampuan memahami kekuatan dan kelemahan diri",
+            "Selalu memikirkan pendapat orang lain",
+            "Mengabaikan perasaan sendiri",
+            "Tidak pernah melakukan refleksi diri",
+          ],
+          "correctAnswer": 0,
+        },
+        {
+          "question": "Bagaimana cara mengidentifikasi kelebihan diri?",
+          "options": [
+            "Meminta orang lain menilai diri kita",
+            "Mengingat momen saat merasa paling bangga",
+            "Membandingkan dengan orang lain",
+            "Fokus hanya pada kelemahan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran passion dalam memilih karir?",
+          "options": [
+            "Tidak berperan sama sekali",
+            "Membuat pekerjaan terasa lebih bermakna",
+            "Hanya untuk hobi, bukan karir",
+            "Passion tidak penting dalam karir",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question":
+              "Bagaimana mengenali aktivitas yang sesuai dengan minatmu?",
+          "options": [
+            "Aktivitas yang membuatmu lupa waktu",
+            "Aktivitas yang paling mudah dilakukan",
+            "Aktivitas yang dilakukan orang lain",
+            "Aktivitas dengan bayaran tertinggi",
+          ],
+          "correctAnswer": 0,
+        },
+        {
+          "question": "Apa yang sebaiknya dilakukan saat minat berubah?",
+          "options": [
+            "Panik dan bingung",
+            "Eksplorasi minat baru dengan terbuka",
+            "Memaksakan minat lama",
+            "Berhenti mencari minat",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa refleksi diri penting dalam menemukan minat?",
+          "options": [
+            "Tidak penting sama sekali",
+            "Membantu memahami apa yang benar-benar disukai",
+            "Hanya membuang waktu",
+            "Membuat bingung",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 3 (Menemukan Passion)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz3") {
+      return [
+        {
+          "question": "Apa perbedaan antara hobi dan passion?",
+          "options": [
+            "Tidak ada perbedaan",
+            "Passion lebih mendalam dan bisa jadi karir",
+            "Hobi lebih penting dari passion",
+            "Passion hanya untuk anak muda",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara mengubah minat menjadi keahlian?",
+          "options": [
+            "Hanya bermimpi tanpa tindakan",
+            "Latihan konsisten dan belajar berkelanjutan",
+            "Menunggu bakat muncul sendiri",
+            "Tidak perlu usaha keras",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question":
+              "Apa yang harus dilakukan jika passion tidak menghasilkan uang?",
+          "options": [
+            "Langsung menyerah",
+            "Cari cara kreatif untuk monetisasi",
+            "Passion tidak untuk menghasilkan uang",
+            "Ganti passion lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa penting mengejar passion dalam hidup?",
+          "options": [
+            "Tidak penting, fokus pada uang saja",
+            "Membuat hidup lebih bermakna dan bahagia",
+            "Hanya untuk pamer di media sosial",
+            "Passion tidak ada hubungannya dengan kebahagiaan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa tanda bahwa kamu telah menemukan passion sejati?",
+          "options": [
+            "Merasa terpaksa melakukannya",
+            "Bersemangat dan termotivasi tanpa dipaksa",
+            "Hanya dilakukan saat ada hadiah",
+            "Cepat bosan dan ingin berhenti",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana sikap yang tepat dalam mengembangkan minat?",
+          "options": [
+            "Menyerah saat ada kesulitan",
+            "Tetap konsisten meski ada tantangan",
+            "Hanya melakukan saat mood bagus",
+            "Berpindah-pindah minat setiap hari",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 1
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengatur_waktu_quiz1") {
       return [
         {
           "question": "Apa manfaat utama mengatur waktu dengan baik?",
@@ -172,9 +313,141 @@ class _QuizPageState extends State<QuizPage> {
       ];
     }
 
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 2 (Prioritas Tugas)
     if (widget.moduleId == "modul1" &&
         widget.sectionId == "bagian1" &&
-        widget.subSection == "berpikir_positif") {
+        widget.subSection == "mengatur_waktu_quiz2") {
+      return [
+        {
+          "question": "Apa itu Matriks Eisenhower?",
+          "options": [
+            "Alat untuk menentukan prioritas berdasarkan urgensi dan penting",
+            "Aplikasi untuk menghitung waktu",
+            "Metode untuk menunda pekerjaan",
+            "Teknik multitasking",
+          ],
+          "correctAnswer": 0,
+        },
+        {
+          "question": "Tugas yang penting tapi tidak mendesak sebaiknya?",
+          "options": [
+            "Diabaikan saja",
+            "Dijadwalkan dengan baik",
+            "Dikerjakan kapan saja",
+            "Didelegasikan ke orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan 'eat the frog'?",
+          "options": [
+            "Makan kodok sungguhan",
+            "Mengerjakan tugas tersulit terlebih dahulu",
+            "Menghindari tugas sulit",
+            "Mengerjakan tugas mudah dulu",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana menentukan tugas yang benar-benar penting?",
+          "options": [
+            "Semua tugas sama pentingnya",
+            "Sesuaikan dengan tujuan jangka panjang",
+            "Yang paling mudah adalah yang penting",
+            "Yang diminta orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa dampak tidak memprioritaskan tugas?",
+          "options": [
+            "Semua berjalan lancar",
+            "Waktu terbuang untuk hal tidak penting",
+            "Menjadi lebih produktif",
+            "Tidak ada dampak negatif",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Kapan sebaiknya mengerjakan tugas yang paling penting?",
+          "options": [
+            "Malam hari saat lelah",
+            "Pagi hari saat energi penuh",
+            "Kapan saja tidak masalah",
+            "Saat deadline mendekat",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 3 (Produktivitas)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengatur_waktu_quiz3") {
+      return [
+        {
+          "question": "Apa itu deep work?",
+          "options": [
+            "Bekerja di laut dalam",
+            "Fokus penuh tanpa distraksi untuk hasil maksimal",
+            "Bekerja sambil bermain",
+            "Multitasking ekstrem",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Berapa lama ideal untuk satu sesi Pomodoro?",
+          "options": ["5 menit", "25 menit", "2 jam", "Sepanjang hari"],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa musuh terbesar produktivitas?",
+          "options": [
+            "Istirahat",
+            "Distraksi dan prokrastinasi",
+            "Perencanaan",
+            "Fokus",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara menghindari burnout?",
+          "options": [
+            "Bekerja terus tanpa istirahat",
+            "Seimbangkan kerja dan istirahat",
+            "Hindari semua pekerjaan",
+            "Bekerja hanya saat mood bagus",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu batch processing dalam manajemen waktu?",
+          "options": [
+            "Menunda semua tugas",
+            "Mengelompokkan tugas serupa dan mengerjakan bersamaan",
+            "Mengerjakan satu per satu dengan lambat",
+            "Membagi tugas ke banyak orang",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa to-do list penting untuk produktivitas?",
+          "options": [
+            "Tidak penting sama sekali",
+            "Membantu mengingat dan melacak tugas",
+            "Hanya untuk gaya-gayaan",
+            "Membuat bingung",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 3: Berpikir Positif - Quiz 1
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "berpikir_positif_quiz1") {
       return [
         {
           "question": "Apa yang dimaksud dengan berpikir positif?",
@@ -240,268 +513,752 @@ class _QuizPageState extends State<QuizPage> {
       ];
     }
 
+    // 🎯 CARD 3: Berpikir Positif - Quiz 2 (Mindset Growth)
     if (widget.moduleId == "modul1" &&
         widget.sectionId == "bagian1" &&
-        widget.subSection == "komunikasi_efektif") {
+        widget.subSection == "berpikir_positif_quiz2") {
       return [
         {
-          "question": "Apa yang dimaksud dengan komunikasi efektif?",
+          "question": "Apa itu growth mindset?",
           "options": [
-            "Berbicara sebanyak mungkin",
-            "Menyampaikan pesan dengan jelas dan dipahami",
-            "Menghindari berbicara dengan orang lain",
-            "Selalu memaksakan pendapat",
+            "Pola pikir bahwa kemampuan bisa dikembangkan",
+            "Percaya kemampuan sudah tetap sejak lahir",
+            "Tidak mau belajar hal baru",
+            "Menyerah saat ada kesulitan",
+          ],
+          "correctAnswer": 0,
+        },
+        {
+          "question": "Apa lawan dari growth mindset?",
+          "options": [
+            "Positive mindset",
+            "Fixed mindset",
+            "Open mindset",
+            "Creative mindset",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa komponen penting dalam mendengarkan aktif?",
+          "question":
+              "Bagaimana orang dengan growth mindset melihat kegagalan?",
           "options": [
-            "Memotong pembicaraan orang lain",
-            "Fokus pada handphone saat berbicara",
-            "Memberikan perhatian penuh dan memahami",
-            "Memikirkan jawaban sambil orang bicara",
-          ],
-          "correctAnswer": 2,
-        },
-        {
-          "question": "Bagaimana body language mempengaruhi komunikasi?",
-          "options": [
-            "Tidak berpengaruh sama sekali",
-            "Dapat memperkuat atau melemahkan pesan",
-            "Hanya penting dalam presentasi",
-            "Tidak penting dalam era digital",
+            "Sebagai akhir dari segalanya",
+            "Sebagai kesempatan untuk belajar",
+            "Sebagai bukti ketidakmampuan",
+            "Sebagai alasan untuk menyerah",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa yang dimaksud dengan komunikasi asertif?",
-          "options": [
-            "Berbicara dengan kasar",
-            "Mengekspresikan pendapat dengan sopan dan tegas",
-            "Selalu mengalah pada orang lain",
-            "Menghindari konflik dengan diam",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa hambatan umum dalam komunikasi?",
-          "options": [
-            "Terlalu banyak mendengarkan",
-            "Prasangka dan asumsi negatif",
-            "Berbicara dengan sopan",
-            "Memahami perspektif orang lain",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Bagaimana cara memberikan kritik yang membangun?",
-          "options": [
-            "Fokus pada kesalahan orangnya",
-            "Menyampaikan di depan banyak orang",
-            "Fokus pada perilaku, bukan pribadi",
-            "Menggunakan kata-kata kasar",
-          ],
-          "correctAnswer": 2,
-        },
-      ];
-    }
-
-    if (widget.moduleId == "modul1" &&
-        widget.sectionId == "bagian1" &&
-        widget.subSection == "kerja_sama_tim") {
-      return [
-        {
-          "question": "Apa manfaat utama bekerja dalam tim?",
-          "options": [
-            "Bisa mengandalkan orang lain sepenuhnya",
-            "Menggabungkan keahlian untuk hasil lebih baik",
-            "Menghindari tanggung jawab pribadi",
-            "Membuat pekerjaan lebih lambat",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa karakteristik anggota tim yang baik?",
-          "options": [
-            "Selalu mendominasi diskusi",
-            "Mendengarkan dan menghargai pendapat orang lain",
-            "Mengerjakan semua tugas sendiri",
-            "Menyalahkan orang lain saat ada masalah",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Bagaimana mengatasi konflik dalam tim?",
-          "options": [
-            "Menghindari konflik dan berpura-pura setuju",
-            "Komunikasi terbuka dan mencari solusi bersama",
-            "Memaksakan pendapat pribadi",
-            "Keluar dari tim",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa peran pemimpin dalam tim?",
-          "options": [
-            "Membuat semua keputusan sendiri",
-            "Mengarahkan dan memfasilitasi kolaborasi",
-            "Menyalahkan anggota yang gagal",
-            "Tidak ikut bekerja sama",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa yang dimaksud dengan sinergi dalam tim?",
-          "options": [
-            "Bekerja sendiri-sendiri",
-            "Hasil bersama lebih besar dari jumlah individu",
-            "Mengikuti pemimpin tanpa bertanya",
-            "Menghindari tanggung jawab",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Bagaimana membangun kepercayaan dalam tim?",
-          "options": [
-            "Menyembunyikan informasi",
-            "Transparansi dan konsisten dalam tindakan",
-            "Bersaing dengan anggota lain",
-            "Tidak peduli dengan kontribusi orang lain",
-          ],
-          "correctAnswer": 1,
-        },
-      ];
-    }
-
-    if (widget.moduleId == "modul1" &&
-        widget.sectionId == "bagian1" &&
-        widget.subSection == "mengelola_emosi") {
-      return [
-        {
-          "question": "Apa yang dimaksud dengan kecerdasan emosional?",
-          "options": [
-            "Tidak pernah merasakan emosi",
-            "Kemampuan mengenali dan mengelola emosi",
-            "Selalu terlihat bahagia",
-            "Mengabaikan perasaan orang lain",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Bagaimana cara mengenali emosi diri sendiri?",
-          "options": [
-            "Mengabaikan perasaan",
-            "Refleksi dan menyadari reaksi tubuh",
-            "Menyalahkan orang lain",
-            "Menekan semua emosi",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa yang sebaiknya dilakukan saat merasa marah?",
-          "options": [
-            "Melampiaskan pada orang lain",
-            "Tarik napas dalam dan tenangkan diri",
-            "Membentak siapa saja",
-            "Membanting barang",
-          ],
-          "correctAnswer": 1,
-        },
-        {
-          "question": "Apa manfaat mengelola emosi dengan baik?",
+          "question": "Apa manfaat memiliki growth mindset?",
           "options": [
             "Tidak ada manfaatnya",
-            "Hubungan lebih harmonis dan produktif",
-            "Menjadi orang yang kaku",
-            "Kehilangan kepribadian",
+            "Lebih berani mengambil tantangan baru",
+            "Membuat takut gagal",
+            "Membatasi potensi diri",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa itu empati?",
+          "question":
+              "Bagaimana cara mengubah fixed mindset menjadi growth mindset?",
           "options": [
-            "Mengabaikan perasaan orang lain",
-            "Memahami dan merasakan perasaan orang lain",
-            "Menyalahkan orang atas emosi mereka",
-            "Tidak peduli dengan orang lain",
+            "Tidak bisa diubah",
+            "Latihan dan kesadaran diri konsisten",
+            "Menunggu perubahan datang sendiri",
+            "Mengabaikan feedback",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Bagaimana cara mengatasi stres dengan sehat?",
+          "question": "Apa kata kunci growth mindset?",
           "options": [
-            "Mengonsumsi hal yang tidak sehat",
-            "Olahraga, meditasi, atau berbicara dengan teman",
-            "Menghindari semua orang",
-            "Tidur sepanjang hari",
+            "Saya tidak bisa",
+            "Saya belum bisa, tapi saya bisa belajar",
+            "Ini terlalu sulit",
+            "Saya menyerah",
           ],
           "correctAnswer": 1,
         },
       ];
     }
 
+    // 🎯 CARD 3: Berpikir Positif - Quiz 3 (Resiliensi Mental)
     if (widget.moduleId == "modul1" &&
         widget.sectionId == "bagian1" &&
-        widget.subSection == "menetapkan_tujuan") {
+        widget.subSection == "berpikir_positif_quiz3") {
       return [
         {
-          "question": "Apa pentingnya menetapkan tujuan dalam hidup?",
+          "question": "Apa yang dimaksud dengan resiliensi mental?",
           "options": [
-            "Tidak ada pentingnya",
-            "Memberikan arah dan motivasi",
-            "Membuat hidup lebih rumit",
-            "Hanya untuk orang ambisius",
+            "Kemampuan untuk tidak pernah mengalami masalah",
+            "Kemampuan bangkit dari kesulitan",
+            "Mengabaikan semua masalah",
+            "Menyerah pada tekanan",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa kepanjangan dari SMART dalam goal setting?",
+          "question": "Bagaimana membangun resiliensi mental?",
           "options": [
-            "Simple, Minimal, Achievable, Realistic, Timely",
-            "Specific, Measurable, Achievable, Relevant, Time-bound",
-            "Strong, Meaningful, Active, Ready, True",
-            "Special, Modern, Attractive, Real, Tactical",
+            "Menghindari semua tantangan",
+            "Menghadapi dan belajar dari kesulitan",
+            "Menyalahkan orang lain",
+            "Tidak pernah keluar dari zona nyaman",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa perbedaan tujuan jangka pendek dan jangka panjang?",
+          "question": "Apa peran support system dalam resiliensi?",
+          "options": [
+            "Tidak berperan sama sekali",
+            "Memberikan dukungan saat menghadapi kesulitan",
+            "Membuat lemah",
+            "Tidak penting",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana menghadapi kritik dengan resiliensi?",
+          "options": [
+            "Marah dan defensif",
+            "Terima sebagai pembelajaran dan perbaiki diri",
+            "Abaikan semua kritik",
+            "Menyalahkan pemberi kritik",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa tanda orang yang memiliki resiliensi tinggi?",
+          "options": [
+            "Mudah menyerah",
+            "Cepat bangkit setelah kegagalan",
+            "Menghindari tantangan",
+            "Tidak pernah gagal",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa self-care penting untuk resiliensi?",
+          "options": [
+            "Tidak ada hubungannya",
+            "Menjaga kesehatan fisik dan mental untuk menghadapi tantangan",
+            "Hanya untuk orang lemah",
+            "Membuang waktu",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 4 (Potensi Diri)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz4") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan potensi diri?",
+          "options": [
+            "Kemampuan yang sudah sempurna",
+            "Kemampuan yang dapat dikembangkan",
+            "Hanya bakat bawaan lahir",
+            "Tidak bisa diubah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara menggali potensi diri?",
+          "options": [
+            "Menunggu orang lain memberitahu",
+            "Mencoba berbagai hal dan mengamati respons diri",
+            "Tidak perlu digali",
+            "Hanya fokus pada satu bidang",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran mentor dalam mengembangkan potensi?",
+          "options": [
+            "Tidak ada peran",
+            "Membimbing dan memberikan perspektif baru",
+            "Menggantikan usaha pribadi",
+            "Membatasi eksplorasi",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa penting mengenali kekuatan diri?",
+          "options": [
+            "Untuk menyombongkan diri",
+            "Agar bisa fokus mengembangkan yang terbaik",
+            "Tidak penting sama sekali",
+            "Hanya untuk resume",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana sikap terhadap kelemahan diri?",
+          "options": [
+            "Menyembunyikan dan mengabaikan",
+            "Terima dan kembangkan menjadi kekuatan",
+            "Malu dan menyerah",
+            "Menyalahkan orang lain",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang membedakan potensi dan prestasi?",
           "options": [
             "Tidak ada perbedaan",
-            "Waktu pencapaian dan cakupannya",
-            "Tingkat kesulitannya saja",
-            "Tujuan pendek lebih penting",
+            "Potensi adalah kemampuan, prestasi adalah hasil",
+            "Prestasi lebih penting",
+            "Potensi tidak bisa diukur",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 5 (Karir Impian)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz5") {
+      return [
+        {
+          "question": "Bagaimana memilih karir yang tepat?",
+          "options": [
+            "Ikuti yang paling populer",
+            "Sesuaikan dengan minat, bakat, dan nilai pribadi",
+            "Pilih yang gajinya paling tinggi",
+            "Ikuti keinginan orang tua",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa yang harus dilakukan jika tujuan tidak tercapai?",
+          "question": "Apa itu career path?",
           "options": [
-            "Menyerah sepenuhnya",
-            "Evaluasi, pelajari, dan buat strategi baru",
-            "Menyalahkan keadaan",
-            "Menghindari tujuan baru",
+            "Jalan untuk berjalan-jalan",
+            "Jalur perkembangan karir dari awal hingga tujuan",
+            "Pekerjaan sampingan",
+            "Tidak ada artinya",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Mengapa penting menulis tujuan?",
+          "question": "Mengapa riset karir itu penting?",
           "options": [
-            "Tidak penting, cukup diingat",
-            "Membuat komitmen lebih kuat dan terukur",
+            "Tidak penting",
+            "Memahami realita pekerjaan dan peluang",
             "Hanya untuk formalitas",
-            "Agar terlihat sibuk",
+            "Membuang waktu",
           ],
           "correctAnswer": 1,
         },
         {
-          "question": "Apa yang dimaksud dengan action plan?",
+          "question":
+              "Apa yang harus dilakukan jika karir impian tidak realistis?",
           "options": [
-            "Daftar impian tanpa rencana",
-            "Langkah konkret untuk mencapai tujuan",
-            "Menunda tujuan",
-            "Rencana tanpa tindakan",
+            "Langsung menyerah",
+            "Cari alternatif yang mendekati atau buat rencana bertahap",
+            "Paksakan tetap",
+            "Abaikan impian",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana peran networking dalam karir?",
+          "options": [
+            "Tidak berperan",
+            "Membuka peluang dan koneksi profesional",
+            "Hanya untuk pamer",
+            "Tidak penting di era digital",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan work-life integration?",
+          "options": [
+            "Bekerja 24 jam",
+            "Menyeimbangkan pekerjaan dengan kehidupan pribadi",
+            "Tidak ada batasan kerja",
+            "Mengabaikan kehidupan pribadi",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 1: Mencari Hal Yang Kamu Suka - Quiz 6 (Pengembangan Minat)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mencari_hal_yang_kamu_suka_quiz6") {
+      return [
+        {
+          "question": "Bagaimana cara mengembangkan minat menjadi keahlian?",
+          "options": [
+            "Hanya bermimpi",
+            "Latihan konsisten dan pembelajaran berkelanjutan",
+            "Menunggu bakat muncul sendiri",
+            "Tidak perlu usaha",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu deliberate practice?",
+          "options": [
+            "Latihan asal-asalan",
+            "Latihan terfokus dengan tujuan spesifik",
+            "Latihan tanpa target",
+            "Tidak pernah latihan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa feedback penting dalam pengembangan minat?",
+          "options": [
+            "Tidak penting",
+            "Membantu identifikasi area yang perlu diperbaiki",
+            "Hanya untuk kritik",
+            "Membuat down",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Berapa lama biasanya menguasai suatu keahlian?",
+          "options": [
+            "Seminggu",
+            "Berbeda untuk setiap orang, butuh waktu dan konsistensi",
+            "Sebulan sudah ahli",
+            "Tidak perlu waktu lama",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran komunitas dalam mengembangkan minat?",
+          "options": [
+            "Tidak ada peran",
+            "Memberikan support dan sharing knowledge",
+            "Hanya untuk bergaul",
+            "Membuat distraksi",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana mengatasi plateau dalam pengembangan skill?",
+          "options": [
+            "Menyerah",
+            "Cari tantangan baru dan ubah metode latihan",
+            "Berhenti berlatih",
+            "Tetap dengan cara lama",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 4 (Disiplin Waktu)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengatur_waktu_quiz4") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan disiplin waktu?",
+          "options": [
+            "Bekerja sepanjang hari",
+            "Konsisten mengikuti jadwal yang telah dibuat",
+            "Tidak pernah istirahat",
+            "Kerja tanpa rencana",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana membangun kebiasaan disiplin?",
+          "options": [
+            "Langsung sempurna",
+            "Mulai dari hal kecil dan konsisten",
+            "Tunggu motivasi datang",
+            "Tidak perlu kebiasaan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa dampak tidak disiplin terhadap produktivitas?",
+          "options": [
+            "Tidak ada dampak",
+            "Menurunkan produktivitas dan hasil kerja",
+            "Meningkatkan kreativitas",
+            "Membuat lebih bahagia",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Berapa lama membentuk kebiasaan baru?",
+          "options": [
+            "1 hari",
+            "Rata-rata 21-66 hari tergantung kompleksitas",
+            "1 tahun",
+            "Tidak bisa dibentuk",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu accountability partner?",
+          "options": [
+            "Musuh",
+            "Teman yang saling mendukung mencapai tujuan",
+            "Atasan yang galak",
+            "Tidak ada gunanya",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana mengatasi godaan menunda?",
+          "options": [
+            "Ikuti saja",
+            "Ingat tujuan dan mulai dari langkah kecil",
+            "Tunggu besok",
+            "Abaikan deadline",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 5 (Efisiensi Kerja)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengatur_waktu_quiz5") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan work smart not hard?",
+          "options": [
+            "Malas bekerja",
+            "Bekerja dengan strategi efektif",
+            "Kerja sebentar saja",
+            "Tidak perlu usaha",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara mengurangi time wasters?",
+          "options": [
+            "Diabaikan saja",
+            "Identifikasi dan eliminasi aktivitas tidak produktif",
+            "Tambah aktivitas lain",
+            "Tidak perlu dikurangi",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu automation dalam efisiensi kerja?",
+          "options": [
+            "Robot mengerjakan semua",
+            "Menggunakan teknologi untuk tugas berulang",
+            "Tidak ada gunanya",
+            "Hanya untuk pabrik",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa delegasi penting untuk efisiensi?",
+          "options": [
+            "Agar bisa malas",
+            "Fokus pada tugas prioritas tinggi",
+            "Lepas tanggung jawab",
+            "Tidak penting",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu Pareto Principle (80/20)?",
+          "options": [
+            "80% waktu untuk istirahat",
+            "80% hasil dari 20% usaha yang tepat",
+            "Bekerja 80 jam seminggu",
+            "20% hasil dari 80% usaha",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana mengukur efisiensi kerja?",
+          "options": [
+            "Tidak bisa diukur",
+            "Bandingkan output dengan input (waktu/tenaga)",
+            "Lihat jam kerja saja",
+            "Tanya bos",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 2: Mengatur Waktu - Quiz 6 (Work-Life Balance)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "mengatur_waktu_quiz6") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan work-life balance?",
+          "options": [
+            "Tidak pernah bekerja",
+            "Keseimbangan antara pekerjaan dan kehidupan pribadi",
+            "Kerja 24 jam",
+            "Hanya fokus pada karir",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa work-life balance penting?",
+          "options": [
+            "Tidak penting",
+            "Mencegah burnout dan menjaga kesehatan",
+            "Untuk malas kerja",
+            "Menurunkan produktivitas",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana menetapkan boundaries dalam pekerjaan?",
+          "options": [
+            "Tidak perlu boundaries",
+            "Tentukan jam kerja dan waktu pribadi yang jelas",
+            "Selalu available 24/7",
+            "Abaikan semua pekerjaan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa dampak tidak ada work-life balance?",
+          "options": [
+            "Tidak ada dampak",
+            "Stres, burnout, dan masalah kesehatan",
+            "Lebih sukses",
+            "Lebih bahagia",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara maintain work-life balance saat WFH?",
+          "options": [
+            "Kerja di kasur sepanjang hari",
+            "Buat jadwal dan ruang kerja terpisah",
+            "Tidak ada bedanya",
+            "Kerja sambil main HP",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran self-care dalam work-life balance?",
+          "options": [
+            "Tidak berperan",
+            "Menjaga kesehatan fisik dan mental",
+            "Hanya untuk orang kaya",
+            "Membuang waktu",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 3: Berpikir Positif - Quiz 4 (Optimisme)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "berpikir_positif_quiz4") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan optimisme?",
+          "options": [
+            "Percaya hal baik akan terjadi",
+            "Mengabaikan kenyataan",
+            "Tidak pernah sedih",
+            "Selalu tersenyum palsu",
+          ],
+          "correctAnswer": 0,
+        },
+        {
+          "question": "Apa perbedaan optimisme dan positive thinking?",
+          "options": [
+            "Tidak ada perbedaan",
+            "Optimisme lebih realistis dan action-oriented",
+            "Optimisme lebih naif",
+            "Positive thinking lebih buruk",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana orang optimis menghadapi kegagalan?",
+          "options": [
+            "Langsung menyerah",
+            "Melihat sebagai temporary dan belajar darinya",
+            "Menyalahkan orang lain",
+            "Menghindari tantangan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa manfaat optimisme untuk kesehatan?",
+          "options": [
+            "Tidak ada manfaat",
+            "Menurunkan stres dan meningkatkan imun",
+            "Membuat sakit",
+            "Tidak ada hubungannya",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apakah optimisme bisa dipelajari?",
+          "options": [
+            "Tidak, harus bawaan lahir",
+            "Ya, melalui latihan dan mindset shift",
+            "Hanya untuk orang tertentu",
+            "Tidak mungkin diubah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa itu realistic optimism?",
+          "options": [
+            "Optimisme tanpa dasar",
+            "Optimisme yang mempertimbangkan realita",
+            "Pesimisme terselubung",
+            "Tidak ada bedanya",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 3: Berpikir Positif - Quiz 5 (Motivasi Diri)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "berpikir_positif_quiz5") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan intrinsic motivation?",
+          "options": [
+            "Motivasi dari hadiah",
+            "Motivasi dari dalam diri sendiri",
+            "Motivasi dari tekanan",
+            "Tidak ada motivasi",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question":
+              "Mana yang lebih sustainable, intrinsic atau extrinsic motivation?",
+          "options": [
+            "Extrinsic",
+            "Intrinsic",
+            "Sama saja",
+            "Tidak ada yang sustainable",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana cara menemukan motivasi intrinsik?",
+          "options": [
+            "Cari hadiah besar",
+            "Kaitkan dengan nilai dan tujuan pribadi",
+            "Tunggu motivasi datang",
+            "Tidak perlu dicari",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang harus dilakukan saat kehilangan motivasi?",
+          "options": [
+            "Menyerah",
+            "Ingat kembali 'why' dan istirahat sejenak",
+            "Paksakan terus",
+            "Ganti tujuan",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran visualization dalam motivasi?",
+          "options": [
+            "Tidak berperan",
+            "Membantu melihat tujuan lebih jelas",
+            "Hanya mimpi",
+            "Membuang waktu",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Bagaimana self-discipline berkaitan dengan motivasi?",
+          "options": [
+            "Tidak ada hubungan",
+            "Discipline mengambil alih saat motivasi menurun",
+            "Discipline membunuh motivasi",
+            "Hanya butuh salah satu",
+          ],
+          "correctAnswer": 1,
+        },
+      ];
+    }
+
+    // 🎯 CARD 3: Berpikir Positif - Quiz 6 (Kesejahteraan Mental)
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.subSection == "berpikir_positif_quiz6") {
+      return [
+        {
+          "question": "Apa yang dimaksud dengan mental wellbeing?",
+          "options": [
+            "Tidak pernah sedih",
+            "Kondisi kesehatan mental yang baik secara keseluruhan",
+            "Selalu bahagia",
+            "Tidak ada masalah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa tanda kesehatan mental yang baik?",
+          "options": [
+            "Tidak pernah stres",
+            "Bisa mengelola emosi dan stres dengan baik",
+            "Selalu ceria",
+            "Tidak punya masalah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Mengapa penting menjaga kesehatan mental?",
+          "options": [
+            "Tidak penting",
+            "Mempengaruhi kualitas hidup keseluruhan",
+            "Hanya untuk orang tertentu",
+            "Tidak ada manfaatnya",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa yang dimaksud dengan mindfulness?",
+          "options": [
+            "Memikirkan masa depan",
+            "Kesadaran penuh pada momen present",
+            "Melamun",
+            "Tidak berpikir",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Kapan harus mencari bantuan profesional?",
+          "options": [
+            "Tidak pernah perlu",
+            "Saat masalah mental mengganggu fungsi sehari-hari",
+            "Hanya untuk orang gila",
+            "Tunggu sampai parah",
+          ],
+          "correctAnswer": 1,
+        },
+        {
+          "question": "Apa peran social connection untuk mental wellbeing?",
+          "options": [
+            "Tidak berperan",
+            "Memberikan dukungan emosional dan sense of belonging",
+            "Membuat stres",
+            "Tidak penting",
           ],
           "correctAnswer": 1,
         },

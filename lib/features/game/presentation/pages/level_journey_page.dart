@@ -57,13 +57,27 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 
     // ✅ Load first time completion status for ALL subSections
     final allSubSections = [
-      'mencari_hal_yang_kamu_suka',
-      'mengatur_waktu',
-      'komunikasi_efektif',
-      'kerja_sama_tim',
-      'mengelola_emosi',
-      'berpikir_positif',
-      'menetapkan_tujuan',
+      'mencari_hal_yang_kamu_suka_video',
+      'mencari_hal_yang_kamu_suka_quiz1',
+      'mencari_hal_yang_kamu_suka_quiz2',
+      'mencari_hal_yang_kamu_suka_quiz3',
+      'mencari_hal_yang_kamu_suka_quiz4',
+      'mencari_hal_yang_kamu_suka_quiz5',
+      'mencari_hal_yang_kamu_suka_quiz6',
+      'mengatur_waktu_video',
+      'mengatur_waktu_quiz1',
+      'mengatur_waktu_quiz2',
+      'mengatur_waktu_quiz3',
+      'mengatur_waktu_quiz4',
+      'mengatur_waktu_quiz5',
+      'mengatur_waktu_quiz6',
+      'berpikir_positif_video',
+      'berpikir_positif_quiz1',
+      'berpikir_positif_quiz2',
+      'berpikir_positif_quiz3',
+      'berpikir_positif_quiz4',
+      'berpikir_positif_quiz5',
+      'berpikir_positif_quiz6',
       'persiapan_karir',
     ];
 
@@ -76,6 +90,137 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     }
 
     print('📊 All first-time status: $subSectionFirstTimeCompleted');
+
+    // ✅ After loading, show auto-popup for next available platform
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowAutoPopup();
+    });
+  }
+
+  /// 🎯 Automatically show popup for the next available (unlocked, not completed) platform
+  void _maybeShowAutoPopup() {
+    try {
+      final platformDataList = _getPlatformData();
+      if (platformDataList.isEmpty) return;
+
+      print('🔍 Looking for next available platform to auto-show...');
+
+      // Find the first platform that is:
+      // 1. Unlocked (previous platform completed OR platform1)
+      // 2. Not yet completed by user
+      for (var platformData in platformDataList) {
+        final key = platformData['key'] as String?;
+        if (key == null) continue;
+
+        // Skip if already completed
+        if (platformStatus[key] == true) {
+          print('   ⏭️ $key already completed, skipping');
+          continue;
+        }
+
+        // Check if unlocked
+        if (!_isPreviousPlatformCompleted(key)) {
+          print('   🔒 $key is locked, stopping search');
+          break; // Stop at first locked platform
+        }
+
+        // Found the next platform to play!
+        final subSection = platformData['subSection'] as String? ?? '';
+        if (subSection == 'default' || subSection.isEmpty) {
+          print('   ⚠️ $key has no valid subSection, skipping');
+          continue;
+        }
+
+        final isFirstTime = _isFirstTimePlay(subSection);
+        final xpReward = isFirstTime ? 80 : 2;
+
+        print('🎯 Auto-showing popup for: $key (subSection: $subSection)');
+        print('   First Time: $isFirstTime, XP: $xpReward');
+
+        // Show the popup
+        _showLessonPopup(
+          context,
+          title: platformData['title'] ?? '',
+          description: platformData['description'] ?? '',
+          xpReward: xpReward,
+          isReplay: !isFirstTime,
+          onStart: () async {
+            print('🚀 Auto-popup: Mulai button pressed!');
+
+            // Mark first time if needed
+            if (isFirstTime) {
+              await _markSubSectionAsPlayed(subSection);
+              await _checkAndUpdateStreak();
+            }
+
+            setState(() {
+              platformStatus[key] = true;
+            });
+
+            await _savePlatformStatus(key, true);
+
+            // Navigate based on platform type
+            if (widget.moduleId == 'modul2' &&
+                widget.sectionId == 'bagian1' &&
+                subSection == 'persiapan_karir') {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BuildCVPage()),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            } else if (platformData['hasVideo'] == true) {
+              final videoData = platformData['videoData'] ?? _getVideoData();
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => VideoPage(
+                    title: videoData['title'] ?? '',
+                    description: videoData['videoDescription'] ?? '',
+                    videoUrl: videoData['videoUrl'] ?? '',
+                    thumbnail: videoData['thumbnail'] ?? '',
+                    moduleId: widget.moduleId,
+                    sectionId: widget.sectionId,
+                    subSection: subSection,
+                    xpReward: xpReward,
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            } else {
+              // Navigate to quiz
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => QuizPage(
+                    moduleId: widget.moduleId,
+                    sectionId: widget.sectionId,
+                    subSection: subSection,
+                    xpReward: xpReward,
+                  ),
+                ),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+              }
+            }
+          },
+        );
+
+        // Only show popup for ONE platform (the next available one)
+        break;
+      }
+
+      print('✅ Auto-popup check completed');
+    } catch (e) {
+      print('❌ Failed to auto-show popup: $e');
+    }
   }
 
   Future<void> _savePlatformStatus(String platformKey, bool status) async {
@@ -177,7 +322,10 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
   }
 
   List<Map<String, dynamic>> _getPlatformData() {
-    if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
+    // 🎯 Lesson 0: Mencari Hal Yang Kamu Suka
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.lessonIndex == 0) {
       return [
         {
           "key": "platform1",
@@ -185,7 +333,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
           "title": "Mengenal Minat Dan Bakat",
           "description":
               "Membahas cara mengidentifikasi minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-          "subSection": "mencari_hal_yang_kamu_suka",
+          "subSection": "mencari_hal_yang_kamu_suka_video",
           "videoData": {
             "title": "Mengenal Minat Dan Bakat",
             "videoDescription":
@@ -197,67 +345,184 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
         {
           "key": "platform2",
           "hasVideo": false,
-          "title": "Mengatur Waktu",
+          "title": "Quiz: Mengenal Minat",
           "description":
-              "Belajar manajemen waktu yang efektif untuk produktivitas optimal.",
-          "subSection": "mengatur_waktu",
+              "Uji pemahamanmu tentang cara menemukan minat dan bakat.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz1",
         },
         {
           "key": "platform3",
           "hasVideo": false,
-          "title": "Komunikasi Efektif",
+          "title": "Quiz: Eksplorasi Diri",
           "description":
-              "Membangun keterampilan komunikasi untuk interaksi yang lebih baik.",
-          "subSection": "komunikasi_efektif",
+              "Kenali lebih dalam tentang passion dan kelebihan dirimu.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz2",
         },
         {
           "key": "platform4",
-          "hasVideo": true,
-          "title": "Kerja Sama Tim",
+          "hasVideo": false,
+          "title": "Quiz: Menemukan Passion",
           "description":
-              "Belajar bekerja sama dalam tim untuk mencapai tujuan bersama.",
-          "subSection": "kerja_sama_tim",
+              "Cari tahu apa yang benar-benar membuatmu bersemangat.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz3",
+        },
+        {
+          "key": "platform5",
+          "hasVideo": false,
+          "title": "Quiz: Potensi Diri",
+          "description": "Gali potensi tersembunyi yang ada dalam dirimu.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz4",
+        },
+        {
+          "key": "platform6",
+          "hasVideo": false,
+          "title": "Quiz: Karir Impian",
+          "description": "Temukan karir yang sesuai dengan minat dan bakatmu.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz5",
+        },
+        {
+          "key": "platform7",
+          "hasVideo": false,
+          "title": "Quiz: Pengembangan Minat",
+          "description": "Strategi mengembangkan minat menjadi keahlian.",
+          "subSection": "mencari_hal_yang_kamu_suka_quiz6",
+        },
+      ];
+    }
+
+    // 🎯 Lesson 1: Mengatur Waktu
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.lessonIndex == 1) {
+      return [
+        {
+          "key": "platform1",
+          "hasVideo": true,
+          "title": "Manajemen Waktu Efektif",
+          "description":
+              "Belajar teknik mengatur waktu untuk produktivitas optimal.",
+          "subSection": "mengatur_waktu_video",
           "videoData": {
-            "title": "Kerja Sama Tim",
+            "title": "Manajemen Waktu",
             "videoDescription":
-                "Video ini membahas cara membangun kolaborasi efektif dalam tim dan pentingnya komunikasi dalam teamwork.",
+                "Video ini membahas teknik-teknik manajemen waktu yang efektif untuk kehidupan sehari-hari.",
             "videoUrl": "https://youtu.be/7D7j8v3kvGI",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
         {
+          "key": "platform2",
+          "hasVideo": false,
+          "title": "Quiz: Manajemen Waktu",
+          "description":
+              "Uji pemahamanmu tentang cara mengatur waktu dengan efektif.",
+          "subSection": "mengatur_waktu_quiz1",
+        },
+        {
+          "key": "platform3",
+          "hasVideo": false,
+          "title": "Quiz: Prioritas Tugas",
+          "description":
+              "Belajar menentukan prioritas dalam mengerjakan tugas.",
+          "subSection": "mengatur_waktu_quiz2",
+        },
+        {
+          "key": "platform4",
+          "hasVideo": false,
+          "title": "Quiz: Produktivitas",
+          "description":
+              "Tingkatkan produktivitas dengan teknik manajemen waktu.",
+          "subSection": "mengatur_waktu_quiz3",
+        },
+        {
           "key": "platform5",
           "hasVideo": false,
-          "title": "Mengelola Emosi",
-          "description": "Memahami dan mengelola emosi dengan baik.",
-          "subSection": "mengelola_emosi",
+          "title": "Quiz: Disiplin Waktu",
+          "description": "Bangun kebiasaan disiplin dalam mengatur waktu.",
+          "subSection": "mengatur_waktu_quiz4",
         },
         {
           "key": "platform6",
           "hasVideo": false,
-          "title": "Berpikir Positif",
-          "description":
-              "Membangun mindset positif untuk menghadapi tantangan.",
-          "subSection": "berpikir_positif",
+          "title": "Quiz: Efisiensi Kerja",
+          "description": "Maksimalkan efisiensi dalam setiap pekerjaan.",
+          "subSection": "mengatur_waktu_quiz5",
         },
         {
           "key": "platform7",
-          "hasVideo": true,
-          "title": "Menetapkan Tujuan",
-          "description":
-              "Belajar cara menetapkan dan mencapai tujuan hidup dengan efektif.",
-          "subSection": "menetapkan_tujuan",
-          "videoData": {
-            "title": "Menetapkan Tujuan",
-            "videoDescription":
-                "Video ini membahas teknik SMART goal setting dan cara membuat action plan untuk mencapai tujuan hidup Anda.",
-            "videoUrl": "https://youtu.be/wtQkr22maZI",
-            "thumbnail": "assets/images/home_card_large.png",
-          },
+          "hasVideo": false,
+          "title": "Quiz: Work-Life Balance",
+          "description": "Seimbangkan kehidupan kerja dan pribadi dengan baik.",
+          "subSection": "mengatur_waktu_quiz6",
         },
       ];
     }
 
+    // 🎯 Lesson 2: Berpikir Positif
+    if (widget.moduleId == "modul1" &&
+        widget.sectionId == "bagian1" &&
+        widget.lessonIndex == 2) {
+      return [
+        {
+          "key": "platform1",
+          "hasVideo": true,
+          "title": "Mindset Positif",
+          "description":
+              "Membangun pola pikir positif untuk menghadapi tantangan hidup.",
+          "subSection": "berpikir_positif_video",
+          "videoData": {
+            "title": "Berpikir Positif",
+            "videoDescription":
+                "Video ini membahas cara membangun dan mempertahankan mindset positif dalam kehidupan sehari-hari.",
+            "videoUrl": "https://youtu.be/wtQkr22maZI",
+            "thumbnail": "assets/images/home_card_large.png",
+          },
+        },
+        {
+          "key": "platform2",
+          "hasVideo": false,
+          "title": "Quiz: Berpikir Positif",
+          "description":
+              "Uji pemahamanmu tentang cara berpikir positif dan manfaatnya.",
+          "subSection": "berpikir_positif_quiz1",
+        },
+        {
+          "key": "platform3",
+          "hasVideo": false,
+          "title": "Quiz: Mindset Growth",
+          "description": "Kembangkan pola pikir berkembang untuk sukses.",
+          "subSection": "berpikir_positif_quiz2",
+        },
+        {
+          "key": "platform4",
+          "hasVideo": false,
+          "title": "Quiz: Resiliensi Mental",
+          "description": "Bangun ketahanan mental menghadapi tantangan hidup.",
+          "subSection": "berpikir_positif_quiz3",
+        },
+        {
+          "key": "platform5",
+          "hasVideo": false,
+          "title": "Quiz: Optimisme",
+          "description": "Pelajari cara memandang hidup dengan optimis.",
+          "subSection": "berpikir_positif_quiz4",
+        },
+        {
+          "key": "platform6",
+          "hasVideo": false,
+          "title": "Quiz: Motivasi Diri",
+          "description": "Temukan sumber motivasi dari dalam diri.",
+          "subSection": "berpikir_positif_quiz5",
+        },
+        {
+          "key": "platform7",
+          "hasVideo": false,
+          "title": "Quiz: Kesejahteraan Mental",
+          "description": "Jaga kesehatan mental untuk hidup lebih bahagia.",
+          "subSection": "berpikir_positif_quiz6",
+        },
+      ];
+    }
     if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
       return [
         {
@@ -900,74 +1165,193 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     required bool isReplay, // ✅ Add replay status
     required VoidCallback onStart,
   }) {
-    showDialog(
+    showGeneralDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: const Color(0xFF7DD3F7),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ✅ Show replay badge if replaying
-                if (isReplay)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "🔄 Replay Mode",
-                      style: whiteTextStyle.copyWith(
-                        fontSize: 12,
-                        fontWeight: semiBold,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            type: MaterialType.transparency,
+            child: ScaleTransition(
+              scale: CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
+              ),
+              child: FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeIn,
+                ),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF7DD3F7),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
                       ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ✅ Show replay badge if replaying with slide animation
+                        if (isReplay)
+                          SlideTransition(
+                            position:
+                                Tween<Offset>(
+                                  begin: const Offset(0, -0.5),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: const Interval(
+                                      0.3,
+                                      1.0,
+                                      curve: Curves.easeOut,
+                                    ),
+                                  ),
+                                ),
+                            child: FadeTransition(
+                              opacity: CurvedAnimation(
+                                parent: animation,
+                                curve: const Interval(0.3, 1.0),
+                              ),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  "🔄 Replay Mode",
+                                  style: whiteTextStyle.copyWith(
+                                    fontSize: 12,
+                                    fontWeight: semiBold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        // ✅ Title with slide animation
+                        SlideTransition(
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, -0.3),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: const Interval(
+                                    0.2,
+                                    1.0,
+                                    curve: Curves.easeOut,
+                                  ),
+                                ),
+                              ),
+                          child: FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(0.2, 1.0),
+                            ),
+                            child: Text(
+                              title,
+                              textAlign: TextAlign.center,
+                              style: whiteTextStyle.copyWith(
+                                fontSize: 20,
+                                fontWeight: bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // ✅ Description with slide animation
+                        SlideTransition(
+                          position:
+                              Tween<Offset>(
+                                begin: const Offset(0, 0.3),
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: const Interval(
+                                    0.3,
+                                    1.0,
+                                    curve: Curves.easeOut,
+                                  ),
+                                ),
+                              ),
+                          child: FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(0.3, 1.0),
+                            ),
+                            child: Text(
+                              description,
+                              textAlign: TextAlign.center,
+                              style: secondaryTextStyle.copyWith(
+                                fontSize: 14,
+                                fontWeight: medium,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // ✅ Button with scale and fade animation
+                        ScaleTransition(
+                          scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(
+                                0.4,
+                                1.0,
+                                curve: Curves.elasticOut,
+                              ),
+                            ),
+                          ),
+                          child: FadeTransition(
+                            opacity: CurvedAnimation(
+                              parent: animation,
+                              curve: const Interval(0.4, 1.0),
+                            ),
+                            child: CustomFilledButton(
+                              title: "Mulai +$xpReward XP",
+                              variant: ButtonColorVariant.white,
+                              height: 50,
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                onStart();
+
+                                // ✅ Wait for activity to complete then refresh
+                                await Future.delayed(
+                                  const Duration(milliseconds: 500),
+                                );
+                                if (context.mounted) {
+                                  context.read<ProfileBloc>().add(
+                                    RefreshProfile(),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: whiteTextStyle.copyWith(
-                    fontSize: 20,
-                    fontWeight: bold,
-                  ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  description,
-                  textAlign: TextAlign.center,
-                  style: secondaryTextStyle.copyWith(
-                    fontSize: 14,
-                    fontWeight: medium,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                CustomFilledButton(
-                  title: "Mulai +$xpReward XP", // ✅ Dynamic XP display
-                  variant: ButtonColorVariant.white,
-                  height: 50,
-                  onPressed: () async {
-                    Navigator.pop(context);
-                    onStart();
-
-                    // ✅ Wait for activity to complete then refresh
-                    await Future.delayed(const Duration(milliseconds: 500));
-                    if (context.mounted) {
-                      context.read<ProfileBloc>().add(RefreshProfile());
-                    }
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         );
