@@ -7,7 +7,6 @@ import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mintrix/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
 import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
-import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add ProfileBloc
@@ -214,10 +213,7 @@ class _HomePageState extends State<HomePage> {
   Widget _buildLargeCard() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LeaderboardPage()),
-        );
+        context.read<NavigationBloc>().add(UpdateIndex(3));
       },
       child: const CustomHomeCardLarge(
         title: 'Liga Emas',

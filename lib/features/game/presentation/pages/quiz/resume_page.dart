@@ -315,12 +315,10 @@ class ResumeResultPage extends StatelessWidget {
                     const SizedBox(height: 32),
                     Column(
                       children: [
-                        Icon(
-                          Icons.add_circle,
-                          color: xpReward == 80
-                              ? const Color(0xFF2B8DD8)
-                              : Colors.orange,
-                          size: 32,
+                        Image.asset(
+                          'assets/images/Frame 172.png',
+                          width: 42,
+                          height: 42,
                         ),
                         const SizedBox(height: 6),
                         Text(

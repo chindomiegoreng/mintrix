@@ -1634,13 +1634,10 @@ class _QuizPageState extends State<QuizPage> {
                       children: [
                         _isSubmittingXP
                             ? const CircularProgressIndicator()
-                            : Icon(
-                                Icons.add_circle,
-                                color: xpEarned == 80
-                                    ? const Color(0xFF2B8DD8)
-                                    : Colors
-                                          .orange, // ✅ Different color for replay
-                                size: 32,
+                            : Image.asset(
+                                'assets/images/Frame 172.png',
+                                width: 42,
+                                height: 42,
                               ),
                         const SizedBox(height: 6),
                         Text(
