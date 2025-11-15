@@ -1,10 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_state.dart';
 
 class GameDetailPage extends StatefulWidget {
   final String sectionTitle;
@@ -132,99 +137,162 @@ class _GameDetailPageState extends State<GameDetailPage> {
     final showCarousel = _showCarousel();
     final isLocked = _isCurrentLessonLocked();
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const GameHeaderWidget(),
-            SectionProgressCard(
-              title: _getSectionTitle(),
-              subtitle: widget.sectionTitle,
-              progress: widget.progress,
-            ),
-            const SizedBox(height: 24),
-            const SizedBox(height: 12),
-            Expanded(
-              child: showCarousel
-                  ? PageView.builder(
-                      controller: _controller,
-                      onPageChanged: (index) =>
-                          setState(() => _currentPage = index),
-                      itemCount: lessons.length,
-                      itemBuilder: (context, index) {
-                        final lesson = lessons[index];
-                        return LessonCard(
-                          title: lesson["title"],
-                          dinoImage: lesson["dinoImage"],
-                          locked: lesson["locked"],
-                        );
-                      },
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                      child: LessonCard(
-                        title: lessons[0]["title"],
-                        dinoImage: lessons[0]["dinoImage"],
-                        locked: lessons[0]["locked"],
+    return BlocBuilder<NavigationBloc, NavigationState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const GameHeaderWidget(),
+                SectionProgressCard(
+                  title: _getSectionTitle(),
+                  subtitle: widget.sectionTitle,
+                  progress: widget.progress,
+                ),
+                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: showCarousel
+                      ? PageView.builder(
+                          controller: _controller,
+                          onPageChanged: (index) =>
+                              setState(() => _currentPage = index),
+                          itemCount: lessons.length,
+                          itemBuilder: (context, index) {
+                            final lesson = lessons[index];
+                            return LessonCard(
+                              title: lesson["title"],
+                              dinoImage: lesson["dinoImage"],
+                              locked: lesson["locked"],
+                            );
+                          },
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                          child: LessonCard(
+                            title: lessons[0]["title"],
+                            dinoImage: lessons[0]["dinoImage"],
+                            locked: lessons[0]["locked"],
+                          ),
+                        ),
+                ),
+                if (showCarousel) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      lessons.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        height: 10,
+                        width: 10,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index
+                              ? Colors.lightBlue
+                              : Colors.grey.shade300,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 16),
+                ],
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: CustomFilledButton(
+                    title: isLocked ? "Terkunci" : "Mulai",
+                    variant: isLocked
+                        ? ButtonColorVariant.secondary
+                        : ButtonColorVariant.blue,
+                    onPressed: isLocked
+                        ? null
+                        : () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LevelJourneyPage(
+                                  moduleId: widget.moduleId,
+                                  sectionId: widget.sectionId,
+                                  lessonIndex: showCarousel ? _currentPage : 0,
+                                ),
+                              ),
+                            );
+
+                            // Reload progress setelah kembali dari journey
+                            if (result == true) {
+                              _loadLessonProgress();
+                            }
+                          },
+                  ),
+                ),
+              ],
             ),
-            if (showCarousel) ...[
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  lessons.length,
-                  (index) => AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    height: 10,
-                    width: 10,
-                    decoration: BoxDecoration(
-                      color: _currentPage == index
-                          ? Colors.lightBlue
-                          : Colors.grey.shade300,
-                      shape: BoxShape.circle,
-                    ),
+          ),
+          bottomNavigationBar: _buildBottomNavigationBar(context, state.index),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
+    const double bottomNavHeight = 70.0;
+    const double iconSize = 28.0;
+    
+    final navItems = [
+      'assets/icons/navbar-home.svg',
+      'assets/icons/navbar-game.svg',
+      'assets/icons/navbar-ai.svg',
+      'assets/icons/navbar-leaderboard.svg',
+      'assets/icons/navbar-shop.svg',
+      'assets/icons/navbar-profile.svg',
+    ];
+
+    return Container(
+      height: bottomNavHeight + 10,
+      padding: const EdgeInsets.only(bottom: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: bluePrimaryColor.withAlpha(100), width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(navItems.length, (index) {
+          final isActive = index == 1; // Game page is at index 1
+          return Expanded(
+            child: InkWell(
+              onTap: () {
+                // Update navigation bloc
+                context.read<NavigationBloc>().add(UpdateIndex(index));
+                
+                // Pop back to main navigation page
+                // This will allow the MainNavigationPage BlocBuilder to handle the page change
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              splashColor: bluePrimaryColor.withValues(alpha: 0.1),
+              highlightColor: bluePrimaryColor.withValues(alpha: 0.05),
+              child: Container(
+                height: double.infinity,
+                alignment: Alignment.center,
+                child: SvgPicture.asset(
+                  navItems[index],
+                  width: iconSize,
+                  height: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    isActive ? bluePrimaryColor : secondaryColor,
+                    BlendMode.srcIn,
                   ),
                 ),
               ),
-            ] else ...[
-              const SizedBox(height: 16),
-            ],
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: CustomFilledButton(
-                title: isLocked ? "Terkunci" : "Mulai",
-                variant: isLocked
-                    ? ButtonColorVariant.secondary
-                    : ButtonColorVariant.blue,
-                onPressed: isLocked
-                    ? null
-                    : () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LevelJourneyPage(
-                              moduleId: widget.moduleId,
-                              sectionId: widget.sectionId,
-                              lessonIndex: showCarousel ? _currentPage : 0,
-                            ),
-                          ),
-                        );
-
-                        // Reload progress setelah kembali dari journey
-                        if (result == true) {
-                          _loadLessonProgress();
-                        }
-                      },
-              ),
             ),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }

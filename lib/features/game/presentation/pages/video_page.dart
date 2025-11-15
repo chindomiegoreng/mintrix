@@ -7,36 +7,8 @@ import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
-import 'package:mintrix/features/game/data/services/youtube_services.dart';
 import 'package:video_player/video_player.dart';
 import 'package:shimmer/shimmer.dart';
-
-class VideoUrlCache {
-  static final Map<String, String> _cache = {};
-  static final Map<String, DateTime> _cacheTime = {};
-  static const Duration _cacheExpiry = Duration(hours: 6); // Cache selama 6 jam
-
-  static String? get(String youtubeUrl) {
-    final cachedTime = _cacheTime[youtubeUrl];
-    if (cachedTime != null && DateTime.now().difference(cachedTime) < _cacheExpiry) {
-      return _cache[youtubeUrl];
-    }
-    // Cache expired, hapus
-    _cache.remove(youtubeUrl);
-    _cacheTime.remove(youtubeUrl);
-    return null;
-  }
-
-  static void set(String youtubeUrl, String directUrl) {
-    _cache[youtubeUrl] = directUrl;
-    _cacheTime[youtubeUrl] = DateTime.now();
-  }
-
-  static void clear() {
-    _cache.clear();
-    _cacheTime.clear();
-  }
-}
 
 class VideoPage extends StatefulWidget {
   final String title;
@@ -66,7 +38,6 @@ class VideoPage extends StatefulWidget {
 class _VideoPageState extends State<VideoPage> {
   bool isWatched = false;
   bool isLoadingVideo = false;
-  String? directVideoUrl;
   VideoPlayerController? _preloadedController;
   String? _errorMessage;
   final StreakService _streakService = StreakService();
@@ -76,11 +47,10 @@ class _VideoPageState extends State<VideoPage> {
   @override
   void initState() {
     super.initState();
-    // ✅ Langsung preload tanpa delay
     _preloadVideo();
   }
 
-  /// ✅ Optimized preload dengan aggressive strategy
+  /// ✅ Preload video langsung dari Cloudinary
   Future<void> _preloadVideo() async {
     if (_retryCount >= _maxRetries) {
       setState(() {
@@ -96,52 +66,30 @@ class _VideoPageState extends State<VideoPage> {
     });
 
     try {
-      String? url;
+      print('🎬 Loading video from Cloudinary... (attempt ${_retryCount + 1})');
+      
+      // ✅ Langsung gunakan URL Cloudinary tanpa konversi
+      final cloudinaryUrl = widget.videoUrl;
 
-      // ✅ Step 1: Cek cache dulu (super fast)
-      url = VideoUrlCache.get(widget.videoUrl);
-
-      if (url == null) {
-        // ✅ Step 2: Fetch dengan timeout lebih pendek untuk responsiveness
-        print('🔄 Fetching YouTube URL... (attempt ${_retryCount + 1})');
-        
-        url = await getYoutubeDirectUrl(widget.videoUrl).timeout(
-          const Duration(seconds: 10),
-          onTimeout: () {
-            throw Exception('Timeout saat mengambil URL video');
-          },
-        );
-
-        if (url != null && url.isNotEmpty) {
-          VideoUrlCache.set(widget.videoUrl, url);
-          print('✅ URL cached successfully');
-        }
-      } else {
-        print('⚡ URL loaded from cache (instant)');
+      if (cloudinaryUrl.isEmpty) {
+        throw Exception('URL video tidak valid');
       }
 
       if (!mounted) return;
 
-      if (url == null || url.isEmpty) {
-        throw Exception('URL video tidak valid');
-      }
-
-      // ✅ Step 3: Initialize controller dengan optimization
+      // ✅ Initialize controller dengan Cloudinary URL
       print('🎬 Initializing video controller...');
       _preloadedController = VideoPlayerController.networkUrl(
-        Uri.parse(url),
+        Uri.parse(cloudinaryUrl),
         videoPlayerOptions: VideoPlayerOptions(
           mixWithOthers: true,
           allowBackgroundPlayback: false,
         ),
-        httpHeaders: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
       );
 
-      // ✅ Initialize dengan timeout optimal
+      // ✅ Initialize dengan timeout
       await _preloadedController!.initialize().timeout(
-        const Duration(seconds: 12),
+        const Duration(seconds: 15),
         onTimeout: () {
           throw Exception('Timeout saat memuat video');
         },
@@ -151,9 +99,8 @@ class _VideoPageState extends State<VideoPage> {
 
       print('✅ Video ready to play');
       setState(() {
-        directVideoUrl = url;
         isLoadingVideo = false;
-        _retryCount = 0; // Reset retry counter on success
+        _retryCount = 0;
       });
     } catch (e) {
       print('❌ Error (attempt ${_retryCount + 1}): $e');
@@ -169,7 +116,7 @@ class _VideoPageState extends State<VideoPage> {
         print('🔄 Auto-retrying in 2 seconds...');
         await Future.delayed(const Duration(seconds: 2));
         if (mounted) {
-          _preloadVideo(); // Recursive retry
+          _preloadVideo();
         }
         return;
       }
@@ -202,7 +149,7 @@ class _VideoPageState extends State<VideoPage> {
   }
 
   void _openVideoPlayer() async {
-    if (_preloadedController == null || directVideoUrl == null) {
+    if (_preloadedController == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Video belum siap, coba lagi.'),
@@ -218,19 +165,16 @@ class _VideoPageState extends State<VideoPage> {
       return;
     }
 
-    // Pass controller yang sudah diinisialisasi
     final watched = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => VideoPlayerPage(
           videoController: _preloadedController!,
-          videoUrl: directVideoUrl!,
           onVideoComplete: onVideoComplete,
         ),
       ),
     );
 
-    // Jika video ditonton sampai selesai
     if (watched == true) {
       setState(() => isWatched = true);
     }
@@ -264,22 +208,18 @@ class _VideoPageState extends State<VideoPage> {
   Future<void> onVideoComplete() async {
     print('✅ Video completed!');
 
-    // ✅ Update streak via API
     print('🎮 Video watched, updating streak...');
     final streakUpdated = await _streakService.updateStreak();
 
     if (streakUpdated && mounted) {
-      // ✅ Refresh ProfileBloc untuk update UI
       context.read<ProfileBloc>().add(RefreshProfile());
       print('🔥 Streak updated after video completion!');
     }
 
-    // Set video as watched
     if (mounted) {
       setState(() => isWatched = true);
     }
 
-    // Navigasi setelah video selesai
     if (_isModule2Section1()) {
       if (mounted) Navigator.pushNamed(context, '/build-cv');
     } else if (widget.moduleId != null &&
@@ -464,13 +404,11 @@ class _VideoPageState extends State<VideoPage> {
 
 class VideoPlayerPage extends StatefulWidget {
   final VideoPlayerController videoController;
-  final String videoUrl;
   final VoidCallback onVideoComplete;
 
   const VideoPlayerPage({
     super.key,
     required this.videoController,
-    required this.videoUrl,
     required this.onVideoComplete,
   });
 
@@ -555,7 +493,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    // ❌ BELUM
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -581,7 +518,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // ✅ YAKIN
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => Navigator.pop(context, true),
@@ -614,14 +550,11 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
     if (confirmed == true) {
       widget.videoController.pause();
-      // ✅ Hanya update streak, tidak navigasi otomatis
       await _updateStreakOnly();
       if (mounted) {
-        // ✅ Kembali ke halaman video dengan status watched = true
         Navigator.pop(context, true);
       }
     } else {
-      // Reset slider jika user membatalkan
       setState(() {
         _sliderValue = 0.0;
         _isSliding = false;
@@ -629,7 +562,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     }
   }
 
-  /// ✅ Update streak tanpa navigasi
   Future<void> _updateStreakOnly() async {
     print('✅ Video completed!');
     print('🎮 Video watched, updating streak...');
@@ -649,7 +581,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       _isSliding = value > 0;
     });
 
-    // Jika slider sudah di posisi paling kanan
     if (value >= 0.95) {
       _showCompletionDialog();
     }
@@ -738,7 +669,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 const SizedBox(height: 16),
                 Stack(
                   children: [
-                    // Background track
                     Container(
                       height: 56,
                       decoration: BoxDecoration(
@@ -746,7 +676,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         borderRadius: BorderRadius.circular(28),
                       ),
                     ),
-                    // Progress indicator
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 100),
                       height: 56,
@@ -761,7 +690,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         borderRadius: BorderRadius.circular(28),
                       ),
                     ),
-                    // Slider
                     GestureDetector(
                       onHorizontalDragUpdate: (details) {
                         final box = context.findRenderObject() as RenderBox;

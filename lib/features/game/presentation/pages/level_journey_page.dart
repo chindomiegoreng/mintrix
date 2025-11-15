@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // ✅ Add this
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,9 @@ import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.d
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add this
 import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart'; // ✅ Add this
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_state.dart';
 
 class LevelJourneyPage extends StatefulWidget {
   final String moduleId;
@@ -285,7 +289,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Membahas cara mengidentifikasi minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
         "videoDescription":
             "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-        "videoUrl": "https://youtu.be/JA8SjQ334CQ",
+        "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
         "thumbnail": "assets/images/home_card_large.png",
         "characterImage":
             "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character6_f99qfe.png",
@@ -299,7 +303,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Membahas langkah-langkah persiapan karir yang efektif untuk masa depan yang lebih cerah.",
         "videoDescription":
             "Video ini berisikan materi terkait persiapan karir dan strategi memasuki dunia kerja.",
-        "videoUrl": "https://youtu.be/TjPhzgxe3L0?si=G3a6-fqbPu3ZikzA",
+        "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
         "thumbnail": "assets/images/home_card_large.png",
         "characterImage":
             "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846592/character3_f6ngcd.png",
@@ -338,7 +342,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Mengenal Minat Dan Bakat",
             "videoDescription":
                 "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-            "videoUrl": "https://youtu.be/JA8SjQ334CQ",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -406,7 +410,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Manajemen Waktu",
             "videoDescription":
                 "Video ini membahas teknik-teknik manajemen waktu yang efektif untuk kehidupan sehari-hari.",
-            "videoUrl": "https://youtu.be/7D7j8v3kvGI",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -474,7 +478,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Berpikir Positif",
             "videoDescription":
                 "Video ini membahas cara membangun dan mempertahankan mindset positif dalam kehidupan sehari-hari.",
-            "videoUrl": "https://youtu.be/wtQkr22maZI",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -575,215 +579,217 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
     final videoData = _getVideoData();
     final platformDataList = _getPlatformData();
 
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, true);
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: Column(
-            children: [
-              const GameHeaderWidget(),
-              Expanded(
-                child: SizedBox(
-                  width: screenWidth,
-                  height: screenHeight,
-                  child: Stack(
-                    children: [
-                      CustomPaint(size: Size(screenWidth, screenHeight)),
+    return BlocBuilder<NavigationBloc, NavigationState>(
+      builder: (context, state) {
+        return WillPopScope(
+          onWillPop: () async {
+            Navigator.pop(context, true);
+            return false;
+          },
+          child: Scaffold(
+            backgroundColor: Colors.white,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  const GameHeaderWidget(),
+                  Expanded(
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: screenHeight,
+                      child: Stack(
+                        children: [
+                          CustomPaint(size: Size(screenWidth, screenHeight)),
 
-                      // 1. button kecil
-                      Positioned(
-                        top: 60,
-                        left: 150,
-                        child: _buildSmallPlatform(
-                          isActive: true,
-                          context: context,
-                        ),
-                      ),
+                          // 1. button kecil
+                          Positioned(
+                            top: 60,
+                            left: 150,
+                            child: _buildSmallPlatform(
+                              isActive: true,
+                              context: context,
+                            ),
+                          ),
 
-                      // 2. button besar
-                      if (platformDataList.isNotEmpty)
-                        Positioned(
-                          top: 120,
-                          left: 40,
-                          child: _buildLargePlatform(
-                            // ✅ Status berdasarkan completion
-                            (platformStatus[platformDataList[0]["key"]] ??
-                                    false)
-                                ? StageType.active
-                                : (_isPreviousPlatformCompleted(
-                                        platformDataList[0]["key"],
-                                      )
-                                      ? StageType.incoming
-                                      : StageType.inactive),
-                            context,
-                            platformData: platformDataList[0],
-                            videoData: videoData,
-                          ),
-                        ),
+                          // 2. button besar
+                          if (platformDataList.isNotEmpty)
+                            Positioned(
+                              top: 120,
+                              left: 40,
+                              child: _buildLargePlatform(
+                                // ✅ Status berdasarkan completion
+                                (platformStatus[platformDataList[0]["key"]] ??
+                                        false)
+                                    ? StageType.active
+                                    : (_isPreviousPlatformCompleted(
+                                            platformDataList[0]["key"],
+                                          )
+                                          ? StageType.incoming
+                                          : StageType.inactive),
+                                context,
+                                platformData: platformDataList[0],
+                                videoData: videoData,
+                              ),
+                            ),
 
-                      // 3. button kecil
-                      if (platformDataList.length > 1)
-                        Positioned(
-                          top: 225,
-                          left: 90,
-                          child: _buildSmallPlatform(
-                            isActive:
-                                (platformStatus[platformDataList[1]["key"]] ??
-                                false),
-                            context: context,
-                            platformData: platformDataList[1],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 221,
-                          left: 90,
-                          child: _buildSmallPlatform(
-                            isActive: false,
-                            context: context,
-                          ),
-                        ),
+                          // 3. button kecil
+                          if (platformDataList.length > 1)
+                            Positioned(
+                              top: 225,
+                              left: 90,
+                              child: _buildSmallPlatform(
+                                isActive:
+                                    (platformStatus[platformDataList[1]["key"]] ??
+                                    false),
+                                context: context,
+                                platformData: platformDataList[1],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 221,
+                              left: 90,
+                              child: _buildSmallPlatform(
+                                isActive: false,
+                                context: context,
+                              ),
+                            ),
 
-                      // 4. button kecil
-                      if (platformDataList.length > 2)
-                        Positioned(
-                          top: 285,
-                          right: 160,
-                          child: _buildSmallPlatform(
-                            isActive:
-                                (platformStatus[platformDataList[2]["key"]] ??
-                                false),
-                            context: context,
-                            platformData: platformDataList[2],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 285,
-                          right: 160,
-                          child: _buildSmallPlatform(
-                            isActive: false,
-                            context: context,
-                          ),
-                        ),
+                          // 4. button kecil
+                          if (platformDataList.length > 2)
+                            Positioned(
+                              top: 285,
+                              right: 160,
+                              child: _buildSmallPlatform(
+                                isActive:
+                                    (platformStatus[platformDataList[2]["key"]] ??
+                                    false),
+                                context: context,
+                                platformData: platformDataList[2],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 285,
+                              right: 160,
+                              child: _buildSmallPlatform(
+                                isActive: false,
+                                context: context,
+                              ),
+                            ),
 
-                      // 5. button besar
-                      if (platformDataList.length > 3)
-                        Positioned(
-                          top: 330,
-                          right: 35,
-                          child: _buildLargePlatform(
-                            // ✅ Status berdasarkan completion
-                            (platformStatus[platformDataList[3]["key"]] ??
-                                    false)
-                                ? StageType.active
-                                : (_isPreviousPlatformCompleted(
-                                        platformDataList[3]["key"],
-                                      )
-                                      ? StageType.incoming
-                                      : StageType.inactive),
-                            context,
-                            platformData: platformDataList[3],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 330,
-                          right: 35,
-                          child: _buildLargePlatform(
-                            StageType.inactive,
-                            context,
-                          ),
-                        ),
+                          // 5. button besar
+                          if (platformDataList.length > 3)
+                            Positioned(
+                              top: 330,
+                              right: 35,
+                              child: _buildLargePlatform(
+                                // ✅ Status berdasarkan completion
+                                (platformStatus[platformDataList[3]["key"]] ??
+                                        false)
+                                    ? StageType.active
+                                    : (_isPreviousPlatformCompleted(
+                                            platformDataList[3]["key"],
+                                          )
+                                          ? StageType.incoming
+                                          : StageType.inactive),
+                                context,
+                                platformData: platformDataList[3],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 330,
+                              right: 35,
+                              child: _buildLargePlatform(
+                                StageType.inactive,
+                                context,
+                              ),
+                            ),
 
-                      // 6. button kecil
-                      if (platformDataList.length > 4)
-                        Positioned(
-                          top: 500,
-                          right: 40,
-                          child: _buildSmallPlatform(
-                            isActive:
-                                (platformStatus[platformDataList[4]["key"]] ??
-                                false),
-                            context: context,
-                            platformData: platformDataList[4],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 500,
-                          right: 40,
-                          child: _buildSmallPlatform(
-                            isActive: false,
-                            context: context,
-                          ),
-                        ),
+                          // 6. button kecil
+                          if (platformDataList.length > 4)
+                            Positioned(
+                              top: 500,
+                              right: 40,
+                              child: _buildSmallPlatform(
+                                isActive:
+                                    (platformStatus[platformDataList[4]["key"]] ??
+                                    false),
+                                context: context,
+                                platformData: platformDataList[4],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 500,
+                              right: 40,
+                              child: _buildSmallPlatform(
+                                isActive: false,
+                                context: context,
+                              ),
+                            ),
 
-                      // 7. button kecil
-                      if (platformDataList.length > 5)
-                        Positioned(
-                          top: 570,
-                          right: 150,
-                          child: _buildSmallPlatform(
-                            isActive:
-                                (platformStatus[platformDataList[5]["key"]] ??
-                                false),
-                            context: context,
-                            platformData: platformDataList[5],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 570,
-                          right: 150,
-                          child: _buildSmallPlatform(
-                            isActive: false,
-                            context: context,
-                          ),
-                        ),
+                          // 7. button kecil
+                          if (platformDataList.length > 5)
+                            Positioned(
+                              top: 570,
+                              right: 150,
+                              child: _buildSmallPlatform(
+                                isActive:
+                                    (platformStatus[platformDataList[5]["key"]] ??
+                                    false),
+                                context: context,
+                                platformData: platformDataList[5],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 570,
+                              right: 150,
+                              child: _buildSmallPlatform(
+                                isActive: false,
+                                context: context,
+                              ),
+                            ),
 
-                      // 8. button besar
-                      if (platformDataList.length > 6)
-                        Positioned(
-                          top: 650,
-                          left: 30,
-                          child: _buildLargePlatform(
-                            // ✅ Status berdasarkan completion
-                            (platformStatus[platformDataList[6]["key"]] ??
-                                    false)
-                                ? StageType.active
-                                : (_isPreviousPlatformCompleted(
-                                        platformDataList[6]["key"],
-                                      )
-                                      ? StageType.incoming
-                                      : StageType.inactive),
-                            context,
-                            platformData: platformDataList[6],
-                            videoData: videoData,
-                          ),
-                        )
-                      else
-                        Positioned(
-                          top: 650,
-                          left: 30,
-                          child: _buildLargePlatform(
-                            StageType.inactive,
-                            context,
-                          ),
-                        ),
+                          // 8. button besar
+                          if (platformDataList.length > 6)
+                            Positioned(
+                              top: 650,
+                              left: 30,
+                              child: _buildLargePlatform(
+                                // ✅ Status berdasarkan completion
+                                (platformStatus[platformDataList[6]["key"]] ??
+                                        false)
+                                    ? StageType.active
+                                    : (_isPreviousPlatformCompleted(
+                                            platformDataList[6]["key"],
+                                          )
+                                          ? StageType.incoming
+                                          : StageType.inactive),
+                                context,
+                                platformData: platformDataList[6],
+                                videoData: videoData,
+                              ),
+                            )
+                          else
+                            Positioned(
+                              top: 650,
+                              left: 30,
+                              child: _buildLargePlatform(
+                                StageType.inactive,
+                                context,
+                              ),
+                            ),
 
-                      Positioned(
-                        top: -10,
-                        right: 10,
+                          Positioned(
+                            top: -10,
+                            right: 10,
                         child: _buildCharacterStage(
                           context,
                           imagePath: videoData["ballImage"],
@@ -807,6 +813,67 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             ],
           ),
         ),
+            bottomNavigationBar: _buildBottomNavigationBar(context, state.index),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
+    const double bottomNavHeight = 70.0;
+    const double iconSize = 28.0;
+    
+    final navItems = [
+      'assets/icons/navbar-home.svg',
+      'assets/icons/navbar-game.svg',
+      'assets/icons/navbar-ai.svg',
+      'assets/icons/navbar-leaderboard.svg',
+      'assets/icons/navbar-shop.svg',
+      'assets/icons/navbar-profile.svg',
+    ];
+
+    return Container(
+      height: bottomNavHeight + 10,
+      padding: const EdgeInsets.only(bottom: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: bluePrimaryColor.withAlpha(100), width: 1),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(navItems.length, (index) {
+          final isActive = index == 1; // Game page is at index 1
+          return Expanded(
+            child: InkWell(
+              onTap: () {
+                // Update navigation bloc
+                context.read<NavigationBloc>().add(UpdateIndex(index));
+                
+                // Pop back to main navigation page (through GameDetailPage and back)
+                // This will allow the MainNavigationPage BlocBuilder to handle the page change
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              splashColor: bluePrimaryColor.withValues(alpha: 0.1),
+              highlightColor: bluePrimaryColor.withValues(alpha: 0.05),
+              child: Container(
+                height: double.infinity,
+                alignment: Alignment.center,
+                child: SvgPicture.asset(
+                  navItems[index],
+                  width: iconSize,
+                  height: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    isActive ? bluePrimaryColor : secondaryColor,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
