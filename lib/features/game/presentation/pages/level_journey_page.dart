@@ -1299,12 +1299,12 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withOpacity(0.3),
+                                  color: whiteColor,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  "🔄 Replay Mode",
-                                  style: whiteTextStyle.copyWith(
+                                  "Replay Mode",
+                                  style: primaryTextStyle.copyWith(
                                     fontSize: 12,
                                     fontWeight: semiBold,
                                   ),
@@ -1343,7 +1343,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         // ✅ Description with slide animation
                         SlideTransition(
                           position:
@@ -1368,9 +1368,9 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
                             child: Text(
                               description,
                               textAlign: TextAlign.center,
-                              style: secondaryTextStyle.copyWith(
+                              style: whiteTextStyle.copyWith(
                                 fontSize: 14,
-                                fontWeight: medium,
+                                fontWeight: semiBold,
                               ),
                             ),
                           ),
