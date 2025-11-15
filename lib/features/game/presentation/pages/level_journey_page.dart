@@ -266,6 +266,13 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
           "description":
               "Membahas langkah-langkah persiapan karir yang efektif untuk masa depan yang lebih cerah.",
           "subSection": "persiapan_karir",
+          "videoData": {
+            "title": "Menetapkan Tujuan",
+            "videoDescription":
+                "Video ini membahas teknik SMART goal setting dan cara membuat action plan untuk mencapai tujuan hidup Anda.",
+            "videoUrl": "https://youtu.be/wtQkr22maZI",
+            "thumbnail": "assets/images/home_card_large.png",
+          },
         },
         {
           "key": "platform2",
