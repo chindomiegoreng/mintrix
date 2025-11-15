@@ -410,7 +410,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Manajemen Waktu",
             "videoDescription":
                 "Video ini membahas teknik-teknik manajemen waktu yang efektif untuk kehidupan sehari-hari.",
-            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763221823/mengatur_waktu_uh2etl.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -478,7 +478,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Berpikir Positif",
             "videoDescription":
                 "Video ini membahas cara membangun dan mempertahankan mindset positif dalam kehidupan sehari-hari.",
-            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763221816/berpikir_positif_zfnxxo.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
