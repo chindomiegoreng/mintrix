@@ -16,7 +16,7 @@ class AIPage extends StatefulWidget {
   State<AIPage> createState() => _AIPageState();
 }
 
-class _AIPageState extends State<AIPage> {
+class _AIPageState extends State<AIPage> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   late DinoApiService _apiService;
   bool _isLoading = false;
@@ -35,26 +35,57 @@ class _AIPageState extends State<AIPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeService();
+  }
+
+  @override
+  void didUpdateWidget(AIPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 🔥 Reload jika widget di-update
+    if (oldWidget.titleId != widget.titleId) {
+      _initializeService();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 🔥 Reload chat ketika app kembali ke foreground
+    if (state == AppLifecycleState.resumed && _isInitialized) {
+      print('🔄 App resumed, checking for chat updates...');
+      _loadLastChatOrCreateNew();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _messageController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeService() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token') ?? ''; // ✅ Ganti dengan 'auth_token'
+    final token = prefs.getString('auth_token') ?? '';
     
     if (token.isEmpty) {
       print('❌ Token tidak ditemukan di SharedPreferences');
-      // Optional: redirect to login
       return;
     }
     
-    print('✅ Token ditemukan: ${token.substring(0, 20)}...'); // Debug print
+    print('✅ Token ditemukan: ${token.substring(0, 20)}...');
 
     _apiService = DinoApiService(authToken: token);
-    _currentTitleId = widget.titleId;
 
-    if (_currentTitleId != null) {
+    // 🔥 LOGIKA: Cek apakah ada titleId yang diberikan
+    if (widget.titleId != null) {
+      // Jika ada titleId spesifik, load chat tersebut
+      _currentTitleId = widget.titleId;
       await _loadChatHistory();
+    } else {
+      // 🔥 Jika tidak ada titleId, coba ambil chat terakhir dari history
+      await _loadLastChatOrCreateNew();
     }
 
     setState(() {
@@ -62,25 +93,56 @@ class _AIPageState extends State<AIPage> {
     });
   }
 
+  // 🔥 FUNGSI: Load chat terakhir atau buat baru
+  Future<void> _loadLastChatOrCreateNew() async {
+    try {
+      print('📡 Mengambil chat history...');
+      final historyList = await _apiService.getChatTitles();
+      
+      if (historyList.isNotEmpty) {
+        // Ambil chat paling terakhir (index 0 biasanya yang terbaru)
+        final lastChat = historyList.first;
+        _currentTitleId = lastChat.id;
+        
+        print('✅ Ditemukan chat terakhir: ${lastChat.title} (ID: ${lastChat.id})');
+        
+        // Load history dari chat terakhir
+        await _loadChatHistory();
+      } else {
+        print('ℹ️ Belum ada chat sebelumnya, akan membuat chat baru saat user mengirim pesan');
+      }
+    } catch (e) {
+      print('❌ Error loading last chat: $e');
+      // Jika error, biarkan user mulai chat baru
+    }
+  }
+
   Future<void> _loadChatHistory() async {
     if (_currentTitleId == null) return;
 
     try {
+      print('📡 Loading chat history untuk titleId: $_currentTitleId');
       final history = await _apiService.getChatHistory(_currentTitleId!);
+      
       setState(() {
         _messages.clear();
-        _messages.add(ChatMessage(
-          text: "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
-          isFromDino: true,
-          time: TimeOfDay.now().format(context),
-        ));
+        
+        // 🔥 PENTING: Hanya tambahkan greeting jika tidak ada pesan
+        if (history.messages.isEmpty) {
+          _messages.add(ChatMessage(
+            text: "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
+            isFromDino: true,
+            time: TimeOfDay.now().format(context),
+          ));
+        }
 
+        // Load semua pesan dari history
         for (var msg in history.messages) {
           String content = msg.content;
           if (msg.role == 'assistant') {
             try {
               final parsed = jsonDecode(content);
-              content = parsed['reply'];
+              content = parsed['reply'] ?? content;
             } catch (e) {
               // If parsing fails, use original content
             }
@@ -93,15 +155,11 @@ class _AIPageState extends State<AIPage> {
           ));
         }
       });
+      
+      print('✅ Berhasil load ${history.messages.length} pesan dari chat history');
     } catch (e) {
-      print('Error loading chat history: $e');
+      print('❌ Error loading chat history: $e');
     }
-  }
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
   }
 
   void _sendMessage() async {
@@ -126,6 +184,11 @@ class _AIPageState extends State<AIPage> {
         final title = '$firstWords ...';
         final chatTitle = await _apiService.createChatTitle(title);
         _currentTitleId = chatTitle.id;
+        print('✅ Chat baru dibuat dengan ID: $_currentTitleId');
+        
+        // 🔥 Simpan titleId chat baru ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_chat_title_id', _currentTitleId!);
       }
 
       // Send message
@@ -152,7 +215,7 @@ class _AIPageState extends State<AIPage> {
         );
         _isLoading = false;
       });
-      print('Error sending message: $e');
+      print('❌ Error sending message: $e');
     }
   }
 
@@ -172,6 +235,11 @@ class _AIPageState extends State<AIPage> {
     });
 
     _messageController.clear();
+    print('✅ Memulai chat baru');
+    
+    // 🔥 Hapus cache titleId saat mulai chat baru
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('last_chat_title_id');
   }
 
   @override

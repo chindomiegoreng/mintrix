@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/features/ai/presentation/pages/ai_page.dart';
+import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -74,6 +75,7 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
   Future<void> _updateMissionStatus(String missionType) async {
     try {
       Map<String, dynamic> body = {};
+      int pointBefore = _currentPoint;
 
       switch (missionType) {
         case 'dino':
@@ -95,6 +97,8 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
 
       if (response['data'] != null) {
         final updatedMission = response['data'];
+        int pointAfter = updatedMission['point'] ?? 0;
+        int pointsAdded = pointAfter - pointBefore;
 
         setState(() {
           _ajakNgobrolDino = updatedMission['ajakNgobrolDino'] ?? false;
@@ -107,8 +111,8 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Misi berhasil diselesaikan! 🎉'),
+            SnackBar(
+              content: Text('Misi berhasil diselesaikan! 🎉 +$pointsAdded poin'),
               backgroundColor: Colors.green,
             ),
           );
@@ -220,7 +224,7 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
   }
 
   // ==============================================================
-  // BUTTON MISI
+  // BUTTON MISI - DENGAN SINKRONISASI KE AI PAGE & SETTINGS
   // ==============================================================
   Widget _buildMissionButton(String mission, bool isCompleted) {
     if (isCompleted) {
@@ -229,20 +233,45 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
 
     return ElevatedButton(
       onPressed: () async {
+        // 🔥 MISI 1: Ajak Ngobrol Dino
         if (mission == 'dino') {
+          // Navigasi ke AI Page dan tunggu hasil
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AIPage()),
-          );
-          await _updateMissionStatus('dino');
+            MaterialPageRoute(
+              builder: (context) => const AIPage(
+                showAppBar: true,
+                // AIPage akan otomatis load chat terakhir atau buat baru
+              ),
+            ),
+          ).then((_) {
+            // 🔥 Setelah kembali, update status misi
+            _updateMissionStatus('dino');
+          });
           return;
         }
 
+        // 🔥 MISI 2: Lakukan Hobimu Hari Ini
         if (mission == 'hobby') {
           await _showConfirmHobbyDialog();
           return;
         }
 
+        // 🔥 MISI 3: Hubungkan Akunmu dengan Orang Tua
+        if (mission == 'connect') {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SettingsConnectPage(),
+            ),
+          ).then((_) {
+            // 🔥 Setelah kembali, update status misi
+            _updateMissionStatus('connect');
+          });
+          return;
+        }
+
+        // Fallback untuk misi lain (jika ada)
         await _updateMissionStatus(mission);
       },
       style: ElevatedButton.styleFrom(
