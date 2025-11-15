@@ -285,7 +285,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Membahas cara mengidentifikasi minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
         "videoDescription":
             "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-        "videoUrl": "https://youtu.be/JA8SjQ334CQ",
+        "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
         "thumbnail": "assets/images/home_card_large.png",
         "characterImage":
             "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character6_f99qfe.png",
@@ -299,7 +299,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "Membahas langkah-langkah persiapan karir yang efektif untuk masa depan yang lebih cerah.",
         "videoDescription":
             "Video ini berisikan materi terkait persiapan karir dan strategi memasuki dunia kerja.",
-        "videoUrl": "https://youtu.be/TjPhzgxe3L0?si=G3a6-fqbPu3ZikzA",
+        "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
         "thumbnail": "assets/images/home_card_large.png",
         "characterImage":
             "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846592/character3_f6ngcd.png",
@@ -338,7 +338,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Mengenal Minat Dan Bakat",
             "videoDescription":
                 "Video ini berisikan materi terkait mengenal minat dan bakat yang selaras dengan karakteristik kepribadian seseorang.",
-            "videoUrl": "https://youtu.be/JA8SjQ334CQ",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -406,7 +406,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Manajemen Waktu",
             "videoDescription":
                 "Video ini membahas teknik-teknik manajemen waktu yang efektif untuk kehidupan sehari-hari.",
-            "videoUrl": "https://youtu.be/7D7j8v3kvGI",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
@@ -474,7 +474,7 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
             "title": "Berpikir Positif",
             "videoDescription":
                 "Video ini membahas cara membangun dan mempertahankan mindset positif dalam kehidupan sehari-hari.",
-            "videoUrl": "https://youtu.be/wtQkr22maZI",
+            "videoUrl": "https://res.cloudinary.com/dy4hqxkv1/video/upload/v1763188431/submodul1_outxfm.mp4",
             "thumbnail": "assets/images/home_card_large.png",
           },
         },
