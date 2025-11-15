@@ -6,6 +6,7 @@ import 'package:mintrix/widgets/game_header.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/video_page.dart';
 import 'package:mintrix/features/game/presentation/pages/quiz/quiz_page.dart';
+import 'package:mintrix/features/game/presentation/pages/buildcv/build_cv_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add this
 import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart'; // ✅ Add this
@@ -644,7 +645,22 @@ class _LevelJourneyPageState extends State<LevelJourneyPage> {
 
             await _savePlatformStatus(platformKey, true);
 
-            if (platformData["hasVideo"]) {
+            // ✅ Check if this is Modul 2 Bagian 1 - navigate to Build CV
+            if (widget.moduleId == "modul2" &&
+                widget.sectionId == "bagian1" &&
+                subSection == "persiapan_karir") {
+              print('🎯 Navigating to Build CV Page...');
+
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BuildCVPage()),
+              );
+
+              if (result == true) {
+                _loadPlatformStatus();
+                await _checkAndUpdateStreak();
+              }
+            } else if (platformData["hasVideo"]) {
               // ✅ Gunakan video data dari platform sendiri
               final platformVideoData =
                   platformData["videoData"] as Map<String, dynamic>;
