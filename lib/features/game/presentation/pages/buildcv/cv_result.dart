@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
+import 'package:mintrix/core/services/streak_service.dart';
 import 'package:mintrix/features/game/bloc/build_cv_bloc.dart';
-import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +14,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CVResult extends StatefulWidget {
   final VoidCallback onComplete;
@@ -34,6 +39,11 @@ class _CVResultState extends State<CVResult> {
   bool isDownloading = false;
   String? localPdfPath;
   bool isPdfLoading = false;
+  final ApiClient _apiClient = ApiClient();
+  final StreakService _streakService = StreakService();
+  bool _isSubmittingXP = false;
+  bool _xpSubmitted = false;
+  final int xpReward = 80;
 
   @override
   void initState() {
@@ -51,6 +61,11 @@ class _CVResultState extends State<CVResult> {
 
       if (resumeLink != null && resumeLink!.isNotEmpty) {
         _downloadPdfForPreview(resumeLink!);
+      }
+
+      // ✅ Submit XP when CV is successfully created
+      if (!_xpSubmitted) {
+        _submitXPToBackend();
       }
     } else if (state is CVSubmitting) {
       setState(() {
@@ -81,6 +96,12 @@ class _CVResultState extends State<CVResult> {
               duration: Duration(seconds: 2),
             ),
           );
+
+          // ✅ Submit XP when CV is successfully created
+          if (!_xpSubmitted) {
+            _submitXPToBackend();
+            _updateStreak();
+          }
         } else if (state is CVSubmitError) {
           setState(() {
             isGenerating = false;
@@ -355,7 +376,7 @@ class _CVResultState extends State<CVResult> {
           children: [
             Text(
               resumeId != null
-                  ? "🎉 Wow, kamu super duper kece! +20 XP"
+                  ? "🎉 Wow, kamu super duper kece! +$xpReward XP"
                   : "⏳ Tunggu sebentar ya...",
               style: primaryTextStyle.copyWith(
                 fontSize: 18,
@@ -384,16 +405,7 @@ class _CVResultState extends State<CVResult> {
                     onPressed: isGenerating
                         ? null
                         : () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LevelJourneyPage(
-                                  moduleId: "modul2",
-                                  sectionId: "bagian1",
-                                  lessonIndex: 0,
-                                ),
-                              ),
-                            );
+                            Navigator.pop(context, true);
                           },
                   ),
                 ),
@@ -403,6 +415,78 @@ class _CVResultState extends State<CVResult> {
         ),
       ),
     );
+  }
+
+  // ✅ Submit XP to backend
+  Future<void> _submitXPToBackend() async {
+    if (_isSubmittingXP || _xpSubmitted) return;
+
+    setState(() {
+      _isSubmittingXP = true;
+    });
+
+    try {
+      print('📤 Mengirim XP: $xpReward untuk Build CV');
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.stats,
+        body: {'xp': xpReward},
+        requiresAuth: true,
+      );
+
+      print('📥 Response: $response');
+
+      if (response['success'] == true) {
+        final updatedXP = response['stats']?['xp'] ?? response['data']?['xp'];
+        print('✅ XP berhasil ditambahkan: $xpReward (Total: $updatedXP)');
+
+        setState(() {
+          _xpSubmitted = true;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('XP +$xpReward berhasil ditambahkan! 🎉'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('❌ Gagal menambah XP: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmittingXP = false;
+        });
+      }
+    }
+  }
+
+  // ✅ Update streak after completing CV
+  Future<void> _updateStreak() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month}-${today.day}';
+    final lastStreakUpdateKey = 'last_streak_update_date';
+
+    final lastUpdateDate = prefs.getString(lastStreakUpdateKey);
+
+    print('🔥 Checking streak: Today=$todayKey, Last=$lastUpdateDate');
+
+    if (lastUpdateDate != todayKey) {
+      print('✅ First game completion today, updating streak...');
+
+      final streakUpdated = await _streakService.updateStreak();
+
+      if (streakUpdated && mounted) {
+        context.read<ProfileBloc>().add(RefreshProfile());
+        await prefs.setString(lastStreakUpdateKey, todayKey);
+        print('🎉 Streak updated!');
+      }
+    }
   }
 
   void _handleDownload() {
@@ -565,6 +649,7 @@ class _CVResultState extends State<CVResult> {
 
   @override
   void dispose() {
+    _apiClient.dispose();
     if (localPdfPath != null) {
       try {
         final file = File(localPdfPath!);

@@ -508,13 +508,8 @@ class _QuizPageState extends State<QuizPage> {
       ];
     }
 
-    return [
-      {
-        "question": "Pertanyaan default 1",
-        "options": ["Opsi A", "Opsi B", "Opsi C", "Opsi D"],
-        "correctAnswer": 0,
-      },
-    ];
+    // ❌ No quiz available for this module/section
+    return [];
   }
 
   Future<void> _submitXPToBackend() async {
@@ -606,6 +601,58 @@ class _QuizPageState extends State<QuizPage> {
   Widget build(BuildContext context) {
     final questions = _getQuestions();
     final totalQuestions = questions.length;
+
+    // ❌ No questions available - show error page
+    if (totalQuestions == 0) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildProgressBar(0.0),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 80,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Quiz Tidak Tersedia',
+                          style: primaryTextStyle.copyWith(
+                            fontSize: 20,
+                            fontWeight: bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Quiz untuk modul ini belum tersedia. Silakan coba modul lain.',
+                          style: secondaryTextStyle.copyWith(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        CustomFilledButton(
+                          title: "Kembali",
+                          variant: ButtonColorVariant.blue,
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (showResult) {
       return _buildResultPage(totalQuestions);
