@@ -3,7 +3,7 @@ import 'package:mintrix/core/api/api_client.dart';
 import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/widgets/buttons.dart';
 import 'package:mintrix/shared/theme.dart';
-import 'quiz_page.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ResumePage extends StatefulWidget {
   final String moduleId;
@@ -107,12 +107,7 @@ class _ResumePageState extends State<ResumePage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => QuizPage(
-              moduleId: widget.moduleId,
-              sectionId: widget.sectionId,
-              subSection: widget.subSection,
-              xpReward: widget.xpReward, // ✅ Pass XP to QuizPage
-            ),
+            builder: (_) => ResumeResultPage(xpReward: widget.xpReward),
           ),
         );
       }
@@ -238,6 +233,152 @@ class _ResumePageState extends State<ResumePage> {
           ),
           IconButton(
             icon: const Icon(Icons.local_fire_department, color: Colors.grey),
+            onPressed: null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ✅ New Result Page after Resume Submission
+class ResumeResultPage extends StatelessWidget {
+  final int xpReward;
+
+  const ResumeResultPage({super.key, required this.xpReward});
+
+  @override
+  Widget build(BuildContext context) {
+    String personalityType = "Investigatif";
+    String personalityDesc =
+        "Artinya, kamu seorang pemikir alami yang suka menganalisis dan memecahkan masalah. Cocok menjadi Ahli Matematika, Programmer, atau Apoteker.";
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildProgressBar(context),
+            const SizedBox(height: 8),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 18,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2B8DD8).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  xpReward == 80
+                      ? "Runtunan telah terbuka!"
+                      : "🔄 Replay Selesai!",
+                  style: bluePrimaryTextStyle.copyWith(
+                    fontSize: 14,
+                    fontWeight: semiBold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    CachedNetworkImage(
+                      imageUrl:
+                          'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846602/character14_tdcjvv.png',
+                      width: 150,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      "Tipe kepribadianmu adalah $personalityType.",
+                      textAlign: TextAlign.center,
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 15,
+                        fontWeight: bold,
+                      ),
+                    ),
+                    Text(
+                      personalityDesc,
+                      textAlign: TextAlign.center,
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 15,
+                        fontWeight: regular,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Column(
+                      children: [
+                        Icon(
+                          Icons.add_circle,
+                          color: xpReward == 80
+                              ? const Color(0xFF2B8DD8)
+                              : Colors.orange,
+                          size: 32,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          "Total XP",
+                          style: secondaryTextStyle.copyWith(
+                            fontSize: 14,
+                            fontWeight: medium,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "$xpReward",
+                          style: primaryTextStyle.copyWith(
+                            fontSize: 22,
+                            fontWeight: bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    CustomFilledButton(
+                      title: "Selanjutnya",
+                      variant: ButtonColorVariant.blue,
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.black),
+            onPressed: () => Navigator.pop(context),
+          ),
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: LinearProgressIndicator(
+                value: 1.0,
+                backgroundColor: const Color(0xFFE5E5E5),
+                valueColor: AlwaysStoppedAnimation<Color>(bluePrimaryColor),
+                minHeight: 12,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.local_fire_department, color: Colors.orange),
             onPressed: null,
           ),
         ],
