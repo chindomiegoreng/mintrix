@@ -13,14 +13,29 @@ import 'package:shimmer/shimmer.dart';
 
 class VideoUrlCache {
   static final Map<String, String> _cache = {};
+  static final Map<String, DateTime> _cacheTime = {};
+  static const Duration _cacheExpiry = Duration(hours: 6); // Cache selama 6 jam
 
-  static String? get(String youtubeUrl) => _cache[youtubeUrl];
+  static String? get(String youtubeUrl) {
+    final cachedTime = _cacheTime[youtubeUrl];
+    if (cachedTime != null && DateTime.now().difference(cachedTime) < _cacheExpiry) {
+      return _cache[youtubeUrl];
+    }
+    // Cache expired, hapus
+    _cache.remove(youtubeUrl);
+    _cacheTime.remove(youtubeUrl);
+    return null;
+  }
 
   static void set(String youtubeUrl, String directUrl) {
     _cache[youtubeUrl] = directUrl;
+    _cacheTime[youtubeUrl] = DateTime.now();
   }
 
-  static void clear() => _cache.clear();
+  static void clear() {
+    _cache.clear();
+    _cacheTime.clear();
+  }
 }
 
 class VideoPage extends StatefulWidget {
@@ -55,15 +70,26 @@ class _VideoPageState extends State<VideoPage> {
   VideoPlayerController? _preloadedController;
   String? _errorMessage;
   final StreakService _streakService = StreakService();
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
 
   @override
   void initState() {
     super.initState();
+    // ✅ Langsung preload tanpa delay
     _preloadVideo();
   }
 
-  /// ✅ Preload video dengan caching mechanism
+  /// ✅ Optimized preload dengan aggressive strategy
   Future<void> _preloadVideo() async {
+    if (_retryCount >= _maxRetries) {
+      setState(() {
+        _errorMessage = 'Gagal memuat video setelah $_maxRetries kali percobaan';
+        isLoadingVideo = false;
+      });
+      return;
+    }
+
     setState(() {
       isLoadingVideo = true;
       _errorMessage = null;
@@ -72,31 +98,35 @@ class _VideoPageState extends State<VideoPage> {
     try {
       String? url;
 
-      // Cek cache terlebih dahulu
+      // ✅ Step 1: Cek cache dulu (super fast)
       url = VideoUrlCache.get(widget.videoUrl);
 
       if (url == null) {
-        // Jika tidak ada di cache, fetch dari YouTube
-        print('🔄 Fetching YouTube URL...');
-        url = await getYoutubeDirectUrl(widget.videoUrl);
+        // ✅ Step 2: Fetch dengan timeout lebih pendek untuk responsiveness
+        print('🔄 Fetching YouTube URL... (attempt ${_retryCount + 1})');
+        
+        url = await getYoutubeDirectUrl(widget.videoUrl).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            throw Exception('Timeout saat mengambil URL video');
+          },
+        );
 
         if (url != null && url.isNotEmpty) {
-          // Simpan ke cache
           VideoUrlCache.set(widget.videoUrl, url);
           print('✅ URL cached successfully');
         }
       } else {
-        print('⚡ URL loaded from cache');
+        print('⚡ URL loaded from cache (instant)');
       }
 
       if (!mounted) return;
 
-      // Validasi URL
       if (url == null || url.isEmpty) {
         throw Exception('URL video tidak valid');
       }
 
-      // Initialize video controller di background
+      // ✅ Step 3: Initialize controller dengan optimization
       print('🎬 Initializing video controller...');
       _preloadedController = VideoPlayerController.networkUrl(
         Uri.parse(url),
@@ -104,11 +134,14 @@ class _VideoPageState extends State<VideoPage> {
           mixWithOthers: true,
           allowBackgroundPlayback: false,
         ),
+        httpHeaders: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
       );
 
-      // Initialize controller dengan timeout
+      // ✅ Initialize dengan timeout optimal
       await _preloadedController!.initialize().timeout(
-        const Duration(seconds: 15),
+        const Duration(seconds: 12),
         onTimeout: () {
           throw Exception('Timeout saat memuat video');
         },
@@ -120,21 +153,51 @@ class _VideoPageState extends State<VideoPage> {
       setState(() {
         directVideoUrl = url;
         isLoadingVideo = false;
+        _retryCount = 0; // Reset retry counter on success
       });
     } catch (e) {
-      print('❌ Error: $e');
+      print('❌ Error (attempt ${_retryCount + 1}): $e');
+      _retryCount++;
+      
       if (!mounted) return;
+
+      // ✅ Auto-retry untuk network errors
+      if (_retryCount < _maxRetries && 
+          (e.toString().contains('Timeout') || 
+           e.toString().contains('Network') ||
+           e.toString().contains('Connection'))) {
+        print('🔄 Auto-retrying in 2 seconds...');
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) {
+          _preloadVideo(); // Recursive retry
+        }
+        return;
+      }
+
       setState(() {
         isLoadingVideo = false;
-        _errorMessage = 'Gagal memuat video: ${e.toString()}';
+        _errorMessage = _retryCount >= _maxRetries 
+            ? 'Gagal memuat video setelah $_maxRetries percobaan'
+            : 'Gagal memuat video: ${e.toString()}';
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal memuat video: $e'),
-          action: SnackBarAction(label: 'Retry', onPressed: _preloadVideo),
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_errorMessage!),
+            duration: const Duration(seconds: 4),
+            action: _retryCount < _maxRetries
+                ? SnackBarAction(
+                    label: 'Retry',
+                    onPressed: () {
+                      _retryCount = 0;
+                      _preloadVideo();
+                    },
+                  )
+                : null,
+          ),
+        );
+      }
     }
   }
 
@@ -143,7 +206,13 @@ class _VideoPageState extends State<VideoPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Video belum siap, coba lagi.'),
-          action: SnackBarAction(label: 'Retry', onPressed: _preloadVideo),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () {
+              _retryCount = 0;
+              _preloadVideo();
+            },
+          ),
         ),
       );
       return;
@@ -156,6 +225,7 @@ class _VideoPageState extends State<VideoPage> {
         builder: (_) => VideoPlayerPage(
           videoController: _preloadedController!,
           videoUrl: directVideoUrl!,
+          onVideoComplete: onVideoComplete,
         ),
       ),
     );
@@ -204,24 +274,31 @@ class _VideoPageState extends State<VideoPage> {
       print('🔥 Streak updated after video completion!');
     }
 
+    // Set video as watched
+    if (mounted) {
+      setState(() => isWatched = true);
+    }
+
     // Navigasi setelah video selesai
     if (_isModule2Section1()) {
-      Navigator.pushNamed(context, '/build-cv');
+      if (mounted) Navigator.pushNamed(context, '/build-cv');
     } else if (widget.moduleId != null &&
         widget.sectionId != null &&
         widget.subSection != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResumePage(
-            moduleId: widget.moduleId!,
-            sectionId: widget.sectionId!,
-            subSection: widget.subSection!,
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ResumePage(
+              moduleId: widget.moduleId!,
+              sectionId: widget.sectionId!,
+              subSection: widget.subSection!,
+            ),
           ),
-        ),
-      );
+        );
+      }
     } else {
-      Navigator.pushNamed(context, '/quizPage');
+      if (mounted) Navigator.pushNamed(context, '/quizPage');
     }
   }
 
@@ -264,8 +341,19 @@ class _VideoPageState extends State<VideoPage> {
                           color: Colors.grey.shade400,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Center(
-                          child: CircularProgressIndicator(color: Colors.white),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircularProgressIndicator(color: Colors.white),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Memuat video${_retryCount > 0 ? " (retry $_retryCount)" : ""}...',
+                              style: whiteTextStyle.copyWith(
+                                fontSize: 12,
+                                fontWeight: medium,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     )
@@ -294,7 +382,10 @@ class _VideoPageState extends State<VideoPage> {
                           ),
                           const SizedBox(height: 4),
                           ElevatedButton(
-                            onPressed: _preloadVideo,
+                            onPressed: () {
+                              _retryCount = 0;
+                              _preloadVideo();
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(
@@ -374,11 +465,13 @@ class _VideoPageState extends State<VideoPage> {
 class VideoPlayerPage extends StatefulWidget {
   final VideoPlayerController videoController;
   final String videoUrl;
+  final VoidCallback onVideoComplete;
 
   const VideoPlayerPage({
     super.key,
     required this.videoController,
     required this.videoUrl,
+    required this.onVideoComplete,
   });
 
   @override
@@ -387,12 +480,12 @@ class VideoPlayerPage extends StatefulWidget {
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
   late ChewieController _chewieController;
+  double _sliderValue = 0.0;
+  bool _isSliding = false;
 
   @override
   void initState() {
     super.initState();
-    // ✅ Langsung buat ChewieController tanpa async
-    // Controller video sudah ready dari parent
     _chewieController = ChewieController(
       videoPlayerController: widget.videoController,
       autoPlay: true,
@@ -418,6 +511,148 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         );
       },
     );
+  }
+
+  Future<void> _showCompletionDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: bluePrimaryColor,
+                  size: 48,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Konfirmasi Pemahaman",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 20,
+                    fontWeight: semiBold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "Yakin telah paham dengan materi ini?",
+                  style: secondaryTextStyle.copyWith(
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    // ❌ BELUM
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: bluePrimaryColor,
+                            width: 1.4,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                        ),
+                        child: Text(
+                          "Belum",
+                          style: bluePrimaryTextStyle.copyWith(
+                            fontSize: 15,
+                            fontWeight: semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // ✅ YAKIN
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: bluePrimaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                        ),
+                        child: Text(
+                          "Yakin",
+                          style: whiteTextStyle.copyWith(
+                            fontSize: 15,
+                            fontWeight: semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      widget.videoController.pause();
+      // ✅ Hanya update streak, tidak navigasi otomatis
+      await _updateStreakOnly();
+      if (mounted) {
+        // ✅ Kembali ke halaman video dengan status watched = true
+        Navigator.pop(context, true);
+      }
+    } else {
+      // Reset slider jika user membatalkan
+      setState(() {
+        _sliderValue = 0.0;
+        _isSliding = false;
+      });
+    }
+  }
+
+  /// ✅ Update streak tanpa navigasi
+  Future<void> _updateStreakOnly() async {
+    print('✅ Video completed!');
+    print('🎮 Video watched, updating streak...');
+    
+    final streakService = StreakService();
+    final streakUpdated = await streakService.updateStreak();
+
+    if (streakUpdated && mounted) {
+      context.read<ProfileBloc>().add(RefreshProfile());
+      print('🔥 Streak updated after video completion!');
+    }
+  }
+
+  void _onSlideUpdate(double value) {
+    setState(() {
+      _sliderValue = value;
+      _isSliding = value > 0;
+    });
+
+    // Jika slider sudah di posisi paling kanan
+    if (value >= 0.95) {
+      _showCompletionDialog();
+    }
   }
 
   @override
@@ -448,12 +683,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
           ),
           title: const Text("Video", style: TextStyle(color: Colors.white)),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.check_circle, color: Colors.white),
-              onPressed: () => Navigator.pop(context, true),
-            ),
-          ],
         ),
         body: Column(
           children: [
@@ -467,6 +696,121 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             ),
             const Spacer(flex: 2),
           ],
+        ),
+        bottomNavigationBar: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade900,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: _isSliding ? Colors.blue.shade400 : Colors.grey.shade600,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _isSliding 
+                            ? 'Geser ke kanan untuk selesai' 
+                            : 'Sudah paham? Geser untuk selesai',
+                        style: TextStyle(
+                          color: _isSliding ? Colors.white : Colors.grey.shade400,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Stack(
+                  children: [
+                    // Background track
+                    Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade800,
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                    ),
+                    // Progress indicator
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 100),
+                      height: 56,
+                      width: MediaQuery.of(context).size.width * 0.88 * _sliderValue,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade700,
+                            Colors.blue.shade400,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                    ),
+                    // Slider
+                    GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        final box = context.findRenderObject() as RenderBox;
+                        final localPosition = box.globalToLocal(details.globalPosition);
+                        final value = (localPosition.dx / box.size.width).clamp(0.0, 1.0);
+                        _onSlideUpdate(value);
+                      },
+                      onHorizontalDragEnd: (details) {
+                        if (_sliderValue < 0.95) {
+                          setState(() {
+                            _sliderValue = 0.0;
+                            _isSliding = false;
+                          });
+                        }
+                      },
+                      child: Container(
+                        height: 56,
+                        alignment: Alignment.centerLeft,
+                        padding: EdgeInsets.only(
+                          left: (MediaQuery.of(context).size.width * 0.88 * _sliderValue)
+                              .clamp(0.0, MediaQuery.of(context).size.width * 0.88 - 56),
+                        ),
+                        child: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward,
+                            color: _isSliding ? Colors.blue.shade700 : Colors.grey.shade600,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
