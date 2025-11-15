@@ -230,31 +230,27 @@ class _StorePageState extends State<StorePage>
   }
 
   Widget buildPowerUpTab() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          spacing: 16,
-          children: [
-            StoreItemCard2(
-              image: "assets/images/store_3streak.png",
-              title: "3 Pembeku Streak",
-              price: "25",
-            ),
-            StoreItemCard2(
-              image: "assets/images/store_3xp.png",
-              title: "3 Mantra XP",
-              price: "25",
-            ),
-            StoreItemCard2(
-              image: "assets/images/store_3streak.png",
-              title: "3 Pembeku Streak",
-              price: "25",
-            ),
-          ],
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 8),
+      children: [
+        StoreItemCard2(
+          image: "assets/images/store_3streak.png",
+          title: "3 Pembeku Streak",
+          price: "25",
         ),
-      ),
+        const SizedBox(height: 16),
+        StoreItemCard2(
+          image: "assets/images/store_3xp.png",
+          title: "3 Mantra XP",
+          price: "25",
+        ),
+        const SizedBox(height: 16),
+        StoreItemCard2(
+          image: "assets/images/store_3streak.png",
+          title: "3 Pembeku Streak",
+          price: "25",
+        ),
+      ],
     );
   }
 
