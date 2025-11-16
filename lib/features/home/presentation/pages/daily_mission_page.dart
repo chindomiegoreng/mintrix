@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
 import 'package:mintrix/features/ai/presentation/pages/ai_page.dart';
+import 'package:mintrix/features/profile/presentation/pages/settings_connect.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
-
-enum MissionStatus { notStarted, inProgress, completed }
 
 class DailyMissionPage extends StatefulWidget {
   const DailyMissionPage({super.key});
@@ -13,98 +15,330 @@ class DailyMissionPage extends StatefulWidget {
 }
 
 class _DailyMissionPageState extends State<DailyMissionPage> {
-  MissionStatus _dinoMissionStatus = MissionStatus.notStarted;
-  MissionStatus _hobbyMissionStatus = MissionStatus.notStarted;
-  MissionStatus _connectMissionStatus = MissionStatus.notStarted;
+  final ApiClient _apiClient = ApiClient();
 
-  void _updateMissionStatus(String mission) {
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  // Mission data
+  bool _ajakNgobrolDino = false;
+  bool _lakukanHobimuHariIni = false;
+  bool _hubungkanAkunmuDenganOrangTua = false;
+  int _currentPoint = 0;
+  String _lastResetDaily = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchMissionData();
+  }
+
+  // ======================================
+  // FETCH MISSION DATA
+  // ======================================
+  Future<void> _fetchMissionData() async {
     setState(() {
-      switch (mission) {
-        case 'dino':
-          if (_dinoMissionStatus == MissionStatus.notStarted) {
-            _dinoMissionStatus = MissionStatus.inProgress;
-          } else if (_dinoMissionStatus == MissionStatus.inProgress) {
-            _dinoMissionStatus = MissionStatus.completed;
-          }
-          break;
-
-        case 'hobby':
-          if (_hobbyMissionStatus == MissionStatus.notStarted) {
-            _hobbyMissionStatus = MissionStatus.inProgress;
-          } else if (_hobbyMissionStatus == MissionStatus.inProgress) {
-            _hobbyMissionStatus = MissionStatus.completed;
-          }
-          break;
-
-        case 'connect':
-          if (_connectMissionStatus == MissionStatus.notStarted) {
-            _connectMissionStatus = MissionStatus.inProgress;
-          } else if (_connectMissionStatus == MissionStatus.inProgress) {
-            _connectMissionStatus = MissionStatus.completed;
-          }
-          break;
-      }
+      _isLoading = true;
+      _errorMessage = null;
     });
-  }
 
-  double _calculateProgress() {
-    int completedCount = 0;
-    if (_dinoMissionStatus == MissionStatus.completed) completedCount++;
-    if (_hobbyMissionStatus == MissionStatus.completed) completedCount++;
-    if (_connectMissionStatus == MissionStatus.completed) completedCount++;
+    try {
+      final response = await _apiClient.get(
+        ApiEndpoints.mission,
+        requiresAuth: true,
+      );
 
-    return completedCount / 3; // total 3 misi
-  }
+      if (response['data'] != null) {
+        final missionData = response['data'];
 
-  Widget _buildMissionButton(String mission, MissionStatus status) {
-    switch (status) {
-      case MissionStatus.notStarted:
-        return ElevatedButton(
-          onPressed: () {
-            if (mission == 'dino') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AIPage()),
-              );
-            }
-            _updateMissionStatus(mission);
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff4DD4E8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-          ),
-          child: const Text("Mulai", style: TextStyle(color: Colors.white)),
-        );
-
-      case MissionStatus.inProgress:
-        return ElevatedButton(
-          onPressed: () => _updateMissionStatus(mission),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xff4DD4E8),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          ),
-          child: const Text("Selesai", style: TextStyle(color: Colors.white)),
-        );
-
-      case MissionStatus.completed:
-        return const Icon(Icons.check_circle, color: Colors.green, size: 28);
+        setState(() {
+          _ajakNgobrolDino = missionData['ajakNgobrolDino'] ?? false;
+          _lakukanHobimuHariIni = missionData['lakukanHobimuHariIni'] ?? false;
+          _hubungkanAkunmuDenganOrangTua =
+              missionData['hubungkanAkunmuDenganOrangTua'] ?? false;
+          _currentPoint = missionData['point'] ?? 0;
+          _lastResetDaily = missionData['lastResetDailyWIB'] ?? '';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Gagal memuat data misi: $e';
+      });
     }
   }
 
+  // ======================================
+  // UPDATE MISSION STATUS
+  // ======================================
+  Future<void> _updateMissionStatus(String missionType) async {
+    try {
+      Map<String, dynamic> body = {};
+      int pointBefore = _currentPoint;
+
+      switch (missionType) {
+        case 'dino':
+          body = {'ajakNgobrolDino': true};
+          break;
+        case 'hobby':
+          body = {'lakukanHobimuHariIni': true};
+          break;
+        case 'connect':
+          body = {'hubungkanAkunmuDenganOrangTua': true};
+          break;
+      }
+
+      final response = await _apiClient.patch(
+        ApiEndpoints.mission,
+        body: body,
+        requiresAuth: true,
+      );
+
+      if (response['data'] != null) {
+        final updatedMission = response['data'];
+        int pointAfter = updatedMission['point'] ?? 0;
+        int pointsAdded = pointAfter - pointBefore;
+
+        setState(() {
+          _ajakNgobrolDino = updatedMission['ajakNgobrolDino'] ?? false;
+          _lakukanHobimuHariIni =
+              updatedMission['lakukanHobimuHariIni'] ?? false;
+          _hubungkanAkunmuDenganOrangTua =
+              updatedMission['hubungkanAkunmuDenganOrangTua'] ?? false;
+          _currentPoint = updatedMission['point'] ?? 0;
+        });
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Misi berhasil diselesaikan! 🎉 +$pointsAdded poin'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menyelesaikan misi: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // ==============================================================
+  // ⭐ POPUP KONFIRMASI – khusus "Lakukan hobimu hari ini"
+  // ==============================================================
+  Future<void> _showConfirmHobbyDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Konfirmasi",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 20,
+                    fontWeight: semiBold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Text(
+                  "Sudah melakukan hobimu hari ini?",
+                  style: secondaryTextStyle.copyWith(fontSize: 16),
+                  textAlign: TextAlign.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          side:
+                              const BorderSide(color: Color(0xff4DD4E8), width: 1.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          "Belum",
+                          style: bluePrimaryTextStyle.copyWith(
+                            fontSize: 15,
+                            fontWeight: semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await _updateMissionStatus('hobby');
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff4DD4E8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: Text(
+                          "Ya",
+                          style: whiteTextStyle.copyWith(
+                            fontSize: 15,
+                            fontWeight: semiBold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ==============================================================
+  // BUTTON MISI - DENGAN SINKRONISASI KE AI PAGE & SETTINGS
+  // ==============================================================
+  Widget _buildMissionButton(String mission, bool isCompleted) {
+    if (isCompleted) {
+      return const Icon(Icons.check_circle, color: Colors.green, size: 28);
+    }
+
+    return ElevatedButton(
+      onPressed: () async {
+        // 🔥 MISI 1: Ajak Ngobrol Dino
+        if (mission == 'dino') {
+          // Navigasi ke AI Page dan tunggu hasil
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AIPage(
+                showAppBar: true,
+                // AIPage akan otomatis load chat terakhir atau buat baru
+              ),
+            ),
+          ).then((_) {
+            // 🔥 Setelah kembali, update status misi
+            _updateMissionStatus('dino');
+          });
+          return;
+        }
+
+        // 🔥 MISI 2: Lakukan Hobimu Hari Ini
+        if (mission == 'hobby') {
+          await _showConfirmHobbyDialog();
+          return;
+        }
+
+        // 🔥 MISI 3: Hubungkan Akunmu dengan Orang Tua
+        if (mission == 'connect') {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const SettingsConnectPage(),
+            ),
+          ).then((_) {
+            // 🔥 Setelah kembali, update status misi
+            _updateMissionStatus('connect');
+          });
+          return;
+        }
+
+        // Fallback untuk misi lain (jika ada)
+        await _updateMissionStatus(mission);
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xff4DD4E8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      ),
+      child: Text(
+        "Mulai",
+        style: whiteTextStyle.copyWith(fontSize: 14, fontWeight: semiBold),
+      ),
+    );
+  }
+
+  // ==============================================================
+  // MAIN UI
+  // ==============================================================
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg_daily_mission.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: const Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg_daily_mission.png'),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  _errorMessage!,
+                  style: primaryTextStyle.copyWith(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _fetchMissionData,
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final double progress = _calculateProgress();
 
     return Scaffold(
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/bg_daily_mission.png'),
@@ -115,180 +349,167 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
           child: Column(
             children: [
               Expanded(
-                child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // === Header ===
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: const Text(
-                                  "September",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 16,
-                                    color: Colors.black,
+                child: RefreshIndicator(
+                  onRefresh: _fetchMissionData,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // HEADER
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    "November",
+                                    style: primaryTextStyle.copyWith(
+                                      fontWeight: medium,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 12),
+                                const SizedBox(height: 12),
+                                Text(
+                                  "Misi Harian",
+                                  style: primaryTextStyle.copyWith(
+                                    fontSize: 28,
+                                    fontWeight: bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star,
+                                        color: Colors.orange, size: 18),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "$_currentPoint POIN",
+                                      style: secondaryTextStyle.copyWith(
+                                        fontSize: 16,
+                                        fontWeight: semiBold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            CachedNetworkImage(
+                              imageUrl:
+                                  'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846605/character15_pet4at.png',
+                              width: 100,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // PROGRESS
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
                               Text(
-                                "Misi Harian",
-                                style: primaryTextStyle.copyWith(
-                                  fontSize: 28,
-                                  fontWeight: bold,
+                                "${(progress * 100).toInt()}% Selesai",
+                                style: secondaryTextStyle.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: semiBold,
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.access_time_rounded,
-                                    color: Color(0xff6B7280),
-                                    size: 18,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    "20 HARI",
-                                    style: secondaryTextStyle.copyWith(
-                                        fontSize: 16),
-                                  ),
-                                ],
+                              _buildProgressBarWithCheckpoints(progress),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // TITLE MISI
+                        Row(
+                          children: [
+                            Text(
+                              "Misi Harian",
+                              style: primaryTextStyle.copyWith(
+                                fontSize: 20,
+                                fontWeight: bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              _lastResetDaily.isNotEmpty
+                                  ? _lastResetDaily
+                                  : 'Hari ini',
+                              style: bluePrimaryTextStyle.copyWith(
+                                fontWeight: semiBold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // LIST MISI
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xffE0E7FF).withOpacity(0.5),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              _buildMissionItem(
+                                title: "Ajak ngobrol dino",
+                                trailing:
+                                    _buildMissionButton('dino', _ajakNgobrolDino),
+                              ),
+                              const Divider(height: 24),
+                              _buildMissionItem(
+                                title: "Lakukan hobimu hari ini",
+                                trailing: _buildMissionButton(
+                                    'hobby', _lakukanHobimuHariIni),
+                              ),
+                              const Divider(height: 24),
+                              _buildMissionItem(
+                                title: "Hubungkan akunmu dengan orang tua",
+                                trailing: _buildMissionButton(
+                                    'connect', _hubungkanAkunmuDenganOrangTua),
                               ),
                             ],
                           ),
-                          Flexible(
-                            child: Image.asset(
-                              'assets/images/dino_daily_mission.png',
-                              width: 150,
-                              height: 150,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // === Progress Bar ===
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              "${(progress * 100).toInt()}% Selesai",
-                              style: secondaryTextStyle.copyWith(
-                                fontSize: 12,
-                                fontWeight: semiBold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            _buildProgressBarWithCheckpoints(progress),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      // === Mission List ===
-                      Row(
-                        children: [
-                          Text(
-                            "Misi Harian",
-                            style: primaryTextStyle.copyWith(
-                              fontSize: 20,
-                              fontWeight: bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Icon(
-                            Icons.access_time,
-                            color: Color(0xff4DD4E8),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "6 JAM",
-                            style: bluePrimaryTextStyle.copyWith(
-                              fontWeight: semiBold,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 20,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xffE0E7FF).withOpacity(0.5),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            _buildMissionItem(
-                              title: "Ajak ngobrol dino",
-                              trailing: _buildMissionButton(
-                                'dino',
-                                _dinoMissionStatus,
-                              ),
-                            ),
-                            const Divider(height: 24),
-                            _buildMissionItem(
-                              title: "Lakukan hobimu hari ini",
-                              trailing: _buildMissionButton(
-                                'hobby',
-                                _hobbyMissionStatus,
-                              ),
-                            ),
-                            const Divider(height: 24),
-                            _buildMissionItem(
-                              title: "Hubungkan akunmu dengan orang tua",
-                              trailing: _buildMissionButton(
-                                'connect',
-                                _connectMissionStatus,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-              // === Tombol Kembali di bawah ===
+              // BUTTON KEMBALI
               Container(
                 width: double.infinity,
                 padding:
@@ -306,13 +527,24 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
     );
   }
 
+  // ==============================================================
+  // PROGRESS BAR
+  // ==============================================================
+  double _calculateProgress() {
+    int completedCount = 0;
+    if (_ajakNgobrolDino) completedCount++;
+    if (_lakukanHobimuHariIni) completedCount++;
+    if (_hubungkanAkunmuDenganOrangTua) completedCount++;
+
+    return completedCount / 3;
+  }
+
   Widget _buildProgressBarWithCheckpoints(double progress) {
     return SizedBox(
       height: 50,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // background
           Positioned.fill(
             child: Align(
               alignment: Alignment.center,
@@ -325,8 +557,6 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
               ),
             ),
           ),
-
-          // progress
           Positioned.fill(
             child: Align(
               alignment: Alignment.centerLeft,
@@ -339,20 +569,11 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
                       colors: [Color(0xff4DD4E8), Color(0xff3BBDD4)],
                     ),
                     borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xff4DD4E8).withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
                 ),
               ),
             ),
           ),
-
-          // checkpoints
           Positioned.fill(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -403,5 +624,11 @@ class _DailyMissionPageState extends State<DailyMissionPage> {
         trailing,
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _apiClient.dispose();
+    super.dispose();
   }
 }

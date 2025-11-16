@@ -1,15 +1,28 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/shared/theme.dart';
+import 'package:mintrix/widgets/game_header.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mintrix/features/game/presentation/pages/level_journey_page.dart';
 import 'package:mintrix/widgets/buttons.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/features/navigation/presentation/bloc/navigation_state.dart';
 
 class GameDetailPage extends StatefulWidget {
   final String sectionTitle;
   final double progress;
+  final String moduleId;
+  final String sectionId;
 
   const GameDetailPage({
     super.key,
     required this.sectionTitle,
     required this.progress,
+    required this.moduleId,
+    required this.sectionId,
   });
 
   @override
@@ -19,135 +32,267 @@ class GameDetailPage extends StatefulWidget {
 class _GameDetailPageState extends State<GameDetailPage> {
   final PageController _controller = PageController();
   int _currentPage = 0;
+  Map<String, bool> _lessonCompletionStatus = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLessonProgress();
+  }
+
+  Future<void> _loadLessonProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _lessonCompletionStatus = {
+        "modul1_bagian1_0": prefs.getBool("modul1_bagian1_0") ?? false,
+        "modul1_bagian1_1": prefs.getBool("modul1_bagian1_1") ?? false,
+        "modul1_bagian1_2": prefs.getBool("modul1_bagian1_2") ?? false,
+        "modul2_bagian1_0": prefs.getBool("modul2_bagian1_0") ?? false,
+      };
+    });
+  }
+
+  String _getSectionTitle() {
+    if (widget.moduleId == "modul1") {
+      return "Bagian 1";
+    } else if (widget.moduleId == "modul2") {
+      return "Bagian 1";
+    }
+    return "Bagian 1";
+  }
+
+  bool _isLessonUnlocked(int currentIndex) {
+    if (currentIndex == 0) return true;
+
+    int previousIndex = currentIndex - 1;
+    String previousKey =
+        "${widget.moduleId}_${widget.sectionId}_$previousIndex";
+
+    return _lessonCompletionStatus[previousKey] ?? false;
+  }
+
+  List<Map<String, dynamic>> _getLessons() {
+    if (widget.moduleId == "modul2" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "title": "Persiapan Karir",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846591/character2_h9dbhr.png",
+          "locked": !_isLessonUnlocked(0),
+          "lessonIndex": 0,
+        },
+      ];
+    }
+
+    if (widget.moduleId == "modul1" && widget.sectionId == "bagian1") {
+      return [
+        {
+          "title": "Mencari Hal Yang Kamu Suka",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
+          "locked": !_isLessonUnlocked(0),
+          "lessonIndex": 0,
+        },
+        {
+          "title": "Mengatur Waktu",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
+          "locked": !_isLessonUnlocked(1),
+          "lessonIndex": 1,
+        },
+        {
+          "title": "Berpikir Positif",
+          "dinoImage":
+              "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846604/character13_r0wia5.png",
+          "locked": !_isLessonUnlocked(2),
+          "lessonIndex": 2,
+        },
+      ];
+    }
+    return [
+      {
+        "title": "Coming Soon",
+        "dinoImage": "assets/images/dino_daily_mission.png",
+        "locked": true,
+        "lessonIndex": 0,
+      },
+    ];
+  }
+
+  bool _showCarousel() {
+    return _getLessons().length > 1;
+  }
+
+  bool _isCurrentLessonLocked() {
+    final lessons = _getLessons();
+    if (!_showCarousel()) {
+      return lessons[0]["locked"];
+    }
+    return lessons[_currentPage]["locked"];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const GameHeader(),
-            SectionProgressCard(
-              title: "Bagian 1",
-              subtitle: widget.sectionTitle,
-              progress: widget.progress,
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                onPageChanged: (index) => setState(() => _currentPage = index),
-                children: const [
-                  LessonCard(
-                    title: "Mencari Hal Yang Kamu Suka",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: false,
+    final lessons = _getLessons();
+    final showCarousel = _showCarousel();
+    final isLocked = _isCurrentLessonLocked();
+
+    return BlocBuilder<NavigationBloc, NavigationState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const GameHeaderWidget(),
+                SectionProgressCard(
+                  title: _getSectionTitle(),
+                  subtitle: widget.sectionTitle,
+                  progress: widget.progress,
+                ),
+                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: showCarousel
+                      ? PageView.builder(
+                          controller: _controller,
+                          onPageChanged: (index) =>
+                              setState(() => _currentPage = index),
+                          itemCount: lessons.length,
+                          itemBuilder: (context, index) {
+                            final lesson = lessons[index];
+                            return LessonCard(
+                              title: lesson["title"],
+                              dinoImage: lesson["dinoImage"],
+                              locked: lesson["locked"],
+                            );
+                          },
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                          child: LessonCard(
+                            title: lessons[0]["title"],
+                            dinoImage: lessons[0]["dinoImage"],
+                            locked: lessons[0]["locked"],
+                          ),
+                        ),
+                ),
+                if (showCarousel) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      lessons.length,
+                      (index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        height: 10,
+                        width: 10,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index
+                              ? Colors.lightBlue
+                              : Colors.grey.shade300,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
                   ),
-                  LessonCard(
-                    title: "Mengatur Waktu",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: false,
-                  ),
-                  LessonCard(
-                    title: "Berpikir Positif",
-                    dinoImage: "assets/images/dino_daily_mission.png",
-                    locked: true,
-                  ),
+                ] else ...[
+                  const SizedBox(height: 16),
                 ],
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                3,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  height: 10,
-                  width: 10,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index
-                        ? Colors.lightBlue
-                        : Colors.grey.shade300,
-                    shape: BoxShape.circle,
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: CustomFilledButton(
+                    title: isLocked ? "Terkunci" : "Mulai",
+                    variant: isLocked
+                        ? ButtonColorVariant.secondary
+                        : ButtonColorVariant.blue,
+                    onPressed: isLocked
+                        ? null
+                        : () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => LevelJourneyPage(
+                                  moduleId: widget.moduleId,
+                                  sectionId: widget.sectionId,
+                                  lessonIndex: showCarousel ? _currentPage : 0,
+                                ),
+                              ),
+                            );
+
+                            // Reload progress setelah kembali dari journey
+                            if (result == true) {
+                              _loadLessonProgress();
+                            }
+                          },
                   ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: CustomFilledButton(
-                title: "Mulai",
-                variant: ButtonColorVariant.blue,
-                height: 50,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LevelJourneyPage(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+          bottomNavigationBar: _buildBottomNavigationBar(context, state.index),
+        );
+      },
     );
   }
-}
 
-class GameHeader extends StatelessWidget {
-  const GameHeader({super.key});
+  Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
+    const double bottomNavHeight = 70.0;
+    const double iconSize = 28.0;
+    
+    final navItems = [
+      'assets/icons/navbar-home.svg',
+      'assets/icons/navbar-game.svg',
+      'assets/icons/navbar-ai.svg',
+      'assets/icons/navbar-leaderboard.svg',
+      'assets/icons/navbar-shop.svg',
+      'assets/icons/navbar-profile.svg',
+    ];
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    return Container(
+      height: bottomNavHeight + 10,
+      padding: const EdgeInsets.only(bottom: 9),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: bluePrimaryColor.withAlpha(100), width: 1),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const CircleAvatar(
-            radius: 22,
-            backgroundImage: AssetImage('assets/images/profile.png'),
-          ),
-          Row(
-            children: const [
-              Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "4",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          Row(
-            children: const [
-              Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-              SizedBox(width: 4),
-              Text(
-                "200",
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: List.generate(navItems.length, (index) {
+          final isActive = index == 1; // Game page is at index 1
+          return Expanded(
+            child: InkWell(
+              onTap: () {
+                // Update navigation bloc
+                context.read<NavigationBloc>().add(UpdateIndex(index));
+                
+                // Pop back to main navigation page
+                // This will allow the MainNavigationPage BlocBuilder to handle the page change
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              splashColor: bluePrimaryColor.withValues(alpha: 0.1),
+              highlightColor: bluePrimaryColor.withValues(alpha: 0.05),
+              child: Container(
+                height: double.infinity,
+                alignment: Alignment.center,
+                child: SvgPicture.asset(
+                  navItems[index],
+                  width: iconSize,
+                  height: iconSize,
+                  colorFilter: ColorFilter.mode(
+                    isActive ? bluePrimaryColor : secondaryColor,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
-            ],
-          ),
-          const Text(
-            "XP 520",
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
             ),
-          ),
-        ],
+          );
+        }),
       ),
     );
   }
@@ -191,44 +336,21 @@ class SectionProgressCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
+                    style: primaryTextStyle.copyWith(
                       fontSize: 16,
+                      fontWeight: medium,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Colors.lightBlue,
+                    style: bluePrimaryTextStyle.copyWith(
                       fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                      fontWeight: regular,
                     ),
                   ),
                 ],
               ),
-            ),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: CircularProgressIndicator(
-                    value: progress,
-                    strokeWidth: 6,
-                    color: Colors.lightBlue,
-                    backgroundColor: Colors.grey.shade200,
-                  ),
-                ),
-                Text(
-                  "${(progress * 100).toInt()}%",
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -276,10 +398,9 @@ class LessonCard extends StatelessWidget {
               child: Text(
                 title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: primaryTextStyle.copyWith(
                   fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
+                  fontWeight: extraBold,
                 ),
               ),
             ),
@@ -287,10 +408,12 @@ class LessonCard extends StatelessWidget {
               Center(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 60),
-                  child: Image.asset(
-                    dinoImage,
-                    height: 300,
-                    fit: BoxFit.contain,
+                  child: CachedNetworkImage(
+                    imageUrl: dinoImage,
+                    width: 220,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
                   ),
                 ),
               ),

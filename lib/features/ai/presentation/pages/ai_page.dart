@@ -1,63 +1,245 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:mintrix/features/ai/presentation/pages/ai_history_page.dart';
+import 'package:mintrix/features/ai/data/services/dino_api_service.dart';
 import 'package:mintrix/shared/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AIPage extends StatefulWidget {
   final bool showAppBar;
+  final String? titleId;
 
-  const AIPage({super.key, this.showAppBar = true});
+  const AIPage({super.key, this.showAppBar = true, this.titleId});
 
   @override
   State<AIPage> createState() => _AIPageState();
 }
 
-class _AIPageState extends State<AIPage> {
+class _AIPageState extends State<AIPage> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
+  late DinoApiService _apiService;
+  bool _isLoading = false;
+  String? _currentTitleId;
+  bool _isInitialized = false;
+
   final List<ChatMessage> _messages = [
     ChatMessage(
-      text: "Huhh, hari ini rasanya padat banget. Capek aku...",
+      text:
+          "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
       isFromDino: true,
       time: "10:30",
-    ),
-    ChatMessage(
-      text:
-          "Wah, kedengarannya capek banget, ya. Kamu udah kerja keras hari ini. Kayaknya kamu benerin butuh istirahat sebentar, deh.",
-      isFromDino: false,
-      time: "10:31",
-    ),
-    ChatMessage(
-      text:
-          "Iya, dari pagi rasanya nggak ada berhentinya. Pengen juga jam tidurnya mau ngapain biar rileks.",
-      isFromDino: true,
-      time: "10:32",
-    ),
-    ChatMessage(
-      text:
-          "Gimana kalau coba istirahat 15 menit aja, nggak usah lihat layar? Mungkin sambil dengerin musik atau makan gitu?",
-      isFromDino: false,
-      time: "10:33",
     ),
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeService();
+  }
+
+  @override
+  void didUpdateWidget(AIPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 🔥 Reload jika widget di-update
+    if (oldWidget.titleId != widget.titleId) {
+      _initializeService();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 🔥 Reload chat ketika app kembali ke foreground
+    if (state == AppLifecycleState.resumed && _isInitialized) {
+      print('🔄 App resumed, checking for chat updates...');
+      _loadLastChatOrCreateNew();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _messageController.dispose();
     super.dispose();
   }
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isNotEmpty) {
+  Future<void> _initializeService() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? '';
+    
+    if (token.isEmpty) {
+      print('❌ Token tidak ditemukan di SharedPreferences');
+      return;
+    }
+    
+    print('✅ Token ditemukan: ${token.substring(0, 20)}...');
+
+    _apiService = DinoApiService(authToken: token);
+
+    // 🔥 LOGIKA: Cek apakah ada titleId yang diberikan
+    if (widget.titleId != null) {
+      // Jika ada titleId spesifik, load chat tersebut
+      _currentTitleId = widget.titleId;
+      await _loadChatHistory();
+    } else {
+      // 🔥 Jika tidak ada titleId, coba ambil chat terakhir dari history
+      await _loadLastChatOrCreateNew();
+    }
+
+    setState(() {
+      _isInitialized = true;
+    });
+  }
+
+  // 🔥 FUNGSI: Load chat terakhir atau buat baru
+  Future<void> _loadLastChatOrCreateNew() async {
+    try {
+      print('📡 Mengambil chat history...');
+      final historyList = await _apiService.getChatTitles();
+      
+      if (historyList.isNotEmpty) {
+        // Ambil chat paling terakhir (index 0 biasanya yang terbaru)
+        final lastChat = historyList.first;
+        _currentTitleId = lastChat.id;
+        
+        print('✅ Ditemukan chat terakhir: ${lastChat.title} (ID: ${lastChat.id})');
+        
+        // Load history dari chat terakhir
+        await _loadChatHistory();
+      } else {
+        print('ℹ️ Belum ada chat sebelumnya, akan membuat chat baru saat user mengirim pesan');
+      }
+    } catch (e) {
+      print('❌ Error loading last chat: $e');
+      // Jika error, biarkan user mulai chat baru
+    }
+  }
+
+  Future<void> _loadChatHistory() async {
+    if (_currentTitleId == null) return;
+
+    try {
+      print('📡 Loading chat history untuk titleId: $_currentTitleId');
+      final history = await _apiService.getChatHistory(_currentTitleId!);
+      
+      setState(() {
+        _messages.clear();
+        
+        // 🔥 PENTING: Hanya tambahkan greeting jika tidak ada pesan
+        if (history.messages.isEmpty) {
+          _messages.add(ChatMessage(
+            text: "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
+            isFromDino: true,
+            time: TimeOfDay.now().format(context),
+          ));
+        }
+
+        // Load semua pesan dari history
+        for (var msg in history.messages) {
+          String content = msg.content;
+          if (msg.role == 'assistant') {
+            try {
+              final parsed = jsonDecode(content);
+              content = parsed['reply'] ?? content;
+            } catch (e) {
+              // If parsing fails, use original content
+            }
+          }
+
+          _messages.add(ChatMessage(
+            text: content,
+            isFromDino: msg.role == 'assistant',
+            time: TimeOfDay.now().format(context),
+          ));
+        }
+      });
+      
+      print('✅ Berhasil load ${history.messages.length} pesan dari chat history');
+    } catch (e) {
+      print('❌ Error loading chat history: $e');
+    }
+  }
+
+  void _sendMessage() async {
+    if (_messageController.text.trim().isEmpty || !_isInitialized) return;
+
+    final userMessage = _messageController.text.trim();
+    final currentTime = TimeOfDay.now().format(context);
+
+    setState(() {
+      _messages.add(
+        ChatMessage(text: userMessage, isFromDino: false, time: currentTime),
+      );
+      _isLoading = true;
+    });
+
+    _messageController.clear();
+
+    try {
+      // Create new chat title if not exists
+      if (_currentTitleId == null) {
+        final firstWords = userMessage.split(' ').take(5).join(' ');
+        final title = '$firstWords ...';
+        final chatTitle = await _apiService.createChatTitle(title);
+        _currentTitleId = chatTitle.id;
+        print('✅ Chat baru dibuat dengan ID: $_currentTitleId');
+        
+        // 🔥 Simpan titleId chat baru ke SharedPreferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_chat_title_id', _currentTitleId!);
+      }
+
+      // Send message
+      final response = await _apiService.sendMessage(_currentTitleId!, userMessage);
+
       setState(() {
         _messages.add(
           ChatMessage(
-            text: _messageController.text,
-            isFromDino: false,
+            text: response,
+            isFromDino: true,
             time: TimeOfDay.now().format(context),
           ),
         );
-        _messageController.clear();
+        _isLoading = false;
       });
+    } catch (e) {
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            text: "Maaf, terjadi kesalahan. Coba lagi nanti ya.",
+            isFromDino: true,
+            time: TimeOfDay.now().format(context),
+          ),
+        );
+        _isLoading = false;
+      });
+      print('❌ Error sending message: $e');
     }
+  }
+
+  void _startNewChat() async {
+    setState(() {
+      _currentTitleId = null;
+      _messages.clear();
+      _messages.add(
+        ChatMessage(
+          text:
+              "Halo! Saya Dino, asisten pintar dari Aplikasi Mintrix. Ada yang bisa saya bantu hari ini?",
+          isFromDino: true,
+          time: TimeOfDay.now().format(context),
+        ),
+      );
+      _isLoading = false;
+    });
+
+    _messageController.clear();
+    print('✅ Memulai chat baru');
+    
+    // 🔥 Hapus cache titleId saat mulai chat baru
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('last_chat_title_id');
   }
 
   @override
@@ -92,13 +274,16 @@ class _AIPageState extends State<AIPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.add, color: Colors.black),
+            onPressed: _startNewChat,
+            tooltip: 'Chat Baru',
+          ),
+          IconButton(
             icon: const Icon(Icons.history, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const AIHistoryPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const AIHistoryPage()),
               );
             },
           ),
@@ -109,8 +294,11 @@ class _AIPageState extends State<AIPage> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
+              itemCount: _messages.length + (_isLoading ? 1 : 0),
               itemBuilder: (context, index) {
+                if (index == _messages.length && _isLoading) {
+                  return _buildLoadingBubble();
+                }
                 final message = _messages[index];
                 return _buildMessageBubble(message);
               },
@@ -176,8 +364,25 @@ class _AIPageState extends State<AIPage> {
                     ),
                     child: IconButton(
                       icon: const Icon(
-                        Icons.mic,
+                        Icons.send,
                         color: Colors.white,
+                        size: 24,
+                      ),
+                      onPressed: _sendMessage,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xff4DD4E8).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(
+                        Icons.mic,
+                        color: Color(0xff4DD4E8),
                         size: 24,
                       ),
                       onPressed: () {},
@@ -185,6 +390,56 @@ class _AIPageState extends State<AIPage> {
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingBubble() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xffE1F5F5),
+            child: Image.asset(
+              'assets/images/dino_get_started.png',
+              width: 30,
+              height: 30,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xff4DD4E8),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Dino sedang mengetik...",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

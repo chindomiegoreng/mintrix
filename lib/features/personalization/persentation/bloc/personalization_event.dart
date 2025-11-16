@@ -1,7 +1,9 @@
-
-import 'package:mintrix/widgets/personalization_long_learning_button.dart';
+import 'package:mintrix/core/models/duration_option_model.dart';
 
 abstract class PersonalizationEvent {}
+
+class LoadDurationOptions
+    extends PersonalizationEvent {} // ✅ Event untuk load options
 
 class UpdatePersonalizationStep extends PersonalizationEvent {
   final int step;
@@ -9,7 +11,7 @@ class UpdatePersonalizationStep extends PersonalizationEvent {
 }
 
 class UpdateLearningDuration extends PersonalizationEvent {
-  final DurationOption duration;
+  final DurationOptionModel duration; // ✅ Changed type
   UpdateLearningDuration(this.duration);
 }
 

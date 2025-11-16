@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mintrix/shared/theme.dart';
@@ -64,9 +65,8 @@ class _StorePageState extends State<StorePage>
                     SvgPicture.asset("assets/icons/obsidian.svg"),
                     const SizedBox(width: 8),
                     Text(
-                      "200",
-                      style: TextStyle(
-                        color: bluePrimaryColor,
+                      "0",
+                      style: bluePrimaryTextStyle.copyWith(
                         fontSize: 16,
                         fontWeight: bold,
                       ),
@@ -75,20 +75,18 @@ class _StorePageState extends State<StorePage>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 "Toko Poin",
-                style: TextStyle(
-                  color: Color(0xff275e73),
+                style: primaryTextStyle.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: bold,
                 ),
               ),
-              const Text(
+              Text(
                 "Naik level lebih cepat!",
-                style: TextStyle(
-                  color: Color(0xff275e73),
+                style: primaryTextStyle.copyWith(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: medium,
                 ),
               ),
             ],
@@ -104,15 +102,24 @@ class _StorePageState extends State<StorePage>
           ),
         ),
         Positioned(
-          bottom: 11,
+          bottom: -113,
           left: 190,
           right: 0,
           child: SizedBox(
-            height: 140,
-            child: Image.asset(
-              "assets/images/store_dino.png",
-              fit: BoxFit.contain,
-            ),
+            // height: 140,
+            child:
+                // Image.asset(
+                //   "assets/images/store_dino.png",
+                //   fit: BoxFit.contain,
+                // ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846597/character25_ofdwly.png',
+                  // width: 350,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                ),
           ),
         ),
       ],
@@ -198,7 +205,7 @@ class _StorePageState extends State<StorePage>
                   ),
                   tabs: const [
                     Tab(text: 'Power-up'),
-                    Tab(text: 'Avatar'),
+                    Tab(text: 'Diamond'),
                     Tab(text: 'Badge'),
                   ],
                 ),
@@ -209,7 +216,7 @@ class _StorePageState extends State<StorePage>
                     controller: _tabController,
                     children: [
                       buildPowerUpTab(),
-                      buildAvatarTab(),
+                      buildDiamondTab(),
                       buildBadgeTab(),
                     ],
                   ),
@@ -223,40 +230,36 @@ class _StorePageState extends State<StorePage>
   }
 
   Widget buildPowerUpTab() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Column(
-          spacing: 16,
-          children: [
-            StoreItemCard2(
-              image: "assets/images/store_3streak.png",
-              title: "3 Pembeku Streak",
-              price: "25",
-            ),
-            StoreItemCard2(
-              image: "assets/images/store_3xp.png",
-              title: "3 Mantra XP",
-              price: "25",
-            ),
-            StoreItemCard2(
-              image: "assets/images/store_3streak.png",
-              title: "3 Pembeku Streak",
-              price: "25",
-            ),
-          ],
+    return ListView(
+      padding: const EdgeInsets.only(bottom: 8),
+      children: [
+        StoreItemCard2(
+          image: "assets/images/store_3streak.png",
+          title: "3 Pembeku Streak",
+          price: "25",
         ),
-      ),
+        const SizedBox(height: 16),
+        StoreItemCard2(
+          image: "assets/images/store_3xp.png",
+          title: "3 Mantra XP",
+          price: "25",
+        ),
+        const SizedBox(height: 16),
+        StoreItemCard2(
+          image: "assets/images/store_3streak.png",
+          title: "3 Pembeku Streak",
+          price: "25",
+        ),
+      ],
     );
   }
 
-  Widget buildAvatarTab() {
+  Widget buildDiamondTab() {
     return ListView(
       children: [
         Center(
           child: Text(
-            'Avatar Items',
+            'Diamond Items',
             style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
           ),
         ),

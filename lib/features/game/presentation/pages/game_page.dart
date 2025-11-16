@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/shared/theme.dart';
+import 'package:mintrix/widgets/game_header.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'game_detail_page.dart';
 
-class GamePage extends StatelessWidget {
+class GamePage extends StatefulWidget {
   final String userName;
   final int streak;
   final int gems;
@@ -16,93 +19,110 @@ class GamePage extends StatelessWidget {
   });
 
   @override
+  State<GamePage> createState() => _GamePageState();
+}
+
+class _GamePageState extends State<GamePage> {
+  Map<String, bool> sectionLocked = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      sectionLocked['modul1_bagian1'] = false; // Selalu terbuka
+      sectionLocked['modul1_bagian2'] =
+          (prefs.getDouble('modul1_bagian1_progress') ?? 0.0) < 1.0;
+      sectionLocked['modul1_bagian3'] =
+          (prefs.getDouble('modul1_bagian2_progress') ?? 0.0) < 1.0;
+      sectionLocked['modul2_bagian1'] = false; // Langsung terbuka
+      sectionLocked['modul2_bagian2'] =
+          (prefs.getDouble('modul2_bagian1_progress') ?? 0.0) < 1.0;
+      sectionLocked['modul2_bagian3'] =
+          (prefs.getDouble('modul2_bagian2_progress') ?? 0.0) < 1.0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 24),
-              _buildModule(context, "Modul 1", [
-                _buildSection(
-                  context,
-                  "Bagian 1",
-                  "Mencari minat dan gairah",
-                  0.2,
-                  false,
+        child: Column(
+          children: [
+            const GameHeaderWidget(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
                 ),
-                _buildSection(
-                  context,
-                  "Bagian 2",
-                  "Pemetaan bakat dan kompetensi",
-                  0.0,
-                  true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildModule(context, "Modul 1", [
+                      _buildSection(
+                        context,
+                        "Bagian 1",
+                        "Mencari minat dan gairah",
+                        sectionLocked['modul1_bagian1'] ?? false,
+                        "modul1",
+                        "bagian1",
+                      ),
+                      _buildSection(
+                        context,
+                        "Bagian 2",
+                        "Pemetaan bakat dan kompetensi",
+                        sectionLocked['modul1_bagian2'] ?? true,
+                        "modul1",
+                        "bagian2",
+                      ),
+                      _buildSection(
+                        context,
+                        "Bagian 3",
+                        "Berkomunikasi",
+                        sectionLocked['modul1_bagian3'] ?? true,
+                        "modul1",
+                        "bagian3",
+                      ),
+                    ]),
+                    const SizedBox(height: 20),
+                    _buildModule(context, "Modul 2", [
+                      _buildSection(
+                        context,
+                        "Bagian 1",
+                        "Persiapan karir",
+                        sectionLocked['modul2_bagian1'] ?? true,
+                        "modul2",
+                        "bagian1",
+                      ),
+                    ]),
+                  ],
                 ),
-                _buildSection(context, "Bagian 3", "Berkomunikasi", 0.0, true),
-              ]),
-              const SizedBox(height: 20),
-              _buildModule(context, "Modul 2", [
-                _buildSection(context, "Bagian 1", "Persiapan karir", 0.2, false),
-                _buildSection(context, "Bagian 2", "Personal branding", 0.0, true),
-                _buildSection(context, "Bagian 3", "Wawancara kerja", 0.0, true),
-              ]),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const CircleAvatar(
-          radius: 22,
-          backgroundImage: AssetImage('assets/images/profile.png'),
-        ),
-        const Spacer(),
-        const Icon(Icons.local_fire_department, color: Colors.grey, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          streak.toString(),
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const Spacer(),
-        const Icon(Icons.ac_unit, color: Colors.lightBlueAccent, size: 22),
-        const SizedBox(width: 4),
-        Text(
-          gems.toString(),
-          style: const TextStyle(
-            color: Colors.lightBlueAccent,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        const Spacer(),
-        Text(
-          "XP $xp",
-          style: const TextStyle(
-            color: Colors.green,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildModule(BuildContext context, String title, List<Widget> sections) {
+  Widget _buildModule(
+    BuildContext context,
+    String title,
+    List<Widget> sections,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: primaryTextStyle.copyWith(fontSize: 20, fontWeight: semiBold),
         ),
         const SizedBox(height: 10),
         ...sections,
@@ -114,22 +134,45 @@ class GamePage extends StatelessWidget {
     BuildContext context,
     String title,
     String subtitle,
-    double progress,
     bool locked,
+    String moduleId,
+    String sectionId,
   ) {
     return GestureDetector(
       onTap: locked
-          ? null
-          : () {
-              Navigator.push(
+          ? () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Selesaikan bagian sebelumnya terlebih dahulu!',
+                    style: whiteTextStyle.copyWith(
+                      fontSize: 14,
+                      fontWeight: medium,
+                    ),
+                  ),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            }
+          : () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => GameDetailPage(
                     sectionTitle: subtitle,
-                    progress: progress,
+                    progress:
+                        0.0, // Default value since we removed progress tracking
+                    moduleId: moduleId,
+                    sectionId: sectionId,
                   ),
                 ),
               );
+
+              // Reload progress setelah kembali dari detail page
+              if (result == true) {
+                _loadProgress();
+              }
             },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
@@ -154,18 +197,17 @@ class GamePage extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
+                    style: primaryTextStyle.copyWith(
+                      fontSize: 18,
+                      fontWeight: bold,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: const TextStyle(
-                      color: Colors.lightBlue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 16,
+                      fontWeight: semiBold,
                     ),
                   ),
                 ],
@@ -173,28 +215,7 @@ class GamePage extends StatelessWidget {
             ),
             locked
                 ? const Icon(Icons.lock, color: Colors.grey)
-                : Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 6,
-                          color: Colors.lightBlue,
-                          backgroundColor: Colors.grey.shade200,
-                        ),
-                      ),
-                      Text(
-                        "${(progress * 100).toInt()}%",
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                : const Icon(Icons.chevron_right, color: Colors.lightBlue),
           ],
         ),
       ),

@@ -1,10 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mintrix/features/leaderboard/cubit/leaderboard_cubit.dart';
+import 'package:mintrix/features/leaderboard/cubit/leaderboard_state.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/leaderboard_animation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class LeaderboardPage extends StatelessWidget {
   const LeaderboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => LeaderboardCubit()..loadLeaderboard(), // ✅ Auto load
+      child: const _LeaderboardView(),
+    );
+  }
+}
+
+class _LeaderboardView extends StatelessWidget {
+  const _LeaderboardView();
 
   @override
   Widget build(BuildContext context) {
@@ -25,86 +41,130 @@ class LeaderboardPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               children: [
                 const SizedBox(height: 64),
-                buildHeader(),
+                _buildHeader(),
                 const SizedBox(height: 12),
-                buildBadges(),
-                const LeaderboardAnimation(),
+                _buildBadges(),
+
+                // ✅ Podium animasi otomatis dari Cubit
+                BlocBuilder<LeaderboardCubit, LeaderboardState>(
+                  builder: (context, state) {
+                    if (state is LeaderboardLoaded && state.users.isNotEmpty) {
+                      final topThree = state.users.take(3).toList();
+                      return LeaderboardAnimation(topUsers: topThree);
+                    }
+                    return const SizedBox(height: 310);
+                  },
+                ),
+
                 const SizedBox(height: 200),
               ],
             ),
           ),
-          // Draggable Bottom Sheet
-          buildDraggableSheet(context),
+
+          // ✅ Draggable Bottom Sheet (4 ke bawah)
+          _buildDraggableSheet(context),
         ],
       ),
     );
   }
 
-  Widget buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildHeader() {
+    return BlocBuilder<LeaderboardCubit, LeaderboardState>(
+      builder: (context, state) {
+        // ✅ Ambil daysLeft dari state
+        int daysLeft = 0;
+        if (state is LeaderboardLoaded) {
+          daysLeft = state.daysLeft;
+        }
+
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Liga Mintrix",
-              style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Liga Mintrix",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 24,
+                    fontWeight: bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "5 besar akan melaju ke babak selanjutnya",
+                  style: primaryTextStyle.copyWith(
+                    fontSize: 12,
+                    fontWeight: medium,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              "5 besar akan melaju ke babak selanjutnya",
-              style: primaryTextStyle.copyWith(
-                fontSize: 12,
-                fontWeight: medium,
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: whiteColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    "$daysLeft", // ✅ Dynamic days left
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                  Text(
+                    " Hari",
+                    style: bluePrimaryTextStyle.copyWith(
+                      fontSize: 12,
+                      fontWeight: bold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: whiteColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.access_time, color: bluePrimaryColor, size: 14),
-              const SizedBox(width: 4),
-              Text(
-                "3",
-                style: TextStyle(
-                  color: bluePrimaryColor,
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-              Text(
-                " Hari",
-                style: TextStyle(
-                  color: bluePrimaryColor,
-                  fontSize: 12,
-                  fontWeight: bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  Widget buildBadges() {
+  // Widget _buildBadges() {
+  //   return SingleChildScrollView(
+  //     scrollDirection: Axis.horizontal,
+  //     child: Row(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         // Image.asset("assets/images/leaderboard_badges.png")
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _buildBadges() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Image.asset("assets/images/leaderboard_badges.png")],
+        children: [
+          CachedNetworkImage(
+            imageUrl:
+                'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762850967/character1_lamw4v.png',
+            width: 450,
+            fit: BoxFit.cover,
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
+          ),
+        ],
       ),
     );
   }
 
-  Widget buildDraggableSheet(BuildContext context) {
+  Widget _buildDraggableSheet(BuildContext context) {
     return DraggableScrollableSheet(
       initialChildSize: 0.3,
       minChildSize: 0.3,
@@ -131,88 +191,124 @@ class LeaderboardPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // List
+
               Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  children: [
-                    buildLeaderboardItem(
-                      rank: 1,
-                      name: "Renata",
-                      xp: 580,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    buildLeaderboardItem(
-                      rank: 2,
-                      name: "Rojali",
-                      xp: 513,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    buildLeaderboardItem(
-                      rank: 3,
-                      name: "Kodomo",
-                      xp: 497,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    buildLeaderboardItem(
-                      rank: 4,
-                      name: "Simons",
-                      xp: 435,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    buildLeaderboardItem(
-                      rank: 5,
-                      name: "Hawila",
-                      xp: 400,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    // Zona Aman
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SvgPicture.asset(
-                            "assets/icons/leaderboard_arrow.svg",
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Zona aman",
-                            style: TextStyle(
-                              color: greenColor,
-                              fontSize: 16,
-                              fontWeight: bold,
+                child: BlocBuilder<LeaderboardCubit, LeaderboardState>(
+                  builder: (context, state) {
+                    if (state is LeaderboardLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is LeaderboardError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              state.message,
+                              style: primaryTextStyle.copyWith(
+                                color: Colors.red,
+                                fontSize: 14,
+                                fontWeight: medium,
+                              ),
+                              textAlign: TextAlign.center,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          SvgPicture.asset(
-                            "assets/icons/leaderboard_arrow.svg",
-                          ),
-                        ],
-                      ),
-                    ),
-                    buildLeaderboardItem(
-                      rank: 6,
-                      name: "Badu",
-                      xp: 395,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    buildLeaderboardItem(
-                      rank: 7,
-                      name: "Orisam",
-                      xp: 386,
-                      image: "assets/images/profile2.png",
-                      isHighlight: false,
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                context
+                                    .read<LeaderboardCubit>()
+                                    .loadLeaderboard();
+                              },
+                              child: Text(
+                                'Coba Lagi',
+                                style: whiteTextStyle.copyWith(
+                                  fontSize: 14,
+                                  fontWeight: semiBold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else if (state is LeaderboardLoaded) {
+                      // ✅ Limit to maximum 30 users total (3 in podium + 27 in list)
+                      final maxUsers = 30;
+                      final allUsers = state.users.take(maxUsers).toList();
+
+                      if (allUsers.length <= 3) {
+                        return const Center(
+                          child: Text('Belum ada data lanjutan'),
+                        );
+                      }
+
+                      final remainingUsers = allUsers.skip(3).toList();
+
+                      return RefreshIndicator(
+                        onRefresh: () => context
+                            .read<LeaderboardCubit>()
+                            .refreshLeaderboard(),
+                        child: ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          physics: const ClampingScrollPhysics(),
+                          itemCount:
+                              remainingUsers.length + 1, // +1 for "Zona Aman"
+                          itemBuilder: (context, index) {
+                            // ✅ Zona Aman after rank 5 (index 2 in remainingUsers)
+                            if (index == 2 && remainingUsers.length > 2) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/icons/leaderboard_arrow.svg",
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Zona aman",
+                                      style: primaryTextStyle.copyWith(
+                                        color: greenColor,
+                                        fontSize: 16,
+                                        fontWeight: bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    SvgPicture.asset(
+                                      "assets/icons/leaderboard_arrow.svg",
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            // ✅ Adjust index to account for "Zona Aman" separator
+                            final userIndex = index > 2 ? index - 1 : index;
+
+                            // ✅ Safety check
+                            if (userIndex >= remainingUsers.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            final user = remainingUsers[userIndex];
+                            final rank = userIndex + 4;
+
+                            return _buildLeaderboardItem(
+                              rank: rank,
+                              name: user.nama,
+                              xp: user.xp,
+                              image: user.foto,
+                              isHighlight: false,
+                            );
+                          },
+                        ),
+                      );
+                    }
+
+                    // ✅ Default return statement
+                    return const Center(child: Text('Tidak ada data'));
+                  },
                 ),
               ),
             ],
@@ -222,11 +318,11 @@ class LeaderboardPage extends StatelessWidget {
     );
   }
 
-  Widget buildLeaderboardItem({
+  Widget _buildLeaderboardItem({
     required int rank,
     required String name,
     required int xp,
-    required String image,
+    String? image,
     bool isHighlight = false,
   }) {
     return Container(
@@ -265,20 +361,29 @@ class LeaderboardPage extends StatelessWidget {
               ),
             ),
             child: ClipOval(
-              child: Image.asset(
-                image,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(
-                      Icons.person,
-                      size: 24,
-                      color: Colors.grey,
+              child: image != null && image.isNotEmpty
+                  ? Image.network(
+                      image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.person,
+                            size: 24,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      color: Colors.grey[200],
+                      child: const Icon(
+                        Icons.person,
+                        size: 24,
+                        color: Colors.grey,
+                      ),
                     ),
-                  );
-                },
-              ),
             ),
           ),
           const SizedBox(width: 16),
@@ -290,6 +395,7 @@ class LeaderboardPage extends StatelessWidget {
                 fontSize: 16,
                 fontWeight: semiBold,
               ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           // XP Badge

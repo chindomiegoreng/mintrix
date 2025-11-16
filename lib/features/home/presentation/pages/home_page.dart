@@ -1,43 +1,142 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mintrix/core/api/api_client.dart';
+import 'package:mintrix/core/api/api_endpoints.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
 import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
+import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add ProfileBloc
+import 'package:mintrix/features/profile/presentation/bloc/profile_state.dart'; // ✅ Add ProfileState
+import 'package:mintrix/features/profile/presentation/bloc/profile_event.dart'; // ✅ Add ProfileEvent
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/home_card.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final ApiClient _apiClient = ApiClient();
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Fetch profile saat HomePage pertama kali dibuka
+    _fetchAndUpdateProfile();
+    // ✅ Load ProfileBloc untuk mendapatkan streak data
+    context.read<ProfileBloc>().add(LoadProfile());
+  }
+
+  // ✅ Fetch profile dari API dan update AuthBloc
+  Future<void> _fetchAndUpdateProfile() async {
+    try {
+      final response = await _apiClient.get(
+        ApiEndpoints.profile, // Sesuaikan dengan endpoint Anda
+        requiresAuth: true,
+      );
+
+      if (response['data'] != null) {
+        final userData = response['data'];
+
+        // ✅ Update AuthBloc dengan data terbaru dari database
+        if (mounted) {
+          context.read<AuthBloc>().add(
+            UpdateProfileEvent(
+              userId: userData['_id'].toString(),
+              username: userData['nama'] ?? 'User',
+              photoUrl: userData['foto'],
+            ),
+          );
+
+          // ✅ Refresh ProfileBloc juga untuk update streak
+          context.read<ProfileBloc>().add(RefreshProfile());
+        }
+
+        print(
+          '✅ Profile updated: ${userData['nama']}, Photo: ${userData['foto']}',
+        );
+      }
+    } catch (e) {
+      print('❌ Failed to fetch profile: $e');
+      // Tidak perlu show error, karena ini background fetch
+    }
+  }
+
+  // Helper function untuk memotong username
+  String _truncateUsername(String username) {
+    if (username.length > 10) {
+      return '${username.substring(0, 10)}...';
+    }
+    return username;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffF5F8FF),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 30),
-              _buildLargeCard(),
-              const SizedBox(height: 24),
-              _buildMenuGrid(context),
-            ],
-          ),
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, authState) {
+            String username = 'User';
+            String? photoUrl;
+
+            if (authState is AuthAuthenticated) {
+              username = authState.username;
+              photoUrl = authState.photoUrl;
+            }
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, username, photoUrl),
+                  const SizedBox(height: 30),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _fetchAndUpdateProfile, // ✅ Pull to refresh
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLargeCard(),
+                            const SizedBox(height: 24),
+                            _buildMenuGrid(context),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String username, String? photoUrl) {
     return Row(
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 25,
-          backgroundImage: AssetImage('assets/images/logo_mintrix.png'),
+          backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+              ? NetworkImage(photoUrl)
+              : const AssetImage('assets/images/dino_get_started.png')
+                    as ImageProvider,
+          backgroundColor: Colors.grey[300],
+          onBackgroundImageError: (exception, stackTrace) {
+            print('❌ Error loading image: $exception');
+          },
         ),
         const SizedBox(width: 12),
         Column(
@@ -48,22 +147,46 @@ class HomePage extends StatelessWidget {
               style: secondaryTextStyle.copyWith(fontSize: 12),
             ),
             Text(
-              "Renata",
+              _truncateUsername(username),
               style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: bold),
             ),
           ],
         ),
         const Spacer(),
-        // Ganti dengan ikon yang sesuai
-        const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
-        const SizedBox(width: 4),
-        Text(
-          "4",
-          style: bluePrimaryTextStyle.copyWith(
-            fontSize: 16,
-            fontWeight: semiBold,
-          ),
+        BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            int streakCount = 0;
+            bool streakActive = false;
+
+            if (profileState is ProfileLoaded) {
+              streakCount = profileState.streakCount;
+              streakActive = profileState.streakActive;
+            }
+
+            return Row(
+              children: [
+                Image.asset(
+                  "assets/icons/fire.png",
+                  height: 36,
+                  // 🔥 Warna berubah jika streak tidak aktif
+                  color: streakActive && streakCount > 0 ? null : Colors.grey,
+                  colorBlendMode: streakActive && streakCount > 0
+                      ? BlendMode.dst
+                      : BlendMode.srcIn,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  "$streakCount",
+                  style: bluePrimaryTextStyle.copyWith(
+                    fontSize: 16,
+                    fontWeight: semiBold,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
+
         const SizedBox(width: 16),
         TextButton(
           onPressed: () {
@@ -88,64 +211,81 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildLargeCard() {
-    return const CustomHomeCardLarge(
-      title: 'Liga Emas',
-      subTitle: 'Posisi 1',
-      description:
-          'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
+    return GestureDetector(
+      onTap: () {
+        context.read<NavigationBloc>().add(UpdateIndex(3));
+      },
+      child: const CustomHomeCardLarge(
+        title: 'Liga Emas',
+        description:
+            'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
+      ),
     );
   }
 
   Widget _buildMenuGrid(BuildContext context) {
-    return Column(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 175 / 220, // ukuran card kamu
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset1.png",
-              title: "Permainan",
-              subTitle: "Ayo bermain dan belajar",
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DailyNotesPage(),
-                  ),
-                );
-              },
-              child: const CustomHomeCardSmall(
-                images: "assets/images/home_card_asset2.png",
-                title: "Catatan harian",
-                subTitle: "Ceritakan kegiatanmu hari ini",
-              ),
-            ),
-          ],
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(1));
+          },
+          child: CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846593/character5_v8uvxf.png",
+            title: "Permainan",
+            subTitle: "Ayo bermain dan belajar",
+          ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const CustomHomeCardSmall(
-              images: "assets/images/home_card_asset3.png",
-              title: "Assisten",
-              subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
-            ),
-            GestureDetector(
-              onTap: () {
-                context.read<NavigationBloc>().add(UpdateIndex(4));
-              },
-              child: const CustomHomeCardSmall(
-                images: "assets/images/home_card_asset4.png",
-                title: "Toko",
-                subTitle: "Tingkatkan performa dengan membeli item",
-              ),
-            ),
-          ],
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyNotesPage()),
+            );
+          },
+          child: const CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846600/character12_bpnhx5.png",
+            title: "Catatan harian",
+            subTitle: "Ceritakan kegiatanmu hari ini",
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(2));
+          },
+          child: CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762848439/character10_hrs1i5.png",
+            title: "Assisten",
+            subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(4));
+          },
+          child: const CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character8_uhbkoc.png",
+            title: "Toko",
+            subTitle: "Tingkatkan performa dengan membeli item",
+          ),
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _apiClient.dispose();
+    super.dispose();
   }
 }

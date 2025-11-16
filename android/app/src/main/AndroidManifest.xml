@@ -7,10 +7,11 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     
     <application
-        android:label="mintrix"
+        android:label="Mintrix"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:enableOnBackInvokedCallback="true">
+        android:icon="@mipmap/launcher_icon"
+        android:enableOnBackInvokedCallback="true"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

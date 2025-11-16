@@ -1,22 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:mintrix/features/ai/data/services/dino_api_service.dart';
+import 'package:mintrix/features/ai/data/models/chat_title_model.dart';
+import 'package:mintrix/features/ai/presentation/pages/ai_page.dart';
 import 'package:mintrix/shared/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
-class AIHistoryPage extends StatelessWidget {
+class AIHistoryPage extends StatefulWidget {
   const AIHistoryPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final histories = [
-      {"title": "title histori ai", "progress": 20, "date": "2 Nov 2025"},
-      {"title": "title histori ai", "progress": 35, "date": "1 Nov 2025"},
-      {"title": "title histori ai", "progress": 50, "date": "31 Okt 2025"},
-      {"title": "title histori ai", "progress": 80, "date": "30 Okt 2025"},
-      {"title": "title histori ai", "progress": 60, "date": "29 Okt 2025"},
-      {"title": "title histori ai", "progress": 40, "date": "28 Okt 2025"},
-      {"title": "title histori ai", "progress": 70, "date": "27 Okt 2025"},
-      {"title": "title histori ai", "progress": 100, "date": "26 Okt 2025"},
-    ];
+  State<AIHistoryPage> createState() => _AIHistoryPageState();
+}
 
+class _AIHistoryPageState extends State<AIHistoryPage> {
+  late DinoApiService _apiService;
+  List<ChatTitleModel> _histories = [];
+  bool _isLoading = true;
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeService();
+  }
+
+  Future<void> _initializeService() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token') ?? ''; // ✅ Ganti dengan 'auth_token'
+    
+    if (token.isEmpty) {
+      print('❌ Token tidak ditemukan di SharedPreferences');
+      setState(() {
+        _isInitialized = true;
+        _isLoading = false;
+      });
+      return;
+    }
+    
+    print('✅ Token ditemukan: ${token.substring(0, 20)}...'); // Debug print
+    
+    _apiService = DinoApiService(authToken: token);
+    
+    setState(() {
+      _isInitialized = true;
+    });
+    
+    await _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    if (!_isInitialized) return;
+    
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final histories = await _apiService.getChatTitles();
+      setState(() {
+        _histories = histories;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print('Error loading history: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -33,7 +88,7 @@ class AIHistoryPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            "Dino",
+            "Riwayat Chat",
             style: primaryTextStyle.copyWith(
               fontSize: 14,
               fontWeight: semiBold,
@@ -43,81 +98,83 @@ class AIHistoryPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: histories.length,
-        itemBuilder: (context, index) {
-          final item = histories[index];
-          final title = item["title"] as String;
-          final date = item["date"] as String;
-          final progress = item["progress"] as int;
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: primaryTextStyle.copyWith(
-                        fontWeight: semiBold,
-                        fontSize: 14,
-                      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _histories.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.history, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada riwayat chat',
+                    style: primaryTextStyle.copyWith(
+                      fontSize: 16,
+                      color: Colors.grey[600],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      date,
-                      style: secondaryTextStyle.copyWith(fontSize: 12),
-                    ),
-                  ],
-                ),
-                _buildProgressCircle(progress),
-              ],
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: _loadHistory,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _histories.length,
+                itemBuilder: (context, index) {
+                  final history = _histories[index];
+                  return _buildHistoryItem(history);
+                },
+              ),
             ),
-          );
-        },
-      ),
     );
   }
 
-  Widget _buildProgressCircle(int progress) {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        SizedBox(
-          width: 42,
-          height: 42,
-          child: CircularProgressIndicator(
-            value: progress / 100,
-            strokeWidth: 5,
-            backgroundColor: const Color(0xffE0F7FA),
-            color: const Color(0xff4DD4E8),
+  Widget _buildHistoryItem(ChatTitleModel history) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AIPage(titleId: history.id),
           ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        Text(
-          "$progress%",
-          style: primaryTextStyle.copyWith(
-            fontSize: 12,
-            fontWeight: semiBold,
-            color: const Color(0xff4DD4E8),
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              history.title,
+              style: primaryTextStyle.copyWith(
+                fontWeight: semiBold,
+                fontSize: 14,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('dd MMM yyyy, HH:mm').format(history.createdAt),
+              style: secondaryTextStyle.copyWith(fontSize: 12),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

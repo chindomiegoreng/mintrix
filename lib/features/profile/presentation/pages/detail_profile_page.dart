@@ -1,9 +1,26 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ✅ Add this
 import 'package:mintrix/shared/theme.dart';
 import 'package:radar_chart/radar_chart.dart';
+import '../bloc/profile_bloc.dart'; // ✅ Add this
+import '../bloc/profile_event.dart'; // ✅ Add this
+import '../bloc/profile_state.dart'; // ✅ Add this
 
-class DetailProfilePage extends StatelessWidget {
+class DetailProfilePage extends StatefulWidget {
   const DetailProfilePage({super.key});
+
+  @override
+  State<DetailProfilePage> createState() => _DetailProfilePageState();
+}
+
+class _DetailProfilePageState extends State<DetailProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Load profile using bloc (same as Profile Page)
+    context.read<ProfileBloc>().add(LoadProfile());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,35 +33,84 @@ class DetailProfilePage extends StatelessWidget {
           },
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        children: [
-          profileInfo(),
-          SizedBox(height: 20),
-          sectionTitle1(),
-          progressContainer(),
-          SizedBox(height: 12),
-          sectionTitle2(),
-          SizedBox(height: 50),
-        ],
+      body: BlocBuilder<ProfileBloc, ProfileState>(
+        builder: (context, state) {
+          if (state is ProfileLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is ProfileError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    state.message,
+                    style: primaryTextStyle.copyWith(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<ProfileBloc>().add(LoadProfile());
+                    },
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            );
+          } else if (state is ProfileLoaded) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<ProfileBloc>().add(RefreshProfile());
+                await Future.delayed(const Duration(seconds: 1));
+              },
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                children: [
+                  _profileInfo(state),
+                  const SizedBox(height: 20),
+                  _sectionTitle1(),
+                  _progressContainer(state),
+                  const SizedBox(height: 12),
+                  _sectionTitle2(state),
+                  const SizedBox(height: 50),
+                ],
+              ),
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
       ),
     );
   }
 
-  Widget profileInfo() {
+  Widget _profileInfo(ProfileLoaded state) {
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
-          Image.asset("assets/images/profile.png"),
-          SizedBox(height: 14),
+          // ✅ Dynamic photo from bloc
+          state.foto != null && state.foto!.isNotEmpty
+              ? CircleAvatar(
+                  radius: 60,
+                  backgroundImage: CachedNetworkImageProvider(state.foto!),
+                )
+              : const CircleAvatar(
+                  radius: 60,
+                  backgroundImage: AssetImage("assets/images/profile.png"),
+                ),
+          const SizedBox(height: 14),
+          // ✅ Dynamic name from bloc
           Text(
-            "Renata",
+            state.name,
             style: primaryTextStyle.copyWith(fontSize: 24, fontWeight: bold),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
+          // ✅ Dynamic ID from bloc
           Text(
-            "ID: 5220411131",
+            // "ID: ${state.id.substring(state.id.length - 10)}",
+            "ID: ${state.id}",
             style: primaryTextStyle.copyWith(fontSize: 14, fontWeight: regular),
           ),
         ],
@@ -52,7 +118,7 @@ class DetailProfilePage extends StatelessWidget {
     );
   }
 
-  Widget sectionTitle1() {
+  Widget _sectionTitle1() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -63,7 +129,7 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           "Data di bawah ini merupakan rekam jejak penggunaan aplikasi dari awal hingga saat ini dan dapat berubah kapanpun. Penilaian yang ditampilkan didasarkan pada keseluruhan aktivitas anak.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
@@ -72,7 +138,7 @@ class DetailProfilePage extends StatelessWidget {
     );
   }
 
-  Widget progressContainer() {
+  Widget _progressContainer(ProfileLoaded state) {
     final labels = [
       "Berani",
       "Empati",
@@ -80,13 +146,20 @@ class DetailProfilePage extends StatelessWidget {
       "Kerja Sama",
       "Kreativitas",
     ];
+
+    // ✅ Get radar values from bloc state (same as Profile Page)
+    final radarValues =
+        state.personality?.toRadarValues() ?? [0.0, 0.0, 0.0, 0.0, 0.0];
+
+    print('🎨 Detail Profile Radar Values: $radarValues'); // ✅ Debug log
+
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(30),
+            padding: const EdgeInsets.all(30),
             decoration: BoxDecoration(
               color: whiteColor,
               border: Border.all(color: bluePrimaryColor, width: 1),
@@ -117,8 +190,7 @@ class DetailProfilePage extends StatelessWidget {
                         preferredSize: const Size.fromRadius(15),
                         child: Text(
                           labels[i],
-                          style: TextStyle(
-                            color: bluePrimaryColor,
+                          style: bluePrimaryTextStyle.copyWith(
                             fontSize: 14,
                             fontWeight: semiBold,
                           ),
@@ -128,7 +200,7 @@ class DetailProfilePage extends StatelessWidget {
                   ],
                   radars: [
                     RadarTile(
-                      values: [0.4, 0.8, 0.65, 0.7, 0.5],
+                      values: radarValues, // ✅ Same source as Profile Page
                       borderStroke: 2,
                       backgroundColor: greenColor.withAlpha(100),
                     ),
@@ -142,7 +214,7 @@ class DetailProfilePage extends StatelessWidget {
     );
   }
 
-  Widget sectionTitle2() {
+  Widget _sectionTitle2(ProfileLoaded state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -153,9 +225,12 @@ class DetailProfilePage extends StatelessWidget {
             fontWeight: semiBold,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
+        // ✅ Dynamic hobi dan minat from bloc
         Text(
-          "Menggambar, bermain musik, dan menulis. kamu senang mengarang dan menciptakan dunia dari imajinasi kamu sendiri.",
+          state.personality?.hobiDanMinat.isNotEmpty ?? false
+              ? state.personality!.hobiDanMinat
+              : "Belum ada data hobi dan minat.",
           style: primaryTextStyle.copyWith(fontSize: 16, fontWeight: medium),
         ),
       ],

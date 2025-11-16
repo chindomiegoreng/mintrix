@@ -12,6 +12,7 @@ class CustomFormField extends StatefulWidget {
   final Function(String)? onFieldSubmitted;
   final String? hintText;
   final FormFieldValidator<String>? validator;
+  final bool isTextArea;
 
   const CustomFormField({
     super.key,
@@ -23,6 +24,7 @@ class CustomFormField extends StatefulWidget {
     this.onFieldSubmitted,
     this.hintText,
     this.validator,
+     this.isTextArea = false,
   });
 
   @override

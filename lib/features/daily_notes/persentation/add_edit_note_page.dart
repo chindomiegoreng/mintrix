@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'dart:math';
-import 'package:intl/intl.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/success_toast.dart';
 import '../bloc/daily_notes_bloc.dart';
-import '../models/note_model.dart';
+import '../../../core/models/note_model.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
 class AddEditNotePage extends StatefulWidget {
@@ -19,6 +18,7 @@ class AddEditNotePage extends StatefulWidget {
 class _AddEditNotePageState extends State<AddEditNotePage> {
   late final TextEditingController _contentController;
   bool get isEditing => widget.note != null;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -34,27 +34,32 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
     super.dispose();
   }
 
-  void _onSave() {
-    if (_contentController.text.isEmpty) {
+  void _onSave() async {
+    if (_contentController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Catatan tidak boleh kosong!')),
       );
       return;
     }
+
+    setState(() => _isLoading = true);
+
     if (isEditing) {
-      final updatedNote = Note(
-        id: widget.note!.id,
-        date: widget.note!.date,
-        content: _contentController.text,
+      final updatedNote = widget.note!.copyWith(
+        content: _contentController.text.trim(),
       );
       context.read<DailyNotesBloc>().add(UpdateDailyNote(updatedNote));
     } else {
+      // ✅ Buat note baru (id akan di-generate di backend)
       final newNote = Note(
-        id: Random().nextInt(100000).toString(),
-        date: DateFormat('dd/MM').format(DateTime.now()),
-        content: _contentController.text,
+        id: '', // ID akan di-set dari response API
+        content: _contentController.text.trim(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       context.read<DailyNotesBloc>().add(AddDailyNote(newNote));
+
+      // ✅ Show success toast
       final overlay = Overlay.of(context);
       final entry = OverlayEntry(
         builder: (context) => Positioned(
@@ -65,7 +70,7 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
             color: Colors.transparent,
             child: Center(
               child: SuccessToast(
-                message: 'Yeaayy, kamu udah tambah catatan hari ini!',
+                message: 'Yeaayy, kamu udah tambah catatan hari ini! +5 XP',
               ),
             ),
           ),
@@ -76,21 +81,50 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
       Future.delayed(const Duration(seconds: 3), () => entry.remove());
     }
 
-    Navigator.pop(context);
+    // ✅ Tunggu sebentar sebelum pop
+    await Future.delayed(const Duration(milliseconds: 500));
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
-  void _onDelete() {
-    if (isEditing) {
+  void _onDelete() async {
+    if (!isEditing) return;
+
+    // ✅ Confirmation dialog
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Catatan'),
+        content: const Text('Apakah kamu yakin ingin menghapus catatan ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      setState(() => _isLoading = true);
       context.read<DailyNotesBloc>().add(DeleteDailyNote(widget.note!.id));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Catatan berhasil dihapus!'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-
-      Navigator.pop(context);
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Catatan berhasil dihapus!'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -107,17 +141,26 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         ),
         title: Text(
           isEditing ? 'Edit Catatan' : 'Catatan Baru',
-          style: const TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: primaryTextStyle.copyWith(fontWeight: bold, fontSize: 18),
         ),
         centerTitle: true,
         actions: [
-          IconButton(
-            onPressed: _onSave,
-            icon: const Icon(Icons.save_outlined, color: Colors.black),
-          ),
+          if (_isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              onPressed: _onSave,
+              icon: const Icon(Icons.save_outlined, color: Colors.black),
+            ),
         ],
       ),
       body: Padding(
@@ -125,17 +168,21 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Tuliskan Pengalamanmu',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              style: primaryTextStyle.copyWith(
+                fontSize: 20,
+                fontWeight: semiBold,
+              ),
             ),
             const SizedBox(height: 8),
             Expanded(
               child: TextField(
                 controller: _contentController,
-                autofocus: true,
+                autofocus: !isEditing,
                 maxLines: null,
                 expands: true,
+                enabled: !_isLoading,
                 textAlignVertical: TextAlignVertical.top,
                 decoration: const InputDecoration(
                   hintText: 'Tuliskan pengalamanmu...',
@@ -145,12 +192,11 @@ class _AddEditNotePageState extends State<AddEditNotePage> {
             ),
             if (isEditing)
               Padding(
-                padding: const EdgeInsets.only(top: 16.0),
+                padding: const EdgeInsets.only(top: 16.0, bottom: 16),
                 child: CustomFilledButton(
-                  title: 'Hapus Catatan',
-                  height: 50,
+                  title: _isLoading ? 'Menghapus...' : 'Hapus Catatan',
                   withShadow: false,
-                  onPressed: _onDelete,
+                  onPressed: _isLoading ? null : _onDelete,
                 ),
               ),
           ],

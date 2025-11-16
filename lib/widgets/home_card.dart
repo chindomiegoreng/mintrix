@@ -1,15 +1,14 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:mintrix/shared/theme.dart';
 
 class CustomHomeCardLarge extends StatelessWidget {
   final String title;
-  final String subTitle;
   final String description;
 
   const CustomHomeCardLarge({
     super.key,
     required this.title,
-    required this.subTitle,
     required this.description,
   });
 
@@ -48,16 +47,6 @@ class CustomHomeCardLarge extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        subTitle,
-                        style: bluePrimaryTextStyle.copyWith(
-                          fontWeight: semiBold,
-                          fontSize: 14,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
                         description,
                         style: bluePrimaryTextStyle.copyWith(
                           fontWeight: medium,
@@ -70,10 +59,18 @@ class CustomHomeCardLarge extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Image.asset(
-                  "assets/images/home_card_asset.png",
+                // Image.asset(
+                //   "assets/images/home_card_asset.png",
+                //   width: 100,
+                //   height: 100,
+                // ),
+                CachedNetworkImage(
+                  imageUrl:
+                      'https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846591/character4_fhw416.png',
                   width: 100,
-                  height: 100,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
                 ),
               ],
             ),
@@ -114,39 +111,46 @@ class CustomHomeCardSmall extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Image.asset(images, width: 90, height: 90),
-                const SizedBox(height: 10),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: bluePrimaryTextStyle.copyWith(
-                    fontWeight: bold,
-                    fontSize: 18,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: images,
+                    width: 90,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) =>
+                        const CircularProgressIndicator(),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: 32,
-                  child: Text(
-                    subTitle,
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
                     textAlign: TextAlign.center,
                     style: bluePrimaryTextStyle.copyWith(
-                      fontWeight: medium,
-                      fontSize: 12,
+                      fontWeight: bold,
+                      fontSize: 18,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                const Spacer(),
-              ],
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 32,
+                    child: Text(
+                      subTitle,
+                      textAlign: TextAlign.center,
+                      style: bluePrimaryTextStyle.copyWith(
+                        fontWeight: medium,
+                        fontSize: 12,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/buttons.dart';
 
@@ -121,6 +124,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/link.svg',
                       title: "Akun Terhubung",
                       subtitle: "Hubungkan dengan orang tua",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/settings-connect");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -132,6 +138,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/edit-user.svg',
                       title: "Edit Profil",
                       subtitle: "Edit Avatar dan Nama Panggilanmu",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/edit-profile");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -143,6 +152,23 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/key.svg',
                       title: "Ubah Kata Sandi",
                       subtitle: "Ubah kata sandi anda secara berkala",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/change-password");
+                      },
+                    ),
+                    Divider(
+                      color: thirdColor,
+                      thickness: 1,
+                      indent: 1,
+                      endIndent: 1,
+                    ),
+                    _buildMenuItem(
+                      icon: 'assets/icons/cv.svg',
+                      title: "Download CV",
+                      subtitle: "Lihat dan download CVmu",
+                      onTap: () {
+                        Navigator.pushNamed(context, "/download-cv");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -154,6 +180,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/globe.svg',
                       title: "Bahasa",
                       subtitle: "Pilih bahasa yang digunakan",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/language-settings");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -215,6 +244,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/circle-question-mark.svg',
                       title: "Pusat Bantuan",
                       subtitle: "Bantuan & Dukungan",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/help-center");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -226,6 +258,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/shield-alert.svg',
                       title: "Tentang Aplikasi",
                       subtitle: "Versi aplikasi v.0.1",
+                      onTap: () {
+                        // Navigator.pushNamed(context, "/about-app");
+                      },
                     ),
                     Divider(
                       color: thirdColor,
@@ -237,6 +272,127 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: 'assets/icons/log-out.svg',
                       title: "Keluar Akun",
                       subtitle: "Keluar dari aplikasi",
+                      onTap: () {
+                        // Tambahkan dialog konfirmasi logout
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) {
+                            return Dialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.all(22),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "Keluar Akun",
+                                      style: primaryTextStyle.copyWith(
+                                        fontSize: 20,
+                                        fontWeight: semiBold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      "Apakah kamu yakin ingin keluar dari aplikasi?",
+                                      style: secondaryTextStyle.copyWith(
+                                        fontSize: 16,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: 24),
+
+                                    Row(
+                                      children: [
+                                        // ❌ BELUM
+                                        Expanded(
+                                          child: OutlinedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            },
+                                            style: OutlinedButton.styleFrom(
+                                              side: BorderSide(
+                                                color: bluePrimaryColor,
+                                                width: 1.4,
+                                              ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                            child: Text(
+                                              "Belum",
+                                              style: bluePrimaryTextStyle
+                                                  .copyWith(
+                                                    fontSize: 15,
+                                                    fontWeight: semiBold,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+
+                                        // ✅ YA, LOGOUT
+                                        Expanded(
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+
+                                              context.read<AuthBloc>().add(
+                                                LogoutEvent(),
+                                              );
+
+                                              Future.microtask(() {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                      "Logging out...",
+                                                    ),
+                                                  ),
+                                                );
+                                              });
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: bluePrimaryColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 12,
+                                                  ),
+                                            ),
+                                            child: Text(
+                                              "Ya",
+                                              style: whiteTextStyle.copyWith(
+                                                fontSize: 15,
+                                                fontWeight: semiBold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -252,41 +408,49 @@ class _SettingsPageState extends State<SettingsPage> {
     required String icon,
     required String title,
     required String subtitle,
+    VoidCallback? onTap,
   }) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SvgPicture.asset(icon, width: 24, height: 24),
-            const SizedBox(width: 20),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Text(
-                  title,
-                  style: primaryTextStyle.copyWith(
-                    fontSize: 16,
-                    fontWeight: semiBold,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: secondaryTextStyle.copyWith(
-                    fontSize: 11,
-                    fontWeight: medium,
-                  ),
+                SvgPicture.asset(icon, width: 24, height: 24),
+                const SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: primaryTextStyle.copyWith(
+                        fontSize: 16,
+                        fontWeight: semiBold,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: secondaryTextStyle.copyWith(
+                        fontSize: 11,
+                        fontWeight: medium,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: bluePrimaryColor,
+              size: 24,
+            ),
           ],
         ),
-        Icon(
-          Icons.arrow_forward_ios_rounded,
-          color: bluePrimaryColor,
-          size: 24,
-        ),
-      ],
+      ),
     );
   }
 }

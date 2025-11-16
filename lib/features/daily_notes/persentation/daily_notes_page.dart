@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mintrix/features/daily_notes/persentation/add_edit_note_page.dart';
+import 'package:mintrix/shared/theme.dart';
 import 'package:mintrix/widgets/notes_card.dart';
 import '../bloc/daily_notes_bloc.dart';
-import '../models/note_model.dart';
+import '../../../core/models/note_model.dart';
 
 class DailyNotesPage extends StatelessWidget {
   const DailyNotesPage({super.key});
@@ -37,9 +38,12 @@ class _DailyNotesView extends StatelessWidget {
             icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
             onPressed: () => Navigator.pop(context),
           ),
-          title: const Text(
+          title: Text(
             'Catatan Harian',
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            style: primaryTextStyle.copyWith(
+              fontSize: 14,
+              fontWeight: semiBold,
+            ),
           ),
         ),
         body: Padding(
@@ -122,7 +126,10 @@ class _DailyNotesView extends StatelessWidget {
               ),
             );
           },
-          child: NoteCard(date: note.date, content: note.content),
+          child: NoteCard(
+            date: note.displayDate, // ✅ Gunakan displayDate
+            content: note.content,
+          ),
         );
       },
     );
