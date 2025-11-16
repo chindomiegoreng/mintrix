@@ -40,63 +40,100 @@ class _LeaderboardAnimationState extends State<LeaderboardAnimation> {
     final second = widget.topUsers[1];
     final third = widget.topUsers[2];
 
-    return Container(
-      height: 310,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage("assets/images/leaderboard_bg.png"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          // 🥈 Podium 2 (belakang)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack,
-            bottom: showSecond ? 0 : -300,
-            right: 220,
-            child: buildPodium(
-              number: 2,
-              name: second.nama,
-              xp: second.xp,
-              image: second.foto ?? "assets/images/profile_placeholder.png",
-              podiumImage: "assets/images/leaderboard_podium2.png",
-            ),
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final w = constraints.maxWidth;
 
-          // 🥉 Podium 3 (belakang)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack,
-            bottom: showThird ? 0 : -300,
-            left: 225,
-            child: buildPodium(
-              number: 3,
-              name: third.nama,
-              xp: third.xp,
-              image: third.foto ?? "assets/images/profile_placeholder.png",
-              podiumImage: "assets/images/leaderboard_podium3.png",
-            ),
-          ),
+        // lebar relatif untuk setiap podium (sesuaikan angka jika mau lebih kecil/besar)
+        final firstWidth = w * 0.36; // podium 1 lebih lebar
+        final otherWidth = w * 0.28; // podium 2 & 3
 
-          // 🥇 Podium 1 (paling depan)
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack,
-            bottom: showFirst ? 0 : -300,
-            child: buildPodium(
-              number: 1,
-              name: first.nama,
-              xp: first.xp,
-              image: first.foto ?? "assets/images/profile_placeholder.png",
-              podiumImage: "assets/images/leaderboard_podium1.png",
-              isFirst: true,
+        // alignment x untuk 3 podium (responsif karena relatif)
+        final alignSecond = Alignment(
+          -0.8,
+          0.9,
+        ); // kiri sedikit dan agak di bawah
+        final alignThird = Alignment(
+          0.8,
+          0.9,
+        ); // kanan sedikit dan agak di bawah
+        final alignFirst = Alignment(
+          0.0,
+          0.55,
+        ); // tengah dan sedikit lebih tinggi
+
+        // offscreen alignment untuk animasi masuk dari bawah
+        final offscreen = const Alignment(0, 2.5);
+
+        return Container(
+          height: 310,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/leaderboard_bg.png"),
+              fit: BoxFit.cover,
             ),
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              // Podium 2 (kiri belakang)
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.easeOutBack,
+                alignment: showSecond ? alignSecond : offscreen,
+                child: SizedBox(
+                  width: otherWidth.clamp(120.0, 260.0),
+                  // tinggi bisa proporsional ke lebar atau fixed; sesuaikan buildPodium
+                  child: buildPodium(
+                    number: 2,
+                    name: second.nama,
+                    xp: second.xp,
+                    image:
+                        second.foto ?? "assets/images/profile_placeholder.png",
+                    podiumImage: "assets/images/leaderboard_podium2.png",
+                  ),
+                ),
+              ),
+
+              // Podium 3 (kanan belakang)
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.easeOutBack,
+                alignment: showThird ? alignThird : offscreen,
+                child: SizedBox(
+                  width: otherWidth.clamp(120.0, 260.0),
+                  child: buildPodium(
+                    number: 3,
+                    name: third.nama,
+                    xp: third.xp,
+                    image:
+                        third.foto ?? "assets/images/profile_placeholder.png",
+                    podiumImage: "assets/images/leaderboard_podium3.png",
+                  ),
+                ),
+              ),
+
+              // Podium 1 (tengah depan)
+              AnimatedAlign(
+                duration: const Duration(milliseconds: 650),
+                curve: Curves.easeOutBack,
+                alignment: showFirst ? alignFirst : offscreen,
+                child: SizedBox(
+                  width: firstWidth.clamp(140.0, 320.0),
+                  child: buildPodium(
+                    number: 1,
+                    name: first.nama,
+                    xp: first.xp,
+                    image:
+                        first.foto ?? "assets/images/profile_placeholder.png",
+                    podiumImage: "assets/images/leaderboard_podium1.png",
+                    isFirst: true,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

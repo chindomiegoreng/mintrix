@@ -7,7 +7,6 @@ import 'package:mintrix/features/auth/presentation/bloc/auth_event.dart';
 import 'package:mintrix/features/auth/presentation/bloc/auth_state.dart';
 import 'package:mintrix/features/daily_notes/persentation/daily_notes_page.dart';
 import 'package:mintrix/features/home/presentation/pages/daily_mission_page.dart';
-import 'package:mintrix/features/leaderboard/presentation/pages/leaderboard_page.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'package:mintrix/features/navigation/presentation/bloc/navigation_event.dart';
 import 'package:mintrix/features/profile/presentation/bloc/profile_bloc.dart'; // ✅ Add ProfileBloc
@@ -93,24 +92,30 @@ class _HomePageState extends State<HomePage> {
               photoUrl = authState.photoUrl;
             }
 
-            return RefreshIndicator(
-              onRefresh: _fetchAndUpdateProfile, // ✅ Pull to refresh
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildHeader(context, username, photoUrl),
-                    const SizedBox(height: 30),
-                    _buildLargeCard(),
-                    const SizedBox(height: 24),
-                    _buildMenuGrid(context),
-                  ],
-                ),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context, username, photoUrl),
+                  const SizedBox(height: 30),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: _fetchAndUpdateProfile, // ✅ Pull to refresh
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLargeCard(),
+                            const SizedBox(height: 24),
+                            _buildMenuGrid(context),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           },
@@ -208,14 +213,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildLargeCard() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LeaderboardPage()),
-        );
+        context.read<NavigationBloc>().add(UpdateIndex(3));
       },
       child: const CustomHomeCardLarge(
         title: 'Liga Emas',
-        subTitle: 'Posisi 1',
         description:
             'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
       ),
@@ -223,67 +224,60 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMenuGrid(BuildContext context) {
-    return Column(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      childAspectRatio: 175 / 220, // ukuran card kamu
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                context.read<NavigationBloc>().add(UpdateIndex(1));
-              },
-              child: CustomHomeCardSmall(
-                images:
-                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846593/character5_v8uvxf.png",
-                title: "Permainan",
-                subTitle: "Ayo bermain dan belajar",
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DailyNotesPage(),
-                  ),
-                );
-              },
-              child: const CustomHomeCardSmall(
-                images:
-                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846600/character12_bpnhx5.png",
-                title: "Catatan harian",
-                subTitle: "Ceritakan kegiatanmu hari ini",
-              ),
-            ),
-          ],
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(1));
+          },
+          child: CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846593/character5_v8uvxf.png",
+            title: "Permainan",
+            subTitle: "Ayo bermain dan belajar",
+          ),
         ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: () {
-                context.read<NavigationBloc>().add(UpdateIndex(2));
-              },
-              child: CustomHomeCardSmall(
-                images:
-                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762848439/character10_hrs1i5.png",
-                title: "Assisten",
-                subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                context.read<NavigationBloc>().add(UpdateIndex(4));
-              },
-              child: const CustomHomeCardSmall(
-                images:
-                    "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character8_uhbkoc.png",
-                title: "Toko",
-                subTitle: "Tingkatkan performa dengan membeli item",
-              ),
-            ),
-          ],
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyNotesPage()),
+            );
+          },
+          child: const CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846600/character12_bpnhx5.png",
+            title: "Catatan harian",
+            subTitle: "Ceritakan kegiatanmu hari ini",
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(2));
+          },
+          child: CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762848439/character10_hrs1i5.png",
+            title: "Assisten",
+            subTitle: "Mulai mengembangkan dirimu dengan bantuan Dino",
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            context.read<NavigationBloc>().add(UpdateIndex(4));
+          },
+          child: const CustomHomeCardSmall(
+            images:
+                "https://res.cloudinary.com/dy4hqxkv1/image/upload/v1762846596/character8_uhbkoc.png",
+            title: "Toko",
+            subTitle: "Tingkatkan performa dengan membeli item",
+          ),
         ),
       ],
     );

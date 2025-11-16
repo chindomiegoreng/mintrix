@@ -121,7 +121,7 @@ class StoreItemCard2 extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 340,
+        width: double.infinity,
         height: 104,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
