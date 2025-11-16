@@ -217,7 +217,6 @@ class _HomePageState extends State<HomePage> {
       },
       child: const CustomHomeCardLarge(
         title: 'Liga Emas',
-        subTitle: 'Posisi 1',
         description:
             'Pertahankan posisimu dengan menyelesaikan misi harian dan mengisi catatan harian',
       ),

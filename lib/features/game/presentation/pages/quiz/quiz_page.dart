@@ -1326,10 +1326,20 @@ class _QuizPageState extends State<QuizPage> {
 
   void _submitQuiz() async {
     final questions = _getQuestions();
-    if (selectedAnswer == questions[currentQuestionIndex]["correctAnswer"]) {
+    final isCorrect =
+        selectedAnswer == questions[currentQuestionIndex]["correctAnswer"];
+
+    if (isCorrect) {
+      // Jawaban Benar
       correctAnswers++;
+      await _showCorrectAnswerDialog();
+    } else {
+      // Jawaban Salah - Tampilkan alert dan user harus jawab ulang
+      await _showWrongAnswerDialog();
+      return; // Tidak lanjut ke soal berikutnya
     }
 
+    // Lanjut ke soal berikutnya atau tampilkan hasil
     if (currentQuestionIndex < questions.length - 1) {
       setState(() {
         currentQuestionIndex++;
@@ -1352,6 +1362,96 @@ class _QuizPageState extends State<QuizPage> {
         print('🔥 Streak updated and profile refreshed!');
       }
     }
+  }
+
+  Future<void> _showCorrectAnswerDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset("assets/icons/check.png"),
+              const SizedBox(height: 16),
+              Text(
+                "Jawaban Benar!",
+                style: primaryTextStyle.copyWith(
+                  fontSize: 22,
+                  fontWeight: bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Luar biasa! Kamu berhasil menjawab dengan benar.",
+                textAlign: TextAlign.center,
+                style: secondaryTextStyle.copyWith(fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              CustomFilledButton(
+                title: "OK",
+                variant: ButtonColorVariant.blue,
+                onPressed: () => Navigator.of(context).pop(),
+                height: 50,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showWrongAnswerDialog() async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset("assets/icons/uncheck.png"),
+              const SizedBox(height: 16),
+              Text(
+                "Jawaban Salah!",
+                style: primaryTextStyle.copyWith(
+                  fontSize: 22,
+                  fontWeight: bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Coba lagi! Kamu harus menjawab dengan benar untuk melanjutkan ke soal berikutnya.",
+                textAlign: TextAlign.center,
+                style: secondaryTextStyle.copyWith(fontSize: 14),
+              ),
+              const SizedBox(height: 24),
+              CustomFilledButton(
+                title: "Coba Lagi",
+                variant: ButtonColorVariant.blue,
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // Reset pilihan jawaban agar user bisa pilih ulang
+                  setState(() {
+                    selectedAnswer = null;
+                  });
+                },
+                height: 50,
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -1455,9 +1555,7 @@ class _QuizPageState extends State<QuizPage> {
                     ),
                     const Spacer(),
                     CustomFilledButton(
-                      title: currentQuestionIndex < totalQuestions - 1
-                          ? "Selanjutnya"
-                          : "Selesai",
+                      title: "Kirim Jawaban",
                       variant: selectedAnswer != null
                           ? ButtonColorVariant.blue
                           : ButtonColorVariant.secondary,
