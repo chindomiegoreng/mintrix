@@ -19,6 +19,34 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  void _showFeatureDisabledDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Fitur Dimatikan',
+          style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: semiBold),
+        ),
+        content: Text(
+          'Fitur sudah di matikan',
+          style: secondaryTextStyle.copyWith(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'OK',
+              style: primaryTextStyle.copyWith(
+                fontWeight: semiBold,
+                color: blueColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _showFeatureDisabledDialog,
                       child: Text(
                         'Lupa Kata Sandimu?',
                         style: primaryTextStyle.copyWith(
@@ -156,10 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                       width: 20,
                       height: 20,
                     ),
-                    onPressed: () {
-                      // ✅ Trigger Google Sign In
-                      context.read<AuthBloc>().add(GoogleSignInEvent());
-                    },
+                    onPressed: _showFeatureDisabledDialog,
                   ),
                 ],
               ),
