@@ -23,6 +23,34 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   File? _profileImage;
 
+  void _showFeatureDisabledDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'Fitur Dimatikan',
+          style: primaryTextStyle.copyWith(fontSize: 18, fontWeight: semiBold),
+        ),
+        content: Text(
+          'Fitur sudah di matikan',
+          style: secondaryTextStyle.copyWith(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'OK',
+              style: primaryTextStyle.copyWith(
+                fontWeight: semiBold,
+                color: bluePrimaryColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
@@ -387,11 +415,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               onPressed: isLoading
                                   ? null
-                                  : () {
-                                      context.read<AuthBloc>().add(
-                                        GoogleSignInEvent(),
-                                      );
-                                    },
+                                  : _showFeatureDisabledDialog,
                               withShadow: true,
                             ),
                           ],

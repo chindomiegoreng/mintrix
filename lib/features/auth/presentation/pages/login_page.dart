@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
               'OK',
               style: primaryTextStyle.copyWith(
                 fontWeight: semiBold,
-                color: blueColor,
+                color: bluePrimaryColor,
               ),
             ),
           ),
