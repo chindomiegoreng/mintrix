@@ -8,11 +8,11 @@ A Flutter-based mobile learning platform that combines gamified education with p
 
 ## Team
 
-| | Role | GitHub |
-|---|---|---|
-| <img src="https://github.com/yogawan.png" width="48" height="48" style="border-radius: 50%" /> | Backend Dev & Mobile Assist | [yogawan](https://github.com/yogawan) |
-| <img src="https://github.com/rstsfyn.png" width="48" height="48" style="border-radius: 50%" /> | Mobile Dev Integration & Slicing | [rstsfyn](https://github.com/rstsfyn) |
-| <img src="https://github.com/rafiikkodev.png" width="48" height="48" style="border-radius: 50%" /> | Lead & Mobile Dev Slicing | [rafiikkodev](https://github.com/rafiikkodev) |
+| Picture | Role | Name | GitHub |
+|---|---|---|---|---|
+| <img src="https://github.com/rafiikkodev.png" width="48" height="48" style="border-radius: 50%" /> | Tech Lead & Mobile Dev Slicing | Rafi Ikko Rastyo | [rafiikkodev](https://github.com/rafiikkodev) |
+| <img src="https://github.com/yogawan.png" width="48" height="48" style="border-radius: 50%" /> | Backend Dev & Mobile Assist | Yogawan Aditya Pratama (Agoy) | [yogawan](https://github.com/yogawan) |
+| <img src="https://github.com/rstsfyn.png" width="48" height="48" style="border-radius: 50%" /> | Mobile Dev Integration & Slicing | restusofyan | [rstsfyn](https://github.com/rstsfyn) |
 
 ## Tech Stack
 
