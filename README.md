@@ -1,5 +1,11 @@
 # Mintrix
 
+<p align="center">
+  <img src="https://res.cloudinary.com/dy4hqxkv1/image/upload/v1781148005/Container_1_d1jvmj.png" alt="Mintrix Thumbnail" width="100%" />
+</p>
+
+A Flutter-based mobile learning platform that combines gamified education with practical career tools — featuring interactive course modules, quizzes, a CV builder, AI-powered chat assistant, daily notes, leaderboard, and a store system.
+
 ## Team
 
 | | Role | GitHub |
@@ -7,12 +13,6 @@
 | <img src="https://github.com/yogawan.png" width="48" height="48" style="border-radius: 50%" /> | Backend Dev & Mobile Assist | [yogawan](https://github.com/yogawan) |
 | <img src="https://github.com/rstsfyn.png" width="48" height="48" style="border-radius: 50%" /> | Mobile Dev Integration & Slicing | [rstsfyn](https://github.com/rstsfyn) |
 | <img src="https://github.com/rafiikkodev.png" width="48" height="48" style="border-radius: 50%" /> | Lead & Mobile Dev Slicing | [rafiikkodev](https://github.com/rafiikkodev) |
-
-<p align="center">
-  <img src="https://res.cloudinary.com/dy4hqxkv1/image/upload/v1781148005/Container_1_d1jvmj.png" alt="Mintrix Thumbnail" width="100%" />
-</p>
-
-A Flutter-based mobile learning platform that combines gamified education with practical career tools — featuring interactive course modules, quizzes, a CV builder, AI-powered chat assistant, daily notes, leaderboard, and a store system.
 
 ## Tech Stack
 
