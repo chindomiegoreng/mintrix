@@ -9,10 +9,10 @@ A Flutter-based mobile learning platform that combines gamified education with p
 ## Team
 
 | Picture | Role | Name | GitHub |
-|---|---|---|---|---|
-| <img src="https://github.com/rafiikkodev.png" width="48" height="48" style="border-radius: 50%" /> | Tech Lead & Mobile Dev Slicing | Rafi Ikko Rastyo | [rafiikkodev](https://github.com/rafiikkodev) |
-| <img src="https://github.com/yogawan.png" width="48" height="48" style="border-radius: 50%" /> | Backend Dev & Mobile Assist | Yogawan Aditya Pratama (Agoy) | [yogawan](https://github.com/yogawan) |
-| <img src="https://github.com/rstsfyn.png" width="48" height="48" style="border-radius: 50%" /> | Mobile Dev Integration & Slicing | restusofyan | [rstsfyn](https://github.com/rstsfyn) |
+|---|---|---|---|
+| <img src="https://github.com/rafiikkodev.png?s=48" width="48"> | Tech Lead & Mobile Dev Slicing | Rafi Ikko Rastyo | [rafiikkodev](https://github.com/rafiikkodev) |
+| <img src="https://github.com/yogawan.png?s=48" width="48"> | Backend Dev & Mobile Assist | Yogawan Aditya Pratama (Agoy) | [yogawan](https://github.com/yogawan) |
+| <img src="https://github.com/rstsfyn.png?s=48" width="48"> | Mobile Dev Integration & Slicing | restusofyan | [rstsfyn](https://github.com/rstsfyn) |
 
 ## Tech Stack
 
